@@ -1,0 +1,4 @@
+# Netlify redirects - todas las rutas deben servir index.html para SPA
+/*    /index.html   200
+
+
