@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import { Fragment, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from "@/api/client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { getCurrentUser } from "@/utils/jwt";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -94,7 +94,7 @@ export default function Onboarding() {
         }));
         toast.success('Ubicación actual obtenida');
       },
-      (error) => {
+      () => {
         toast.error('No se pudo obtener la ubicación');
       }
     );
@@ -119,7 +119,7 @@ export default function Onboarding() {
           {/* Indicador de pasos */}
           <div className="flex items-center justify-center gap-2 py-6">
             {[1, 2].map((step) => (
-              <React.Fragment key={step}>
+              <Fragment key={step}>
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
                     step === currentStep
@@ -138,7 +138,7 @@ export default function Onboarding() {
                     }`}
                   />
                 )}
-              </React.Fragment>
+              </Fragment>
             ))}
             <span className="ml-2 text-sm text-gray-500">
               Paso {currentStep} de 2

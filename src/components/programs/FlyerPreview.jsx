@@ -1,15 +1,6 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 
-// Helper to darken color
-const darkenColor = (hex, percent) => {
-  const num = parseInt(hex.replace('#', ''), 16);
-  const amt = Math.round(2.55 * percent);
-  const R = Math.max((num >> 16) - amt, 0);
-  const G = Math.max((num >> 8 & 0x00FF) - amt, 0);
-  const B = Math.max((num & 0x0000FF) - amt, 0);
-  return `#${(0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1)}`;
-};
 
 // Helper to add alpha to hex color
 const addAlpha = (hex, alpha) => {
@@ -34,7 +25,6 @@ const FlyerPreview = forwardRef(({
   const reward = customReward || card?.reward_text || 'Recompensa especial';
   const accentColor = card?.card_color || '#8B5CF6';
   const logoUrl = card?.logo_url;
-  const darkAccent = darkenColor(accentColor, 15);
   const flyerId = isForDownload ? 'flyer-preview-download' : 'flyer-preview';
 
   // Base container styles

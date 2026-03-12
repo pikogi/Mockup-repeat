@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useQueryClient } from "@tanstack/react-query";
 import { createPageUrl } from '@/utils';
 import { getCurrentUser } from "@/utils/jwt";
-import { LayoutDashboard, CreditCard, Plus, User, Users, Scan, Store, Shield, Menu, Bell, LogOut, ClipboardList, BookOpen, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, CreditCard, Plus, User, Users, Scan, Store, Menu, Bell, LogOut, ClipboardList, BookOpen, HelpCircle } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/auth/LanguageContext";

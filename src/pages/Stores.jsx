@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { getCurrentUser } from "@/utils/jwt";
 import useStoresStore from "@/stores/useStoresStore";
 import useProgramsStore from "@/stores/useProgramsStore";

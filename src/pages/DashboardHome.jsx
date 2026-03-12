@@ -2,11 +2,8 @@ import React from 'react';
 import { useQuery } from "@tanstack/react-query";
 import useStoresStore from "@/stores/useStoresStore";
 import useProgramsStore from "@/stores/useProgramsStore";
-import { Link, useNavigate } from 'react-router-dom';
 import { api } from "@/api/client";
-import { getCurrentUser } from "@/utils/jwt";
 import { createPageUrl } from '@/utils';
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   CreditCard,
@@ -18,30 +15,20 @@ import {
 } from 'lucide-react';
 import MetricCard from '../components/dashboard/MetricCard';
 import StatsChart from '../components/dashboard/StatsChart';
-import StampsDistribution from '../components/dashboard/StampsDistribution';
 import { motion } from "framer-motion";
 import {
   format,
   subDays,
   addDays,
   startOfMonth,
-  isAfter,
-  isBefore,
-  endOfDay,
-  startOfDay,
   eachDayOfInterval
 } from 'date-fns';
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/auth/LanguageContext";
 
 export default function DashboardHome() {
   const { t } = useLanguage();
-  const navigate = useNavigate();
-
   const [dateFilter, setDateFilter] = React.useState('default');
-  const [customDate, setCustomDate] = React.useState({
+  const [customDate] = React.useState({
     from: new Date(),
     to: new Date(),
   });
@@ -60,9 +47,6 @@ export default function DashboardHome() {
   const effectiveBrandId = brandIdFromStorage || me?.brands?.[0]?.brand_id;  
 
   // ⚠️ brand / cards aún no existen en backend
-  const brand = null;
-  const cards = [];
-  const interactions = [];
 
   const { stores: storesFromStore, fetchStores } = useStoresStore();
   const { programs: storedPrograms } = useProgramsStore();
@@ -86,7 +70,8 @@ export default function DashboardHome() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const dashboardProgramIds = programsData.map(p => p.program_id || p.id).filter(Boolean);
+  // Stable key for customDate to avoid query refetches on unrelated state changes
+  const customDateKey = dateFilter === 'custom' ? `${customDate.from?.getTime()}-${customDate.to?.getTime()}` : '';
 
   // ======================
   // DATE FILTER
@@ -103,7 +88,7 @@ export default function DashboardHome() {
 
   // Brand stats — solo se usa para chartData (totalRedemptions)
   const { data: brandStats, isLoading: brandStatsLoading } = useQuery({
-    queryKey: ['brandStats', effectiveBrandId, storeId, dateFilter, customDate],
+    queryKey: ['brandStats', effectiveBrandId, storeId, dateFilter, customDateKey],
     queryFn: async () => {
       if (!effectiveBrandId) return null;
       const range = getDateRange();
@@ -151,7 +136,7 @@ export default function DashboardHome() {
 
   // Brand stats per interval — daily for ≤7d, weekly for larger ranges
   const { data: statsTransactionsData } = useQuery({
-    queryKey: ['brandStatsTransactions', effectiveBrandId, dateFilter, customDate, storeId],
+    queryKey: ['brandStatsTransactions', effectiveBrandId, dateFilter, customDateKey, storeId],
     queryFn: async () => {
       if (!effectiveBrandId) return [];
       const range = getDateRange();
@@ -267,13 +252,6 @@ export default function DashboardHome() {
       };
     });
   }, [dateFilter, customDate, statsUsersData, statsTransactionsData, membersData, brandStats]);
-
-  const stampsDistribution = React.useMemo(() => {
-    return Array.from({ length: 11 }, (_, i) => ({
-      stamps: i,
-      count: 0
-    }));
-  }, []);
 
   // ======================
   // UI (NO SE TOCA)

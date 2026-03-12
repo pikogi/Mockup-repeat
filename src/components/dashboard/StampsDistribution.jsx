@@ -1,11 +1,10 @@
-import React from 'react';
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useLanguage } from "@/components/auth/LanguageContext";
 
-export default function StampsDistribution({ data, maxStamps = 10, loading }) {
+export default function StampsDistribution({ data, loading }) {
   const { t } = useLanguage();
   const maxCount = Math.max(...data.map(d => d.count), 1);
   const navigate = useNavigate();

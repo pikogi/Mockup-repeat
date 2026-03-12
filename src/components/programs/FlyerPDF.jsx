@@ -1,10 +1,8 @@
-import React from 'react';
 import { Document, Page, View, Text, Image, StyleSheet, Svg, Path } from '@react-pdf/renderer';
 
 // Gift Icon as SVG component for react-pdf
 // Using simplified paths for better compatibility with react-pdf
 const GiftIcon = ({ color = '#ffffff', size = 16 }) => {
-  const scale = size / 24;
   return (
     <View style={{ width: size, height: size }}>
       <Svg width={size} height={size} viewBox="0 0 24 24">

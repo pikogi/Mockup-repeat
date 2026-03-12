@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { api } from "@/api/client";
+import { createContext, useContext, useState, useEffect } from 'react';
 import { getCurrentUser } from "@/utils/jwt";
 
 const LanguageContext = createContext();
@@ -282,7 +281,7 @@ export function LanguageProvider({ children }) {
           const saved = localStorage.getItem('app_language');
           if (saved) setLanguage(saved);
         }
-      } catch (e) {
+      } catch {
         // User not logged in or error
         const saved = localStorage.getItem('app_language');
         if (saved) setLanguage(saved);

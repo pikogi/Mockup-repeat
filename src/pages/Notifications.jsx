@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { api } from "@/api/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getCurrentUser } from "@/utils/jwt";
-import { Bell, Send, Clock, CheckCircle, AlertCircle, Loader2, History, Mail, Users, MapPin, TrendingUp, Calendar, Search, CheckSquare, Square, Store, ChevronRight } from 'lucide-react';
+import { Bell, Send, Clock, CheckCircle, AlertCircle, Loader2, History, Mail, Users, Search, CheckSquare, Square, Store, ChevronRight } from 'lucide-react';
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/components/auth/LanguageContext";
@@ -41,8 +41,6 @@ export default function Notifications() {
   const [tempSelectedMemberIds, setTempSelectedMemberIds] = useState([]);
   const [memberSearchQuery, setMemberSearchQuery] = useState('');
   const [selectedStoreFilter, setSelectedStoreFilter] = useState('all');
-  const [isSending, setIsSending] = useState(false);
-  
   const user = getCurrentUser();
 
   // Obtener brand_id desde /auth/me
@@ -61,7 +59,7 @@ export default function Notifications() {
   const brandId = brandIdFromStorage || meData?.brands?.[0]?.brand_id;
 
   // Consultar programas de lealtad
-  const { data: programs = [] } = useQuery({
+  useQuery({
     queryKey: ['loyaltyPrograms', brandId],
     queryFn: async () => {
       if (!brandId) return [];
@@ -71,12 +69,6 @@ export default function Notifications() {
     enabled: !!brandId,
     staleTime: 5 * 60 * 1000,
   });
-
-  const cards = programs.map(program => ({
-    id: program.program_id || program.id,
-    club_name: program.program_name,
-    card_title: program.program_name,
-  }));
 
   // Consultar stores
   const { data: storesData = [] } = useQuery({
@@ -119,11 +111,6 @@ export default function Notifications() {
   const isLoading = false;
 
   // Funciones auxiliares para filtrar miembros
-  const getCardName = (cardId) => {
-    const card = cards.find(c => c.id === cardId);
-    return card?.club_name || 'Programa desconocido';
-  };
-
   const filterMembersByCategory = (category) => {
     if (!members || members.length === 0) return [];
     
@@ -280,7 +267,7 @@ export default function Notifications() {
 
   const sendCampaignMutation = useMutation({
     mutationFn: async (campaignData) => {
-      const { type, ...data } = campaignData;
+      const { type } = campaignData;
       
       if (type === 'push') {
         // NOTA: api.entities.Campaign.create() y api.functions.invoke('sendCampaign') no existen en el YAML - comentado

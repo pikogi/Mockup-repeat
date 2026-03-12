@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';

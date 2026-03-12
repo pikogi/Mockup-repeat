@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from "@/api/client";
-import { getCurrentUser, decodeJWT, hasValidToken } from "@/utils/jwt";
+import { decodeJWT, hasValidToken } from "@/utils/jwt";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,7 +50,6 @@ function Typewriter({ text, speed = 100, delay = 0 }) {
 
 export default function Login() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const [isLogin, setIsLogin] = useState(true);
   const [showVerificationMessage, setShowVerificationMessage] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState('');
@@ -77,52 +76,6 @@ export default function Login() {
       navigate('/dashboard', { replace: true });
     }
   }, [navigate]);
-
-  // Función para procesar el join después de autenticación
-  const processJoin = async () => {
-    const joinBrandId = searchParams.get('join_brand');
-    const joinBranchId = searchParams.get('branch_id');
-    
-    if (!joinBrandId) {
-      navigate('/dashboard');
-      return;
-    }
-
-    try {
-      const user = getCurrentUser();
-      
-      if (!user) {
-        navigate('/dashboard');
-        return;
-      }
-
-      // Si el usuario ya tiene una marca diferente, mostrar error
-      if (user.brand_id && user.brand_id !== joinBrandId) {
-        toast.error('Ya perteneces a una marca. Debes salirte para unirte a otra.');
-        navigate('/dashboard');
-        return;
-      }
-
-      // Si ya es miembro de esta marca, solo redirigir
-      if (user.brand_id === joinBrandId) {
-        toast.info('Ya eres miembro de esta marca.');
-        navigate('/dashboard');
-        return;
-      }
-
-      // Nota: api.auth.updateMe() no existe en el backend según el YAML
-      // El usuario debe actualizar su información a través de otro endpoint
-      // o el backend debe implementar PATCH /auth/me
-      toast.info('Para unirte a una marca, contacta al administrador o espera a que se implemente el endpoint de actualización de usuario.');
-      
-      // Limpiar parámetros de la URL
-      navigate('/dashboard', { replace: true });
-    } catch (error) {
-      console.error("Error joining brand:", error);
-      toast.error('Error al unirse a la marca');
-      navigate('/dashboard');
-    }
-  };
 
   const loginMutation = useMutation({
     mutationFn: async ({ email, password }) => {
@@ -205,7 +158,7 @@ export default function Login() {
       const response = await api.auth.register(email, password, name);
       return response;
     },
-    onSuccess: async (response) => {
+    onSuccess: async () => {
       setVerificationEmail(formData.email);
       setShowVerificationMessage(true);
       toast.success('¡Registro exitoso! Por favor verifica tu correo electrónico.');
@@ -231,11 +184,6 @@ export default function Login() {
 
   const handleForgotPassword = () => {
     navigate('/forgot-password');
-  };
-
-  const handleGoogleLogin = () => {
-    toast.info('Login con Google próximamente disponible');
-    // TODO: Implementar OAuth con Google
   };
 
   return (

@@ -1,14 +1,13 @@
-import React from 'react';
 import { api } from "@/api/client";
 import useProgramsStore from "@/stores/useProgramsStore";
 import useStoresStore from "@/stores/useStoresStore";
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { getCurrentUser } from "@/utils/jwt";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, CreditCard, LogOut, Crown, Mail, Globe, Lock, Store, Loader2 } from 'lucide-react';
+import { User, LogOut, Crown, Mail, Globe, Lock, Store, Loader2 } from 'lucide-react';
 import { motion } from "framer-motion";
 import { useLanguage } from "@/components/auth/LanguageContext";
 import { toast } from "sonner";
@@ -39,7 +38,7 @@ export default function Profile() {
   //   queryFn: () => api.entities.LoyaltyCard.filter({ created_by: user.email }, '-created_date'),
   //   enabled: !!user?.email,
   // });
-  const cards = [];
+  // const cards = []; // TODO: integrate when API endpoint exists
 
   // const { data: userBranch } = useQuery({
   //   queryKey: ['userBranch', user?.branch_id],

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { getCurrentUser } from "@/utils/jwt";
@@ -83,9 +83,13 @@ export default function MyPrograms() {
     created_date: program.created_date || program.start_date,
   }));
 
+  // Memoize program IDs for stable query keys
+  const programIds = useMemo(() => programs.map(p => p.program_id || p.id).filter(Boolean), [programs]);
+  const programIdsKey = useMemo(() => programIds.join(','), [programIds]);
+
   // Contar miembros por programa usando ventanas de 3 meses (backend limita a 4 meses max)
   const { data: memberCounts = {} } = useQuery({
-    queryKey: ['programMemberCounts', brandId, programs.map(p => p.program_id || p.id).join(',')], // programs from Zustand store — stable reference
+    queryKey: ['programMemberCounts', brandId, programIdsKey],
     queryFn: async () => {
       if (!brandId || programs.length === 0) return {};
 

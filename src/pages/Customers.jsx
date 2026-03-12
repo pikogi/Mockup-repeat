@@ -11,8 +11,7 @@ import { format } from 'date-fns';
 import CustomerDetailModal from '../components/customers/CustomerDetailModal';
 import { useLanguage } from "@/components/auth/LanguageContext";
 
-function CustomerCard({ member, brandId, userData, onClick }) {
-  const { t } = useLanguage();
+function CustomerCard({ member, userData, onClick }) {
 
   const displayName = member.full_name || member.email || '?';
   const displayEmail = member.email || '';
@@ -108,13 +107,9 @@ function CustomerCard({ member, brandId, userData, onClick }) {
 export default function Customers() {
   const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
-  const urlParams = new URLSearchParams(window.location.search);
-  const initialStamps = urlParams.get('stamps');
 
   const [selectedMonth, setSelectedMonth] = useState('all');
   const [selectedCard, setSelectedCard] = useState('all');
-  const [selectedStore, setSelectedStore] = useState('all');
-  const [selectedStampRange, setSelectedStampRange] = useState(initialStamps || 'all');
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [sortBy, setSortBy] = useState('date');
 
@@ -457,7 +452,6 @@ export default function Customers() {
               >
                 <CustomerCard
                   member={member}
-                  brandId={brandId}
                   userData={userStatsMap[member.user_id]}
                   onClick={() => setSelectedCustomer(member)}
                 />

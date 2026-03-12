@@ -1,6 +1,5 @@
-import React from 'react';
 import { motion } from "framer-motion";
-import { Gift, CreditCard, Percent, DollarSign, Crown, Ticket, ChevronUp, Pencil, Check, Mail, Globe, Phone } from 'lucide-react';
+import { Gift, CreditCard, Percent, DollarSign, Crown, Ticket, ChevronUp, Pencil, Check, Mail } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
 // Función helper para ajustar el brillo de un color hex
@@ -539,40 +538,8 @@ function GoogleTextModule({ label, value, foregroundColor, align = 'left' }) {
   );
 }
 
-// Grid de sellos para Android - más cuadrado/Material Design
-function AndroidStampsGrid({ stampsRequired, currentStamps, stampImageUrl, backgroundColor, foregroundColor }) {
-  const stamps = Array.from({ length: stampsRequired });
-  const cols = stampsRequired <= 5 ? stampsRequired : Math.ceil(stampsRequired / 2);
-
-  return (
-    <div className="grid gap-2 p-2" style={{ gridTemplateColumns: `repeat(${Math.min(cols, 5)}, 1fr)` }}>
-      {stamps.map((_, index) => {
-        const isCompleted = index < currentStamps;
-        return (
-          <div
-            key={index}
-            className="aspect-square rounded-lg flex items-center justify-center transition-all"
-            style={{
-              backgroundColor: isCompleted ? foregroundColor : `${foregroundColor}15`,
-              border: `2px solid ${foregroundColor}30`
-            }}
-          >
-            {isCompleted ? (
-              <svg className="w-5 h-5" fill="none" stroke={backgroundColor} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-              </svg>
-            ) : (
-              <span className="text-xs font-bold opacity-40" style={{ color: foregroundColor }}>{index + 1}</span>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 // Preview Stamps para Android - Estilo Google Wallet Loyalty Card
-function AndroidStampsPreview({ card, foregroundColor, backgroundColor, currentStamps, stampsRequired }) {
+function AndroidStampsPreview({ card, backgroundColor, currentStamps, stampsRequired }) {
   return (
     <div className="relative h-48">
       {/* Hero image area */}
@@ -623,7 +590,7 @@ function AndroidStampsPreview({ card, foregroundColor, backgroundColor, currentS
 }
 
 // Preview Gift Card para Android
-function AndroidGiftCardPreview({ card, foregroundColor, backgroundColor }) {
+function AndroidGiftCardPreview({ card, backgroundColor }) {
   const balance = card.balance || 500;
   const cardNumber = card.card_number || '•••• 4532';
 
@@ -660,7 +627,7 @@ function AndroidGiftCardPreview({ card, foregroundColor, backgroundColor }) {
 }
 
 // Preview Cashback para Android
-function AndroidCashbackPreview({ card, foregroundColor, backgroundColor }) {
+function AndroidCashbackPreview({ card, backgroundColor }) {
   const cashbackPercent = card.cashback_percent || 5;
   const accumulatedCashback = card.accumulated_cashback || 150;
   const totalSpent = card.total_spent || 3000;
@@ -701,7 +668,7 @@ function AndroidCashbackPreview({ card, foregroundColor, backgroundColor }) {
 }
 
 // Preview Discount para Android - Estilo Google Wallet Offer
-function AndroidDiscountPreview({ card, foregroundColor, backgroundColor }) {
+function AndroidDiscountPreview({ card, backgroundColor }) {
   const discountPercent = card.discount_percent || 15;
   const discountType = card.discount_type || 'Descuento Miembro';
   const validUntil = card.valid_until || 'Sin vencimiento';
@@ -756,7 +723,7 @@ function AndroidDiscountPreview({ card, foregroundColor, backgroundColor }) {
 }
 
 // Preview Membership para Android - Estilo Google Wallet Generic
-function AndroidMembershipPreview({ card, foregroundColor, backgroundColor }) {
+function AndroidMembershipPreview({ card, backgroundColor }) {
   const membershipLevel = card.membership_level || 'Gold';
   const memberSince = card.member_since || '2024';
   const memberId = card.member_id || 'MBR-001234';
@@ -818,7 +785,7 @@ function AndroidMembershipPreview({ card, foregroundColor, backgroundColor }) {
 }
 
 // Preview Coupon para Android - Estilo Google Wallet Offer
-function AndroidCouponPreview({ card, foregroundColor, backgroundColor }) {
+function AndroidCouponPreview({ card, backgroundColor }) {
   const availableCoupons = card.available_coupons || 3;
   const totalCoupons = card.total_coupons || 5;
   const nextCoupon = card.next_coupon || 'Café gratis';
@@ -884,13 +851,11 @@ function AndroidCouponPreview({ card, foregroundColor, backgroundColor }) {
 
 export default function ProgramPreviewComponent({
   card,
-  showDetails = false,
   demoStamps = 0,
   demoStampsRequired = null,
   platform = 'ios',
   isFlipped = false,
   customerCardId = null, // ID de la tarjeta del cliente (para QR de clientes registrados)
-  stampCardImageUrl = null, // URL de la imagen generada de stamp card (S3)
 }) {
   // Determinar tipo de programa
   const programType = card.card_type || getProgramTypeFromId(card.program_type_id);

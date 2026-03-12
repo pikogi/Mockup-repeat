@@ -279,6 +279,7 @@ const useStoresStore = create(
     } catch (error) {
       // Revertir al estado anterior y remover de deletingStoreIds en caso de error
       set((state) => {
+        // eslint-disable-next-line no-unused-vars
         const { [storeId]: _, ...rest } = state.deletingStoreIds;
         return {
           stores: previousStores,

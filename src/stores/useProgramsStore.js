@@ -58,7 +58,6 @@ const useProgramsStore = create(
         // y si el servidor tiene al menos tantos programas como nosotros
         const currentState = get();
         const currentLastModified = currentState.lastModified;
-        const currentPrograms = currentState.programs;
         const stillRecent = currentLastModified && (Date.now() - currentLastModified < 10000);
 
         if (!stillRecent) {
@@ -70,7 +69,7 @@ const useProgramsStore = create(
           const filteredPrograms = mappedPrograms.filter(p => !newDeletingIds[p.program_id || p.id]);
           set({ programs: filteredPrograms, deletingProgramIds: newDeletingIds });
         }
-      } catch (error) {
+      } catch {
         // Silent fail for background fetch
       }
       return;
@@ -339,6 +338,7 @@ const useProgramsStore = create(
     } catch (error) {
       const isNotFound = error?.response?.status === 404;
       set((state) => {
+        // eslint-disable-next-line no-unused-vars
         const { [programId]: _, ...rest } = state.deletingProgramIds;
         // Si el backend dice 404, el programa ya no existe → mantener el delete optimista
         if (isNotFound) return { deletingProgramIds: rest };

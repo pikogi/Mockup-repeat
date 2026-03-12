@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from "@/api/client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ export default function PublicCard() {
 
   const [pageLoadTs] = useState(() => Date.now());
   const [added, setAdded] = useState(false);
-  const [customerCardId, setCustomerCardId] = useState(null); // ID de la tarjeta del cliente
+  const [, setCustomerCardId] = useState(null); // ID de la tarjeta del cliente
   const [showSignUp, setShowSignUp] = useState(false);
   const [signupData, setSignupData] = useState({ name: '', email: '', phone: '', birthday: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -230,7 +230,7 @@ export default function PublicCard() {
       try {
         await navigator.clipboard.writeText(window.location.href);
         toast.success('Link copiado al portapapeles');
-      } catch (err) {
+      } catch {
         toast.error('No se pudo copiar el link');
       }
     }

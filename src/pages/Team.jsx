@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { api } from "@/api/client";
+import { useState, useEffect } from 'react';
 import { getCurrentUser } from "@/utils/jwt";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -24,7 +23,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useLanguage } from "@/components/auth/LanguageContext";
 
-import { UserPlus, Lock, Copy, Mail, Send, Loader2 } from 'lucide-react';
+import { UserPlus, Copy, Mail, Send, Loader2 } from 'lucide-react';
 import PricingModal from '@/components/subscription/PricingModal';
 
 export default function Team() {
@@ -75,7 +74,7 @@ export default function Team() {
   };
 
   // Reset step when dialog opens/closes
-  React.useEffect(() => {
+  useEffect(() => {
       if (showInvite) {
           setInviteStep('form');
           setInviteEmail('');
@@ -147,7 +146,7 @@ export default function Team() {
   const updateUserMutation = useMutation({
     // NOTA: api.entities.User.update() no existe en el YAML - comentado
     // mutationFn: ({ id, data }) => api.entities.User.update(id, data),
-    mutationFn: ({ id, data }) => {
+    mutationFn: () => {
       throw new Error('Funcionalidad no disponible. El endpoint /entities/User no está documentado en el YAML de Insomnia.');
     },
     onSuccess: () => {
@@ -163,7 +162,7 @@ export default function Team() {
   const deleteUserMutation = useMutation({
     // NOTA: api.entities.User.delete() no existe en el YAML - comentado
     // mutationFn: (id) => api.entities.User.delete(id),
-    mutationFn: (id) => {
+    mutationFn: () => {
       throw new Error('Funcionalidad no disponible. El endpoint /entities/User no está documentado en el YAML de Insomnia.');
     },
     onSuccess: () => {

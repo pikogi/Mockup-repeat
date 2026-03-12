@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, Edit, Share2, TrendingUp, Lock, Trash2, QrCode, Download, FileImage, Loader2 } from 'lucide-react';
+import { Eye, Edit, Share2, TrendingUp, Trash2, QrCode, Download, FileImage, Loader2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,11 +17,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
-import { Link, useNavigate } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
 import PricingModal from '@/components/subscription/PricingModal';
 import FlyerPreview from '@/components/programs/FlyerPreview';
 import FlyerPDF from '@/components/programs/FlyerPDF';
@@ -29,7 +27,6 @@ import { pdf } from '@react-pdf/renderer';
 import { toast } from "sonner";
 
 export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete, brand, currentUser, memberCount }) {
-  const navigate = useNavigate();
   const [showPricing, setShowPricing] = useState(false);
   const [showQr, setShowQr] = useState(false);
 
@@ -51,7 +48,7 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
         url.searchParams.set('brand_id', brandId);
       }
       return url.toString();
-    } catch (e) {
+    } catch {
       return window.location.href;
     }
   })();
@@ -60,7 +57,7 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
     try {
       await navigator.clipboard.writeText(shareUrl);
       toast.success('Enlace copiado al portapapeles');
-    } catch (err) {
+    } catch {
       toast.error('Error al copiar el enlace');
     }
   };

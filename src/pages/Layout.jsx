@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import Sidebar from '@/components/layout/Sidebar';
 import { LanguageProvider } from '@/components/auth/LanguageContext';
 import { api } from "@/api/client";
@@ -13,8 +13,6 @@ export default function Layout({ children, currentPageName }) {
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(window.location.search);
   const joinBrandId = urlParams.get('join_brand');
-  const joinBranchId = urlParams.get('branch_id');
-
   useEffect(() => {
     document.title = "Repeat";
   }, []);
@@ -103,11 +101,6 @@ export default function Layout({ children, currentPageName }) {
              url.searchParams.delete('join_brand');
              window.history.replaceState({}, '', url);
           }
-      } else if (user && !joinBrandId) {
-        // Obtener brand_id y onboarding_completed desde meData (fuente de verdad)
-        const effectiveBrandId = meData?.brands?.[0]?.brand_id || user.brand_id;
-        const onboardingCompleted = meData?.onboarding_completed === true || user.onboarding_completed === true;
-        
       }
     };
 

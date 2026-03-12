@@ -1,6 +1,5 @@
-import React from 'react';
 import { motion } from 'framer-motion';
-import { ClipboardList, MessageSquare, BarChart2, Gift, RefreshCw } from 'lucide-react';
+import { ClipboardList } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
 const benefits = [

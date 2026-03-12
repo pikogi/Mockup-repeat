@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from "@/api/client";
 import { getCurrentUser } from "@/utils/jwt";
@@ -8,10 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X, CheckCircle, AlertCircle, Store, Gift, Loader2 } from 'lucide-react';
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
-import { toast } from "sonner";
 import { useLanguage } from "@/components/auth/LanguageContext";
 import jsQR from 'jsqr';
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { api } from "@/api/client";
 import { getCurrentUser } from "@/utils/jwt";
 import { useQuery } from "@tanstack/react-query";
@@ -12,25 +12,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Save, Loader2, Plus, Trash2, Upload, RotateCw } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Upload, RotateCw } from 'lucide-react';
 import { motion } from "framer-motion";
 import { useLanguage } from "@/components/auth/LanguageContext";
 import { toast } from "sonner";
 import ProgramPreviewComponent from "@/components/programs/ProgramPreviewComponent";
-
-function resizeImage(base64, width, height) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-      resolve(canvas.toDataURL('image/png'));
-    };
-    img.src = base64;
-  });
-}
 
 // Escala la imagen proporcionalmente si supera las dimensiones máximas.
 // Usa PNG para preservar transparencia.
@@ -109,35 +95,6 @@ function sampleCircleEdgeColor(base64, size = 300) {
       const n = points.length;
       const toHex = (v) => Math.round(v / n).toString(16).padStart(2, '0');
       resolve(`#${toHex(rSum)}${toHex(gSum)}${toHex(bSum)}`);
-    };
-    img.src = base64;
-  });
-}
-
-function applyRoundedCorners(base64, radius = 0.15) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      const { naturalWidth: w, naturalHeight: h } = img;
-      const canvas = document.createElement('canvas');
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext('2d');
-      const r = Math.min(w, h) * radius;
-      ctx.beginPath();
-      ctx.moveTo(r, 0);
-      ctx.lineTo(w - r, 0);
-      ctx.arcTo(w, 0, w, r, r);
-      ctx.lineTo(w, h - r);
-      ctx.arcTo(w, h, w - r, h, r);
-      ctx.lineTo(r, h);
-      ctx.arcTo(0, h, 0, h - r, r);
-      ctx.lineTo(0, r);
-      ctx.arcTo(0, 0, r, 0, r);
-      ctx.closePath();
-      ctx.clip();
-      ctx.drawImage(img, 0, 0);
-      resolve(canvas.toDataURL('image/png'));
     };
     img.src = base64;
   });
@@ -554,10 +511,10 @@ export default function CreateClub() {
             logo: hasNewLogo ? formData.logo_url : prevImages.logo,
             color: formData.stamp_icon_bg_color,
           }));
-        } catch (e) { /* localStorage lleno, ignorar */ }
+        } catch { /* localStorage lleno, ignorar */ }
 
         if (hasNewLogo && formData.logo_url) {
-          try { localStorage.setItem(`brand_logo_version_${brandId}`, Date.now()); } catch (_) {}
+          try { localStorage.setItem(`brand_logo_version_${brandId}`, Date.now()); } catch {}
           api.brands.update(brandId, { logo_url: formData.logo_url })
             .catch(err => console.warn('[CreateClub edit] Error actualizando logo en brand:', err));
         }
@@ -629,14 +586,14 @@ export default function CreateClub() {
               logo: formData.logo_url,
               color: formData.stamp_icon_bg_color,
             }));
-          } catch (e) { /* localStorage lleno, ignorar */ }
+          } catch { /* localStorage lleno, ignorar */ }
 
           try {
             const { logo: hasNewLogo, background: hasNewBackground, stamp: hasNewStamp } = newUpload;
 
             if (hasNewLogo && formData.logo_url) {
               const s3LogoUrl = api.images.getLogoUrl(brandId);
-              if (s3LogoUrl) { try { localStorage.setItem(`brand_logo_url_${brandId}`, `${s3LogoUrl}?v=${Date.now()}`); } catch (_) {} }
+              if (s3LogoUrl) { try { localStorage.setItem(`brand_logo_url_${brandId}`, `${s3LogoUrl}?v=${Date.now()}`); } catch {} }
               api.brands.update(brandId, { logo_url: formData.logo_url })
                 .catch(err => console.warn('[CreateClub] Error actualizando logo en brand:', err));
             }
