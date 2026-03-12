@@ -40,15 +40,14 @@ export default defineConfig({
         manualChunks(id) {
           if (!id.includes('node_modules')) return;
 
-          if (id.includes('react-dom') || id.includes('react-router-dom') || id.includes('/react/')) {
-            return 'vendor-react';
-          }
-          if (id.includes('@radix-ui') || id.includes('lucide-react') || id.includes('/sonner/') ||
+          // React + UI libs in same chunk (Radix uses React.forwardRef at init time)
+          if (id.includes('react-dom') || id.includes('react-router-dom') || id.includes('/react/') ||
+              id.includes('@radix-ui') || id.includes('lucide-react') || id.includes('/sonner/') ||
               id.includes('/vaul/') || id.includes('/cmdk/') || id.includes('embla-carousel') ||
               id.includes('class-variance-authority') || id.includes('/clsx/') ||
               id.includes('tailwind-merge') || id.includes('react-day-picker') ||
               id.includes('react-resizable-panels') || id.includes('input-otp')) {
-            return 'vendor-ui';
+            return 'vendor-core';
           }
           if (id.includes('@tanstack/react-query') || id.includes('/zustand/') ||
               id.includes('/zod/') || id.includes('react-hook-form') ||
