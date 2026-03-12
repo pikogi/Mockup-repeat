@@ -57,9 +57,6 @@ export default defineConfig({
           }
           if (id.includes('framer-motion')) return 'vendor-motion';
           if (id.includes('recharts')) return 'vendor-charts';
-          if (id.includes('@react-pdf') || id.includes('/jspdf/') || id.includes('html2canvas')) {
-            return 'vendor-pdf';
-          }
           if (id.includes('/jsqr/') || id.includes('qrcode.react')) return 'vendor-qr';
         },
       },
