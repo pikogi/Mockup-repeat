@@ -1,32 +1,33 @@
-import React, { useEffect } from 'react';
+import React, { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import Layout from './Layout';
+import Login from './Login';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
   return null;
 }
-import Layout from './Layout';
-import Home from './Home';
-import Login from './Login';
-import Dashboard from './Dashboard';
-import MyPrograms from './MyPrograms';
-import CreateClub from './CreateClub';
-import Customers from './Customers';
-import Stores from './Stores';
-import Team from './Team';
-import Notifications from './Notifications';
-import Profile from './Profile';
-import ScanQR from './ScanQR';
-import PublicCard from './PublicCard';
-import PublicStore from './PublicStore';
-import VerifyEmail from './VerifyEmail';
-import ForgotPassword from './ForgotPassword';
-import ResetPassword from './ResetPassword';
-import Onboarding from './Onboarding';
-import Survey from './Survey';
-import Menu from './Menu';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
+
+const Home = lazy(() => import('./Home'));
+const Dashboard = lazy(() => import('./Dashboard'));
+const MyPrograms = lazy(() => import('./MyPrograms'));
+const CreateClub = lazy(() => import('./CreateClub'));
+const Customers = lazy(() => import('./Customers'));
+const Stores = lazy(() => import('./Stores'));
+const Team = lazy(() => import('./Team'));
+const Notifications = lazy(() => import('./Notifications'));
+const Profile = lazy(() => import('./Profile'));
+const ScanQR = lazy(() => import('./ScanQR'));
+const PublicCard = lazy(() => import('./PublicCard'));
+const PublicStore = lazy(() => import('./PublicStore'));
+const VerifyEmail = lazy(() => import('./VerifyEmail'));
+const ForgotPassword = lazy(() => import('./ForgotPassword'));
+const ResetPassword = lazy(() => import('./ResetPassword'));
+const Onboarding = lazy(() => import('./Onboarding'));
+const Survey = lazy(() => import('./Survey'));
+const Menu = lazy(() => import('./Menu'));
 
 // Componente wrapper para obtener el nombre de la página actual
 function LayoutWrapper({ children }) {
@@ -39,6 +40,7 @@ export default function Pages() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>}>
       <Routes>
         {/* Rutas públicas - sin protección */}
         <Route path="/publicprogram" element={<PublicCard />} />
@@ -68,6 +70,7 @@ export default function Pages() {
         {/* Ruta catch-all para redirigir a login si no está autenticado */}
         <Route path="*" element={<ProtectedRoute><Home /></ProtectedRoute>} />
       </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

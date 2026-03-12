@@ -31,6 +31,43 @@ export default defineConfig({
     },
     extensions: ['.mjs', '.js', '.jsx', '.ts', '.tsx', '.json']
   },
+  build: {
+    target: 'es2020',
+    sourcemap: 'hidden',
+    chunkSizeWarningLimit: 500,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+
+          if (id.includes('react-dom') || id.includes('react-router-dom') || id.includes('/react/')) {
+            return 'vendor-react';
+          }
+          if (id.includes('@radix-ui') || id.includes('lucide-react') || id.includes('/sonner/') ||
+              id.includes('/vaul/') || id.includes('/cmdk/') || id.includes('embla-carousel') ||
+              id.includes('class-variance-authority') || id.includes('/clsx/') ||
+              id.includes('tailwind-merge') || id.includes('react-day-picker') ||
+              id.includes('react-resizable-panels') || id.includes('input-otp')) {
+            return 'vendor-ui';
+          }
+          if (id.includes('@tanstack/react-query') || id.includes('/zustand/') ||
+              id.includes('/zod/') || id.includes('react-hook-form') ||
+              id.includes('@hookform') || id.includes('date-fns')) {
+            return 'vendor-data';
+          }
+          if (id.includes('framer-motion')) return 'vendor-motion';
+          if (id.includes('recharts')) return 'vendor-charts';
+          if (id.includes('@react-pdf') || id.includes('/jspdf/') || id.includes('html2canvas')) {
+            return 'vendor-pdf';
+          }
+          if (id.includes('/jsqr/') || id.includes('qrcode.react')) return 'vendor-qr';
+        },
+      },
+    },
+  },
+  esbuild: {
+    pure: ['console.log', 'console.warn'],
+  },
   optimizeDeps: {
     include: ['@tanstack/react-query'],
     esbuildOptions: {

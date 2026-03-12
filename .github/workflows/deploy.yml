@@ -27,7 +27,7 @@ jobs:
     if: github.ref == 'refs/heads/develop' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'dev')
     runs-on: ubuntu-latest
     environment:
-      name: ${{ github.ref_name == 'main' && 'prod' || github.ref_name == 'stage' && 'stg' || 'dev' }}
+      name: dev
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -35,6 +35,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
+          cache: 'npm'
       - name: Install dependencies
         run: npm ci
       - name: Build
@@ -47,10 +48,103 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-      - name: Deploy to S3
-        run: aws s3 sync dist/ s3://${{ vars.AWS_S3_BUCKET }} --delete
+      - name: Deploy hashed assets to S3 (immutable cache)
+        run: |
+          aws s3 sync dist/assets/ s3://${{ vars.AWS_S3_BUCKET }}/assets/ \
+            --delete \
+            --cache-control "public, max-age=31536000, immutable"
+      - name: Deploy root files to S3 (no cache)
+        run: |
+          aws s3 sync dist/ s3://${{ vars.AWS_S3_BUCKET }} \
+            --delete \
+            --exclude "assets/*" \
+            --cache-control "public, max-age=0, must-revalidate"
       - name: Invalidate CloudFront cache
         run: |
           aws cloudfront create-invalidation \
             --distribution-id ${{ vars.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/*"
+            --paths "/index.html" "/"
+
+  deploy-stg:
+    if: github.ref == 'refs/heads/stage' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'stg')
+    runs-on: ubuntu-latest
+    environment:
+      name: stg
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5.1.0
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Deploy hashed assets to S3 (immutable cache)
+        run: |
+          aws s3 sync dist/assets/ s3://${{ vars.AWS_S3_BUCKET }}/assets/ \
+            --delete \
+            --cache-control "public, max-age=31536000, immutable"
+      - name: Deploy root files to S3 (no cache)
+        run: |
+          aws s3 sync dist/ s3://${{ vars.AWS_S3_BUCKET }} \
+            --delete \
+            --exclude "assets/*" \
+            --cache-control "public, max-age=0, must-revalidate"
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ vars.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/index.html" "/"
+
+  deploy-prod:
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'prod')
+    runs-on: ubuntu-latest
+    environment:
+      name: prod
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5.1.0
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Deploy hashed assets to S3 (immutable cache)
+        run: |
+          aws s3 sync dist/assets/ s3://${{ vars.AWS_S3_BUCKET }}/assets/ \
+            --delete \
+            --cache-control "public, max-age=31536000, immutable"
+      - name: Deploy root files to S3 (no cache)
+        run: |
+          aws s3 sync dist/ s3://${{ vars.AWS_S3_BUCKET }} \
+            --delete \
+            --exclude "assets/*" \
+            --cache-control "public, max-age=0, must-revalidate"
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ vars.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/index.html" "/"

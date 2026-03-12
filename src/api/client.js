@@ -2,14 +2,16 @@
 
 import { decodeJWT } from "@/utils/jwt";
 
-const DEFAULT_API_URL = 'https://uvlrwbjp35.execute-api.us-east-1.amazonaws.com/dev';
 const STAMP_CARD_IMAGES_BASE_URL = 'https://repeat-program-images.s3.us-east-1.amazonaws.com';
 const envApiUrl = import.meta.env.VITE_API_URL;
 const isDev = import.meta.env.DEV;
 
 // En desarrollo: usa /api (Vite proxy redirige a AWS)
 // En producción: usa VITE_API_URL directamente (S3+CloudFront no tiene proxy)
-const API_BASE_URL = isDev ? '/api' : (envApiUrl || DEFAULT_API_URL);
+if (!isDev && !envApiUrl) {
+  console.error('VITE_API_URL is not configured. API calls will fail.');
+}
+const API_BASE_URL = isDev ? '/api' : envApiUrl;
 
 class ApiClient {
   constructor() {
