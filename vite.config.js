@@ -35,31 +35,9 @@ export default defineConfig({
     target: 'es2020',
     sourcemap: 'hidden',
     chunkSizeWarningLimit: 500,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (!id.includes('node_modules')) return;
-
-          // React + UI libs in same chunk (Radix uses React.forwardRef at init time)
-          if (id.includes('react-dom') || id.includes('react-router-dom') || id.includes('/react/') ||
-              id.includes('@radix-ui') || id.includes('lucide-react') || id.includes('/sonner/') ||
-              id.includes('/vaul/') || id.includes('/cmdk/') || id.includes('embla-carousel') ||
-              id.includes('class-variance-authority') || id.includes('/clsx/') ||
-              id.includes('tailwind-merge') || id.includes('react-day-picker') ||
-              id.includes('react-resizable-panels') || id.includes('input-otp')) {
-            return 'vendor-core';
-          }
-          if (id.includes('@tanstack/react-query') || id.includes('/zustand/') ||
-              id.includes('/zod/') || id.includes('react-hook-form') ||
-              id.includes('@hookform') || id.includes('date-fns')) {
-            return 'vendor-data';
-          }
-          if (id.includes('framer-motion')) return 'vendor-motion';
-          if (id.includes('recharts')) return 'vendor-charts';
-          if (id.includes('/jsqr/') || id.includes('qrcode.react')) return 'vendor-qr';
-        },
-      },
-    },
+    // manualChunks removed: libs like Radix, recharts, and react-pdf call React
+    // at module init time, causing ReferenceErrors when split into separate chunks.
+    // React.lazy route splitting provides effective code splitting instead.
   },
   esbuild: {
     pure: ['console.log', 'console.warn'],
