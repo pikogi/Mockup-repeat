@@ -1,152 +1,99 @@
 # Repeat
 
-Aplicación completa de gestión de programas de fidelización con frontend (React + Vite) y backend (Node.js + Express).
+Plataforma de gestión de programas de fidelización. Frontend SPA (React + Vite) que se conecta a un backend Node.js/Express desplegado en AWS (Lambda + API Gateway).
 
-## 🚀 Inicio Rápido
+## Inicio Rápido
 
 ### Prerrequisitos
 
-- Node.js 18+ instalado
-- npm o yarn
+- Node.js 22+ (ver `.nvmrc`)
+- npm
 
-### 1. Configurar el Backend
+### Desarrollo local
 
 ```bash
-# Ir a la carpeta del backend
-cd backend
-
 # Instalar dependencias
 npm install
 
-# Crear archivo .env
+# Crear archivo .env (opcional, el proxy de Vite usa el backend de dev por defecto)
 cp .env.example .env
 
-# Editar .env y cambiar JWT_SECRET por un valor seguro
-# (puedes usar: openssl rand -base64 32)
-
-# Iniciar el servidor backend
+# Iniciar servidor de desarrollo
 npm run dev
 ```
 
-El backend estará disponible en `http://localhost:3000`
+El frontend estará disponible en `http://localhost:5173`. En desarrollo, Vite proxea `/api` al backend de AWS automáticamente (ver `vite.config.js`).
 
-### 2. Configurar el Frontend
-
-En una nueva terminal:
-
-```bash
-# Volver a la raíz del proyecto
-cd ..
-
-# Instalar dependencias del frontend
-npm install
-
-# Crear archivo .env en la raíz
-echo "VITE_API_URL=http://localhost:3000/api" > .env
-echo "VITE_LOGIN_URL=/login" >> .env
-
-# Iniciar el frontend
-npm run dev
-```
-
-El frontend estará disponible en `http://localhost:5173`
-
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
-repeat/
-├── backend/              # Backend API (Node.js + Express)
-│   ├── database/        # Base de datos SQLite
-│   ├── routes/          # Rutas de la API
-│   ├── middleware/      # Middleware (auth, etc.)
-│   └── server.js        # Servidor principal
-├── src/                 # Frontend (React + Vite)
-│   ├── api/             # Cliente API
-│   ├── components/      # Componentes React
-│   └── pages/           # Páginas de la aplicación
-└── README.md
+repeat-app/
+├── .github/workflows/   # CI/CD (GitHub Actions → S3 + CloudFront)
+├── src/
+│   ├── api/             # Cliente API (client.js)
+│   ├── components/      # Componentes React (shadcn/ui + Radix)
+│   ├── hooks/           # Custom hooks
+│   ├── pages/           # Páginas (lazy-loaded via React.lazy)
+│   ├── stores/          # Estado global (Zustand)
+│   ├── lib/             # Utilidades (cn, etc.)
+│   └── utils/           # Helpers
+├── public/              # Assets estáticos
+├── vite.config.js       # Config de Vite (proxy, build)
+└── .env.example         # Variables de entorno de referencia
 ```
 
-## 🔧 Configuración
-
-### Variables de Entorno del Backend (`backend/.env`)
+## Variables de Entorno
 
 ```env
-PORT=3000
-JWT_SECRET=tu_secret_super_seguro_aqui
-FRONTEND_URL=http://localhost:5173
-UPLOAD_DIR=./uploads
+VITE_API_URL=https://your-api-gateway-url.execute-api.us-east-1.amazonaws.com/dev
 ```
 
-### Variables de Entorno del Frontend (`.env` en la raíz)
+- En **desarrollo**: No es necesaria. Vite proxea `/api` al backend de dev.
+- En **producción**: Requerida. Se inyecta en el build via GitHub Actions desde GitHub Environments.
 
-```env
-VITE_API_URL=http://localhost:3000/api
-VITE_LOGIN_URL=/login
-```
+## Scripts
 
-## 📚 Documentación
+- `npm run dev` — Servidor de desarrollo con HMR
+- `npm run build` — Build de producción a `dist/`
+- `npm run preview` — Preview del build de producción
+- `npm run lint` — ESLint
 
-- **Backend**: Ver [backend/README.md](backend/README.md) para documentación completa de la API
-- **Frontend**: El cliente API está en `src/api/client.js`
+## Despliegue
 
-## 🛠️ Scripts Disponibles
+El despliegue es automático via GitHub Actions a AWS S3 + CloudFront.
 
-### Frontend
-- `npm run dev` - Iniciar servidor de desarrollo
-- `npm run build` - Construir para producción
-- `npm run preview` - Previsualizar build de producción
+### Stages y branches
 
-### Backend
-- `npm run dev` - Iniciar servidor con recarga automática
-- `npm start` - Iniciar servidor en producción
-- `npm run init-db` - Reinicializar base de datos
+| Branch    | Environment | Descripción        |
+|-----------|-------------|--------------------|
+| `develop` | dev         | Desarrollo         |
+| `stage`   | stg         | Staging / QA       |
+| `main`    | prod        | Producción         |
 
-## 🎯 Primeros Pasos
+### Cómo funciona
 
-1. **Inicia el backend** primero (puerto 3000)
-2. **Luego inicia el frontend** (puerto 5173)
-3. **Registra un usuario** nuevo desde el frontend
-4. **Crea un negocio** cuando te lo solicite
-5. **¡Empieza a usar la aplicación!**
+1. Push a una branch dispara el workflow correspondiente
+2. Se puede disparar manualmente via `workflow_dispatch`
+3. El workflow hace `npm ci` + `npm run build` con `VITE_API_URL` del environment
+4. Sube `dist/` a S3 con cache headers diferenciados (assets con hash = immutable, root files = no-cache)
+5. Invalida CloudFront cache
 
-## 📝 Notas Importantes
+### Configuración requerida
 
-- La base de datos SQLite se crea automáticamente al iniciar el backend
-- Los archivos subidos se guardan en `backend/uploads/`
-- En producción, cambia `JWT_SECRET` por un valor seguro y aleatorio
-- Las funciones de integración (email, LLM, etc.) están simuladas - necesitarás implementarlas según tus necesidades
+**GitHub Environments** (dev, stg, prod) — variables por environment:
+- `VITE_API_URL` — URL del API backend
+- `AWS_S3_BUCKET` — Nombre del bucket S3
+- `AWS_CLOUDFRONT_DISTRIBUTION_ID` — ID de la distribución CloudFront
 
-## 🔐 Autenticación
+**GitHub Secrets** (a nivel de repositorio):
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
 
-El sistema usa JWT (JSON Web Tokens) para autenticación. El token se almacena automáticamente en `localStorage` del navegador después del login.
+**AWS** (por cada stage):
+- Bucket S3 con block public access ON
+- CloudFront con OAC, custom error responses (403/404 → `/index.html` con HTTP 200)
+- IAM con permisos: `s3:PutObject`, `s3:DeleteObject`, `s3:ListBucket`, `cloudfront:CreateInvalidation`
 
-## 🚀 Despliegue en Producción
+## Autenticación
 
-### Despliegue en Vercel
-
-La aplicación está lista para desplegarse en Vercel y se conecta directamente al backend AWS.
-
-**Pasos rápidos:**
-
-1. Conecta tu repositorio a Vercel
-2. Vercel detectará automáticamente que es un proyecto Vite
-3. No se requieren variables de entorno (usa el backend AWS por defecto)
-4. Haz clic en "Deploy"
-
-**Backend configurado:**
-- URL: `https://uvlrwbjp35.execute-api.us-east-1.amazonaws.com/dev`
-- La aplicación se conecta automáticamente a este backend
-
-Para más detalles sobre el despliegue, consulta [DEPLOY.md](DEPLOY.md).
-
-## 💡 Próximos Pasos
-
-Para producción, considera:
-
-1. Cambiar SQLite por PostgreSQL o MySQL
-2. Implementar envío real de emails
-3. Configurar almacenamiento en la nube (AWS S3, etc.)
-4. Agregar tests automatizados
-5. Configurar HTTPS
-6. Implementar rate limiting
+JWT almacenado en `localStorage` y cacheado en memoria (`_cachedToken` en `client.js`). Respuestas 401 limpian el token y redirigen a login automáticamente.
