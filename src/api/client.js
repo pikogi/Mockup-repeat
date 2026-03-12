@@ -5,17 +5,11 @@ import { decodeJWT } from "@/utils/jwt";
 const DEFAULT_API_URL = 'https://uvlrwbjp35.execute-api.us-east-1.amazonaws.com/dev';
 const STAMP_CARD_IMAGES_BASE_URL = 'https://repeat-program-images.s3.us-east-1.amazonaws.com';
 const envApiUrl = import.meta.env.VITE_API_URL;
-
 const isDev = import.meta.env.DEV;
-const isProd = import.meta.env.PROD;
 
-let API_BASE_URL;
-
-// Usar /api tanto en desarrollo como en producción para evitar problemas de CORS
-// - En desarrollo: Vite proxy (vite.config.js) redirige /api → AWS
-// - En producción: Vercel rewrites (vercel.json) redirige /api → AWS
-// Esto evita llamadas cross-origin que causan errores CORS
-API_BASE_URL = '/api';
+// En desarrollo: usa /api (Vite proxy redirige a AWS)
+// En producción: usa VITE_API_URL directamente (S3+CloudFront no tiene proxy)
+const API_BASE_URL = isDev ? '/api' : (envApiUrl || DEFAULT_API_URL);
 
 class ApiClient {
   constructor() {
@@ -23,9 +17,8 @@ class ApiClient {
     // #region agent log
     console.log('[DEBUG API_BASE_URL]', {
       API_BASE_URL,
-      isProd: import.meta.env.PROD,
-      isDev: import.meta.env.DEV,
-      usingProxy: true
+      isDev,
+      envApiUrl,
     });
     // #endregion
   }
