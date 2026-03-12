@@ -17,6 +17,11 @@ const API_BASE_URL = isDev ? '/api' : envApiUrl;
 let _cachedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('auth_token') : null;
 
 function getCachedToken() {
+  // Defensive check: if external code (e.g. jwt.js) cleared localStorage directly,
+  // sync the cache to avoid sending a stale/expired token.
+  if (_cachedToken && !localStorage.getItem('auth_token')) {
+    _cachedToken = null;
+  }
   return _cachedToken;
 }
 
