@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { api } from "@/api/client";
 import { getCurrentUser } from "@/utils/jwt";
 import { useQuery, useQueries } from "@tanstack/react-query";
@@ -154,10 +154,15 @@ export default function Customers() {
     card_title: program.program_name,
   }));
 
-  const programIds = programs.map(p => p.program_id || p.id).filter(Boolean);
+  const programIds = useMemo(
+    () => programs.map(p => p.program_id || p.id).filter(Boolean),
+    [programs]
+  );
+
+  const programIdsKey = useMemo(() => programIds.join(','), [programIds]);
 
   const { data: members = [], isLoading: membersLoading, isError: membersError } = useQuery({
-    queryKey: ['brandUsers', brandId, programIds.join(',')],
+    queryKey: ['brandUsers', brandId, programIdsKey],
     queryFn: async () => {
       if (!brandId) return [];
 
@@ -173,32 +178,36 @@ export default function Customers() {
         };
       });
 
+      // Build a Map for O(1) program lookups
+      const programMap = new Map(programs.map(p => [p.program_id || p.id, p]));
+
       let allEntries = [];
 
       if (programIds.length > 0) {
-        // Llamar por programa (solo ventana más reciente para limitar requests)
         const { from, to } = windows[0];
-        const perProgramResults = await Promise.all(
-          programIds.map(pid =>
-            api.brands.getUsers(brandId, { programId: pid, from, to })
-              .then(r => {
-                const items = Array.isArray(r?.data) ? r.data : Array.isArray(r) ? r : [];
-                const program = programs.find(p => (p.program_id || p.id) === pid);
-                return items.map(entry => ({
-                  ...entry,
-                  _programId: pid,
-                  _programName: program?.program_name,
-                  _programRules: program?.program_rules,
-                }));
-              })
-              .catch(() => [])
-          )
-        );
-        allEntries = perProgramResults.flat();
 
-        // Siempre incluir call general para no perder usuarios que no matcheen
-        // ningún program_id específico (los per-program tienen prioridad en el dedup)
-        const generalRes = await api.brands.getUsers(brandId, { from, to }).catch(() => ({ data: [] }));
+        // Parallelize per-program fetches AND general fetch
+        const [perProgramResults, generalRes] = await Promise.all([
+          Promise.all(
+            programIds.map(pid =>
+              api.brands.getUsers(brandId, { programId: pid, from, to })
+                .then(r => {
+                  const items = Array.isArray(r?.data) ? r.data : Array.isArray(r) ? r : [];
+                  const program = programMap.get(pid);
+                  return items.map(entry => ({
+                    ...entry,
+                    _programId: pid,
+                    _programName: program?.program_name,
+                    _programRules: program?.program_rules,
+                  }));
+                })
+                .catch(() => [])
+            )
+          ),
+          api.brands.getUsers(brandId, { from, to }).catch(() => ({ data: [] })),
+        ]);
+
+        allEntries = perProgramResults.flat();
         const generalEntries = Array.isArray(generalRes?.data) ? generalRes.data : Array.isArray(generalRes) ? generalRes : [];
         allEntries = [...allEntries, ...generalEntries];
       }
@@ -252,8 +261,8 @@ export default function Customers() {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
   }))].sort().reverse();
 
-  // Filter members
-  const filteredMembers = members.filter(member => {
+  // Filter members (memoized to avoid re-creating array for useQueries)
+  const filteredMembers = useMemo(() => members.filter(member => {
     const matchesSearch = !searchQuery ||
       (member.email || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (member.full_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -266,7 +275,7 @@ export default function Customers() {
     const matchesCard = selectedCard === 'all' || member.programs?.some(p => p.program_id === selectedCard);
 
     return matchesSearch && matchesMonth && matchesCard;
-  });
+  }), [members, searchQuery, selectedMonth, selectedCard]);
 
   // Prefetch user stats for all filtered members when sorting by stamps or visits
   const userStatsQueries = useQueries({
@@ -443,7 +452,8 @@ export default function Customers() {
                 key={member.user_id || index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
+                transition={{ delay: Math.min(index * 0.05, 0.5) }}
+                style={{ contentVisibility: 'auto', containIntrinsicSize: '0 120px' }}
               >
                 <CustomerCard
                   member={member}

@@ -85,7 +85,7 @@ export default function MyPrograms() {
 
   // Contar miembros por programa usando ventanas de 3 meses (backend limita a 4 meses max)
   const { data: memberCounts = {} } = useQuery({
-    queryKey: ['programMemberCounts', brandId, programs.map(p => p.program_id || p.id).join(',')],
+    queryKey: ['programMemberCounts', brandId, programs.map(p => p.program_id || p.id).join(',')], // programs from Zustand store — stable reference
     queryFn: async () => {
       if (!brandId || programs.length === 0) return {};
 

@@ -81,14 +81,10 @@ export default function CustomerDetailModal({ customer, brandId, onClose }) {
     enabled: !!brandId && !!userId,
   });
 
-  // Auto-seleccionar card para agregar sello
-  useEffect(() => {
-    if (userData?.loyalty_cards?.length === 1) {
-      setSelectedCardId(userData.loyalty_cards[0].card_id);
-    } else if (userData?.loyalty_cards?.length > 1 && !selectedCardId) {
-      setSelectedCardId(null);
-    }
-  }, [userData]);
+  // Auto-seleccionar card: si solo hay una, usarla directamente
+  const autoSelectedCardId = userData?.loyalty_cards?.length === 1
+    ? userData.loyalty_cards[0].card_id
+    : selectedCardId;
 
   useEffect(() => {
     if (!showRedeemSuccess) return;
@@ -98,7 +94,7 @@ export default function CustomerDetailModal({ customer, brandId, onClose }) {
 
   const multipleCards = (userData?.loyalty_cards?.length ?? 0) > 1;
   // Si hay múltiples cards, solo mostrar la elegida. Si hay una sola, usarla directamente.
-  const activeCard = userData?.loyalty_cards?.find(lc => lc.card_id === selectedCardId) ?? (multipleCards ? null : userData?.loyalty_cards?.[0]);
+  const activeCard = userData?.loyalty_cards?.find(lc => lc.card_id === autoSelectedCardId) ?? (multipleCards ? null : userData?.loyalty_cards?.[0]);
 
   const customerName = userData?.full_name || customer?.full_name || 'Cliente';
   const customerEmail = userData?.email || customer?.email || 'Sin correo registrado';
@@ -110,9 +106,9 @@ export default function CustomerDetailModal({ customer, brandId, onClose }) {
   const addStampMutation = useMutation({
     mutationFn: async () => {
       if (!selectedStore) throw new Error('Seleccioná una sucursal antes de agregar el sello.');
-      if (!selectedCardId) throw new Error('No se encontró la tarjeta del cliente.');
+      if (!autoSelectedCardId) throw new Error('No se encontró la tarjeta del cliente.');
 
-      await api.transactions.create(selectedCardId, selectedStore, 'stamp_added', 'stamp', 1);
+      await api.transactions.create(autoSelectedCardId, selectedStore, 'stamp_added', 'stamp', 1);
 
       const programId = activeCard?.program?.program_id;
       if (programId) {
@@ -377,7 +373,7 @@ export default function CustomerDetailModal({ customer, brandId, onClose }) {
             <AlertDialogTrigger asChild>
               <Button
                 className="w-full h-12 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-semibold"
-                disabled={addStampMutation.isPending || userLoading || !selectedStore || !selectedCardId}
+                disabled={addStampMutation.isPending || userLoading || !selectedStore || !autoSelectedCardId}
               >
                 {addStampMutation.isPending ? (
                   <Loader2 className="w-5 h-5 animate-spin mr-2" />
