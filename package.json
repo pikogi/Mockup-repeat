@@ -1,13 +1,17 @@
 {
-  "name": "Repeat",
+  "name": "repeat-app",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "npx eslint . --ext .jsx,.js",
+    "lint:fix": "npm run lint -- --fix",
+    "format": "npx prettier --write .",
+    "precommit": "npx lint-staged",
+    "prepare": "npx husky"
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.2",
@@ -66,6 +70,8 @@
     "zustand": "^5.0.10"
   },
   "devDependencies": {
+    "@commitlint/cli": "^20.4.4",
+    "@commitlint/config-conventional": "^20.4.4",
     "@eslint/js": "^9.19.0",
     "@flydotio/dockerfile": "^0.7.8",
     "@types/node": "^22.13.5",
@@ -74,12 +80,30 @@
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.19.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.18",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
     "globals": "^15.14.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.3.3",
     "postcss": "^8.5.3",
+    "prettier": "^3.8.1",
     "tailwindcss": "^3.4.17",
     "vite": "^5.4.21"
+  },
+  "lint-staged": {
+    "*.{js,jsx}": [
+      "npx eslint --fix --max-warnings 0",
+      "npx prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "npx prettier --write"
+    ]
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
