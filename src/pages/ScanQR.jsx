@@ -66,25 +66,23 @@ export default function ScanQR() {
     if (brandId) fetchStores(brandId);
   }, [brandId]);
 
-  // Store inicial desde localStorage / usuario, o auto-selección si hay solo una
+  // Store inicial desde usuario o localStorage (validado), o auto-selección si hay solo una
   useEffect(() => {
-    const storedStore = localStorage.getItem('operating_branch_id');
     if (user?.assigned_branch_id) {
       setSelectedStore(user.assigned_branch_id);
-    } else if (storedStore) {
-      setSelectedStore(storedStore);
+      return;
     }
-  }, [user]);
-
-  // Auto-seleccionar si solo hay una tienda
-  useEffect(() => {
-    if (!selectedStore && stores.length === 1) {
-      const store = stores[0];
-      const storeId = store.store_id || store.id;
+    if (stores.length === 0) return;
+    const stored = localStorage.getItem('operating_branch_id');
+    const isValid = stored && stores.some(s => (s.store_id || s.id) === stored);
+    if (isValid) {
+      setSelectedStore(stored);
+    } else if (stores.length === 1) {
+      const storeId = stores[0].store_id || stores[0].id;
       setSelectedStore(storeId);
       localStorage.setItem('operating_branch_id', storeId);
     }
-  }, [stores, selectedStore]);
+  }, [user, stores]);
 
   const handleStoreSelect = (storeId) => {
     setSelectedStore(storeId);
@@ -255,7 +253,7 @@ export default function ScanQR() {
         cardData.cardId,
         selectedStore,
         'stamp_added',
-        'stamp',
+        'point',
         1
       );
       console.log('[ScanQR] Transacción creada exitosamente');
