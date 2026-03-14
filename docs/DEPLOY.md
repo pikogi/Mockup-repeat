@@ -36,15 +36,15 @@ graph TB
         S3_PROD --> CF_PROD
     end
 
-    BUILD -->|"assets/ → immutable cache<br/>root files → no cache"| S3_DEV
-    BUILD -->|"assets/ → immutable cache<br/>root files → no cache"| S3_STG
+    BUILD --> S3_DEV
+    BUILD --> S3_STG
     BUILD -->|"assets/ → immutable cache<br/>root files → no cache"| S3_PROD
-    BUILD -->|"invalidate /index.html /"| CF_DEV
-    BUILD -->|"invalidate /index.html /"| CF_STG
+    BUILD --> CF_DEV
+    BUILD --> CF_STG
     BUILD -->|"invalidate /index.html /"| CF_PROD
 
-    subgraph "AWS — Backend (separate repo)"
-        APIGW["API Gateway<br/>/dev endpoint"]
+    subgraph "AWS — Backend"
+        APIGW["API Gateway<br/> endpoint"]
         LAMBDA["Lambda Functions"]
         APIGW --> LAMBDA
     end
@@ -61,11 +61,11 @@ graph TB
 
 ## Environments
 
-| Environment | Branch    | Trigger              |
-|-------------|-----------|----------------------|
-| dev         | `develop` | push or manual       |
-| stg         | `stage`   | push or manual       |
-| prod        | `main`    | push or manual       |
+| Environment | Branch    | Trigger        |
+| ----------- | --------- | -------------- |
+| dev         | `develop` | push or manual |
+| stg         | `stage`   | push or manual |
+| prod        | `main`    | push or manual |
 
 All environments also support `workflow_dispatch` for manual deploys with environment selection.
 
@@ -81,13 +81,22 @@ All environments also support `workflow_dispatch` for manual deploys with enviro
 
 ## Secrets & Variables (GitHub Environments)
 
-| Type     | Name                              | Description                        |
-|----------|-----------------------------------|------------------------------------|
-| Secret   | `AWS_ACCESS_KEY_ID`               | IAM credentials for S3/CloudFront  |
-| Secret   | `AWS_SECRET_ACCESS_KEY`           | IAM credentials for S3/CloudFront  |
-| Variable | `VITE_API_URL`                    | Backend API Gateway URL            |
-| Variable | `AWS_S3_BUCKET`                   | Target S3 bucket name              |
-| Variable | `AWS_CLOUDFRONT_DISTRIBUTION_ID`  | CloudFront distribution to invalidate |
+| Type     | Name                             | Description                           |
+| -------- | -------------------------------- | ------------------------------------- |
+| Secret   | `AWS_ACCESS_KEY_ID`              | IAM credentials for S3/CloudFront     |
+| Secret   | `AWS_SECRET_ACCESS_KEY`          | IAM credentials for S3/CloudFront     |
+| Variable | `VITE_API_URL`                   | Backend API Gateway URL               |
+| Variable | `AWS_S3_BUCKET`                  | Target S3 bucket name                 |
+| Variable | `AWS_CLOUDFRONT_DISTRIBUTION_ID` | CloudFront distribution to invalidate |
+
+## Releases
+
+Automated via [release-please](https://github.com/googleapis/release-please) (`.github/workflows/release-please.yml`). On pushes to `stage`, release-please analyzes Conventional Commit messages and maintains an open release PR. Merging that PR:
+
+1. Bumps `version` in `package.json` and `.release-please-manifest.json`
+2. Updates `CHANGELOG.md`
+3. Creates a GitHub Release with a `vX.Y.Z` tag
+4. The merge commit triggers `deploy.yml`, deploying the release to stg automatically
 
 ## Cache Strategy
 

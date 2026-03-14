@@ -1,99 +1,121 @@
 # Repeat
 
-Plataforma de gestión de programas de fidelización. Frontend SPA (React + Vite) que se conecta a un backend Node.js/Express desplegado en AWS (Lambda + API Gateway).
+Loyalty program management platform. Frontend SPA (React + Vite) that connects to a Node.js/Express backend deployed on AWS (Lambda + API Gateway).
 
-## Inicio Rápido
+## Quick Start
 
-### Prerrequisitos
+### Prerequisites
 
-- Node.js 22+ (ver `.nvmrc`)
+- Node.js 22+ (see `.nvmrc`)
 - npm
 
-### Desarrollo local
+### Local Development
 
 ```bash
-# Instalar dependencias
+# Install dependencies
 npm install
 
-# Crear archivo .env (opcional, el proxy de Vite usa el backend de dev por defecto)
+# Create .env file (optional, Vite proxy uses the dev backend by default)
 cp .env.example .env
 
-# Iniciar servidor de desarrollo
+# Start dev server
 npm run dev
 ```
 
-El frontend estará disponible en `http://localhost:5173`. En desarrollo, Vite proxea `/api` al backend de AWS automáticamente (ver `vite.config.js`).
+The frontend will be available at `http://localhost:5173`. In development, Vite proxies `/api` to the AWS backend automatically (see `vite.config.js`).
 
-## Estructura del Proyecto
+## Project Structure
 
 ```
 repeat-app/
 ├── .github/workflows/   # CI/CD (GitHub Actions → S3 + CloudFront)
 ├── src/
-│   ├── api/             # Cliente API (client.js)
-│   ├── components/      # Componentes React (shadcn/ui + Radix)
+│   ├── api/             # API client (client.js)
+│   ├── components/      # React components (shadcn/ui + Radix)
 │   ├── hooks/           # Custom hooks
-│   ├── pages/           # Páginas (lazy-loaded via React.lazy)
-│   ├── stores/          # Estado global (Zustand)
-│   ├── lib/             # Utilidades (cn, etc.)
+│   ├── pages/           # Pages (lazy-loaded via React.lazy)
+│   ├── stores/          # Global state (Zustand)
+│   ├── lib/             # Utilities (cn, etc.)
 │   └── utils/           # Helpers
-├── public/              # Assets estáticos
-├── vite.config.js       # Config de Vite (proxy, build)
-└── .env.example         # Variables de entorno de referencia
+├── public/              # Static assets
+├── vite.config.js       # Vite config (proxy, build)
+└── .env.example         # Environment variables reference
 ```
 
-## Variables de Entorno
+## Environment Variables
 
 ```env
 VITE_API_URL=https://your-api-gateway-url.execute-api.us-east-1.amazonaws.com/dev
 ```
 
-- En **desarrollo**: No es necesaria. Vite proxea `/api` al backend de dev.
-- En **producción**: Requerida. Se inyecta en el build via GitHub Actions desde GitHub Environments.
+- **Development**: Not required. Vite proxies `/api` to the dev backend.
+- **Production**: Required. Injected at build time via GitHub Actions from GitHub Environments.
 
 ## Scripts
 
-- `npm run dev` — Servidor de desarrollo con HMR
-- `npm run build` — Build de producción a `dist/`
-- `npm run preview` — Preview del build de producción
+- `npm run dev` — Dev server with HMR
+- `npm run build` — Production build to `dist/`
+- `npm run preview` — Preview production build
 - `npm run lint` — ESLint
+- `npm run lint:fix` — ESLint with auto-fix
+- `npm run format` — Format files with Prettier
 
-## Despliegue
+## Code Quality
 
-El despliegue es automático via GitHub Actions a AWS S3 + CloudFront.
+The project uses the following tools to maintain code quality:
 
-### Stages y branches
+- **Prettier** — Auto-formatting (no semicolons, single quotes, trailing commas, 120 char width)
+- **ESLint** — Linting with plugins for React, import sorting, and Prettier
+- **Commitlint** — Validates commit messages follow [Conventional Commits](https://www.conventionalcommits.org/) (allowed types: `feat`, `fix`, `docs`, `chore`, `refactor`, `style`, `test`, `build`, `ci`, `perf`, `revert`)
+- **Husky + lint-staged** — Pre-commit hooks that automatically run ESLint and Prettier on staged files
 
-| Branch    | Environment | Descripción        |
-|-----------|-------------|--------------------|
-| `develop` | dev         | Desarrollo         |
-| `stage`   | stg         | Staging / QA       |
-| `main`    | prod        | Producción         |
+## Releases & Changelog
 
-### Cómo funciona
+Releases are managed automatically with [release-please](https://github.com/googleapis/release-please). On pushes to `stage`, release-please analyzes commits (Conventional Commits) and maintains an open release PR. Merging that PR:
 
-1. Push a una branch dispara el workflow correspondiente
-2. Se puede disparar manualmente via `workflow_dispatch`
-3. El workflow hace `npm ci` + `npm run build` con `VITE_API_URL` del environment
-4. Sube `dist/` a S3 con cache headers diferenciados (assets con hash = immutable, root files = no-cache)
-5. Invalida CloudFront cache
+- Bumps the version in `package.json`
+- Generates/updates `CHANGELOG.md`
+- Creates a GitHub Release with a tag (`v1.x.x`)
 
-### Configuración requerida
+## Deployment
 
-**GitHub Environments** (dev, stg, prod) — variables por environment:
-- `VITE_API_URL` — URL del API backend
-- `AWS_S3_BUCKET` — Nombre del bucket S3
-- `AWS_CLOUDFRONT_DISTRIBUTION_ID` — ID de la distribución CloudFront
+Deployment is automated via GitHub Actions to AWS S3 + CloudFront.
 
-**GitHub Secrets** (a nivel de repositorio):
+### Stages and Branches
+
+| Branch    | Environment | Description  |
+| --------- | ----------- | ------------ |
+| `develop` | dev         | Development  |
+| `stage`   | stg         | Staging / QA |
+| `main`    | prod        | Production   |
+
+### How It Works
+
+1. Push to a branch triggers the corresponding workflow
+2. Can be triggered manually via `workflow_dispatch`
+3. The workflow runs `npm ci` + `npm run build` with `VITE_API_URL` from the environment
+4. Uploads `dist/` to S3 with differentiated cache headers (hashed assets = immutable, root files = no-cache)
+5. Invalidates CloudFront cache
+
+### Required Configuration
+
+**GitHub Environments** (dev, stg, prod) — per-environment variables:
+
+- `VITE_API_URL` — Backend API URL
+- `AWS_S3_BUCKET` — S3 bucket name
+- `AWS_CLOUDFRONT_DISTRIBUTION_ID` — CloudFront distribution ID
+
+**GitHub Secrets** (repository-level):
+
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
 
-**AWS** (por cada stage):
-- Bucket S3 con block public access ON
-- CloudFront con OAC, custom error responses (403/404 → `/index.html` con HTTP 200)
-- IAM con permisos: `s3:PutObject`, `s3:DeleteObject`, `s3:ListBucket`, `cloudfront:CreateInvalidation`
+**AWS** (per stage):
 
-## Autenticación
+- S3 bucket with block public access ON
+- CloudFront with OAC, custom error responses (403/404 → `/index.html` with HTTP 200)
+- IAM with permissions: `s3:PutObject`, `s3:DeleteObject`, `s3:ListBucket`, `cloudfront:CreateInvalidation`
 
-JWT almacenado en `localStorage` y cacheado en memoria (`_cachedToken` en `client.js`). Respuestas 401 limpian el token y redirigen a login automáticamente.
+## Authentication
+
+JWT stored in `localStorage` and cached in memory (`_cachedToken` in `client.js`). 401 responses automatically clear the token and redirect to login.
