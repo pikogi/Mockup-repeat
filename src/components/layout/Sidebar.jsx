@@ -52,7 +52,7 @@ export default function Sidebar() {
   const navItems = [
     { name: t('dashboard'), icon: LayoutDashboard, page: 'Dashboard' },
     { name: t('customers'), icon: User, page: 'Customers' },
-    { name: t('notifications'), icon: Bell, page: 'Notifications' },
+    { name: t('notifications'), icon: Bell, page: 'Notifications', comingSoon: true },
     { name: t('myPrograms'), icon: CreditCard, page: 'MyPrograms' },
     { name: t('survey'), icon: ClipboardList, page: 'Survey' },
     { name: t('menu'), icon: BookOpen, page: 'Menu' },
@@ -143,14 +143,6 @@ export default function Sidebar() {
       <header className="lg:hidden fixed top-0 left-0 right-0 bg-black z-40 px-4 py-3 flex items-center justify-between">
         <h1 className="text-xl font-bold text-white">repeat</h1>
         <div className="flex items-center gap-1">
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-white p-2"
-          >
-            <HelpCircle className="w-5 h-5" />
-          </a>
         {(user?.type_user === 'brand_admin') && (
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>

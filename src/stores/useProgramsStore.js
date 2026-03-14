@@ -11,6 +11,7 @@ const useProgramsStore = create(
   isLoading: false,
   error: null,
   lastModified: null, // Timestamp de última modificación local
+  displayLogos: {}, // { [brandId]: base64 } — no persisted, for immediate display after logo upload
 
   // Estados de mutación
   isCreating: false,
@@ -31,6 +32,23 @@ const useProgramsStore = create(
     // Si hubo una modificación reciente (menos de 10 segundos), no sobrescribir
     const recentlyModified = lastModified && (Date.now() - lastModified < 10000);
 
+    // Fetch individual wallet_design for each program (LIST doesn't return it)
+    const fetchWalletDesigns = async (fetchedPrograms) => {
+      const results = await Promise.all(
+        fetchedPrograms.map(async (program) => {
+          const id = program.program_id || program.id;
+          try {
+            const detail = await api.loyaltyPrograms.get(id);
+            const detailData = detail?.data || detail;
+            return { id, wallet_design: detailData?.wallet_design };
+          } catch {
+            return { id, wallet_design: program.wallet_design };
+          }
+        })
+      );
+      return Object.fromEntries(results.map(r => [r.id, r.wallet_design]));
+    };
+
     // Si ya hay programas y no es refresh forzado
     if (programs.length > 0 && !forceRefresh) {
       // Si fue modificado recientemente, no hacer fetch
@@ -41,15 +59,18 @@ const useProgramsStore = create(
       try {
         const res = await api.loyaltyPrograms.list(brandId);
         const fetchedPrograms = res?.data || res || [];
+        const walletDesignMap = await fetchWalletDesigns(fetchedPrograms);
         const currentStore = get().programs;
         const mappedPrograms = fetchedPrograms.map(program => {
           const existing = currentStore.find(p => (p.program_id || p.id) === (program.program_id || program.id));
+          const id = program.program_id || program.id;
           return {
             ...program,
-            id: program.program_id || program.id,
-            program_id: program.program_id || program.id,
-            wallet_design: program.wallet_design || existing?.wallet_design,
+            id,
+            program_id: id,
+            wallet_design: walletDesignMap[id],
             images: program.images || existing?.images,
+            metadata: program.metadata || existing?.metadata,
             // El backend no persiste is_active vía PATCH → preservar el valor local
             is_active: existing !== undefined ? existing.is_active : program.is_active,
           };
@@ -80,15 +101,18 @@ const useProgramsStore = create(
     try {
       const res = await api.loyaltyPrograms.list(brandId);
       const fetchedPrograms = res?.data || res || [];
+      const walletDesignMap = await fetchWalletDesigns(fetchedPrograms);
       const currentStore = get().programs;
       const mappedPrograms = fetchedPrograms.map(program => {
         const existing = currentStore.find(p => (p.program_id || p.id) === (program.program_id || program.id));
+        const id = program.program_id || program.id;
         return {
           ...program,
-          id: program.program_id || program.id,
-          program_id: program.program_id || program.id,
-          wallet_design: program.wallet_design || existing?.wallet_design,
+          id,
+          program_id: id,
+          wallet_design: walletDesignMap[id],
           images: program.images || existing?.images,
+          metadata: program.metadata || existing?.metadata,
           // El backend no persiste is_active vía PATCH → preservar el valor local
           is_active: existing !== undefined ? existing.is_active : program.is_active,
         };
@@ -156,7 +180,9 @@ const useProgramsStore = create(
         reward_rules: programData.reward_rules || {},
         wallet_design: programData.wallet_design || { hex_background_color: null },
         store_ids: programData.store_ids || [],
+        ...(programData.metadata && { metadata: programData.metadata }),
       };
+      console.log('[createProgram] payload:', JSON.stringify(dataToSend, null, 2));
       const response = await api.loyaltyPrograms.create(dataToSend);
       const newProgram = response?.data || response;
       if (newProgram) {
@@ -166,6 +192,7 @@ const useProgramsStore = create(
           id: programId,
           program_id: programId,
           wallet_design: newProgram.wallet_design || dataToSend.wallet_design,
+          metadata: newProgram.metadata || dataToSend.metadata,
         };
 
         set((state) => ({
@@ -182,6 +209,7 @@ const useProgramsStore = create(
       toast.success('Programa creado exitosamente');
       return { success: true, program: newProgram };
     } catch (error) {
+      console.error('[createProgram] error:', JSON.stringify(error?.response?.data || error?.message || error, null, 2));
       set({
         programs: previousPrograms,
         isCreating: false
@@ -211,6 +239,7 @@ const useProgramsStore = create(
       program_rules: programData.program_rules || previousProgram.program_rules,
       reward_rules: programData.reward_rules || previousProgram.reward_rules,
       is_active: programData.is_active !== undefined ? programData.is_active : previousProgram.is_active,
+      metadata: programData.metadata || previousProgram.metadata,
     };
 
     set((state) => ({
@@ -230,7 +259,9 @@ const useProgramsStore = create(
       if (programData.reward_rules) updateData.reward_rules = programData.reward_rules;
       if (programData.is_active !== undefined) updateData.is_active = programData.is_active;
       if (programData.wallet_design) updateData.wallet_design = programData.wallet_design;
+      if (programData.metadata) updateData.metadata = programData.metadata;
 
+      console.log('[updateProgram] payload:', JSON.stringify(updateData, null, 2));
       const response = await api.loyaltyPrograms.update(programId, updateData);
 
       const updatedProgram = response?.data || response;
@@ -242,9 +273,10 @@ const useProgramsStore = create(
           ...updatedProgram,
           id: updatedProgram.program_id || updatedProgram.id || programId,
           program_id: updatedProgram.program_id || updatedProgram.id || programId,
-          // PATCH no devuelve `images` ni `wallet_design` → preservar lo enviado o el anterior
+          // PATCH no devuelve `images`, `wallet_design` ni `metadata` → preservar lo enviado o el anterior
           images: updatedProgram.images || previousProgram?.images,
           wallet_design: updatedProgram.wallet_design || programData.wallet_design || previousProgram?.wallet_design,
+          metadata: updatedProgram.metadata || optimisticUpdate.metadata,
         };
 
         set((state) => ({
@@ -353,6 +385,42 @@ const useProgramsStore = create(
   },
 
   clearPrograms: () => set({ programs: [], isLoading: false, error: null }),
+
+  setDisplayLogo: (brandId, logoUrl) => set((state) => ({
+    displayLogos: { ...state.displayLogos, [brandId]: logoUrl },
+  })),
+
+  // Actualiza el logo en todos los programas de la brand (excepto el que ya se acaba de guardar)
+  updateBrandLogo: (brandId, logoUrl, excludeProgramId = null) => {
+    const { programs } = get();
+    const toUpdate = programs.filter(p =>
+      p.brand_id === brandId && (p.program_id || p.id) !== excludeProgramId
+    );
+
+    // Actualizar store optimistamente
+    set((state) => ({
+      programs: state.programs.map(p => {
+        if (p.brand_id !== brandId || (p.program_id || p.id) === excludeProgramId) return p;
+        return { ...p, wallet_design: { ...(p.wallet_design || {}), logo_url: logoUrl } };
+      })
+    }));
+
+    // Limpiar logo stale de localStorage y persistir en backend
+    toUpdate.forEach(p => {
+      const programId = p.program_id || p.id;
+
+      // Actualizar savedImages en localStorage para que no sobreescriba el nuevo logo
+      try {
+        const key = `program_images_${programId}`;
+        const saved = JSON.parse(localStorage.getItem(key) || '{}');
+        localStorage.setItem(key, JSON.stringify({ ...saved, logo: logoUrl }));
+      } catch {}
+
+      api.loyaltyPrograms.update(programId, {
+        wallet_design: { ...(p.wallet_design || {}), logo_url: logoUrl }
+      }).catch(err => console.warn(`[updateBrandLogo] Error en programa ${programId}:`, err));
+    });
+  },
     }),
     {
       name: 'programs-storage',

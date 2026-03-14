@@ -44,6 +44,7 @@ export default function MyPrograms() {
     toggleProgramActive,
     deleteProgram,
     isDeletingProgram,
+    displayLogos,
   } = useProgramsStore();
 
   // Cargar programas al montar el componente
@@ -59,7 +60,7 @@ export default function MyPrograms() {
     club_name: program.program_name,
     card_title: program.program_name,
     description: program.description,
-    logo_url: program.program_rules?.logo_url || '',
+    logo_url: (program.brand_id && displayLogos[program.brand_id]) || program.wallet_design?.logo_url || program.program_rules?.logo_url || '',
     card_color: program.wallet_design?.hex_background_color || program.program_rules?.card_color || '#000000',
     gradient_color: program.program_rules?.gradient_color || '#F59E0B',
     reward_text: program.reward_description,
@@ -73,7 +74,7 @@ export default function MyPrograms() {
     security_ticket_required: program.program_rules?.security_ticket_required || false,
     security_geofence_required: program.program_rules?.security_geofence_required || false,
     security_cooldown_hours: program.program_rules?.security_cooldown_hours || 0,
-    validity_stamps_days: program.program_rules?.validity_stamps_days || 0,
+    validity_stamps_days: program.program_rules?.card_validity_days ?? program.program_rules?.validity_stamps_days ?? 0,
     validity_reward_days: program.program_rules?.validity_reward_days || 0,
     validity_duration_days: program.program_rules?.validity_duration_days || 0,
     collect_name: program.program_rules?.collect_name !== false,

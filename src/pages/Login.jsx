@@ -84,37 +84,42 @@ export default function Login() {
     },
     onSuccess: async (response) => {
       toast.success('¡Inicio de sesión exitoso!');
-      
-      // Obtener el token de la respuesta o de localStorage (api.auth.login ya lo guarda)
+
       const token = response?.data?.token;
-      
+
       if (token) {
-        // Decodificar el JWT para obtener el payload
         const decoded = decodeJWT(token);
-        
+
         if (decoded) {
-          // Guardar campos en localStorage
-       
-          const { onboarding_completed, full_name, email } = decoded;
+          const { full_name, email } = decoded;
+          localStorage.setItem('user_full_name', full_name);
+          localStorage.setItem('user_email', email);
 
+          // Verificar via /auth/me si el usuario ya tiene marcas en la DB.
+          // El campo onboarding_completed del JWT puede estar desactualizado
+          // (ej: el usuario completó onboarding pero el JWT viejo aún lo marca como false).
+          try {
+            const meData = await api.auth.me();
+            const brands = meData?.data?.brands || [];
+            if (brands.length > 0) {
+              // Tiene marca → marcar onboarding como completado y redirigir al dashboard
+              localStorage.setItem('user_onboarding_completed', 'true');
+              navigate('/dashboard');
+            } else {
+              // Sin marcas → onboarding real
+              localStorage.setItem('user_onboarding_completed', 'false');
+              navigate('/onboarding');
+            }
+          } catch {
+            // Fallback: usar el valor del JWT si /auth/me falla
+            const onboarding_completed = decoded.onboarding_completed;
             localStorage.setItem('user_onboarding_completed', String(onboarding_completed));
-        
-            localStorage.setItem('user_full_name', full_name);
-          
-            localStorage.setItem('user_email', email);
-
-          // Redirigir según onboarding_completed          
-          if (onboarding_completed) {
-            navigate('/dashboard');
-          } else {
-            navigate('/onboarding');
+            navigate(onboarding_completed ? '/dashboard' : '/onboarding');
           }
         } else {
-          // Si no se puede decodificar, mostrar error
           toast.error('Error al procesar la autenticación. Intenta nuevamente.');
         }
       } else {
-        // Si no hay token, mostrar error
         toast.error('Error al procesar la autenticación. Intenta nuevamente.');
       }
     },

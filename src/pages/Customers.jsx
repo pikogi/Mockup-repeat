@@ -61,7 +61,7 @@ function CustomerCard({ member, userData, onClick }) {
           const stampsRequired = lc.program?.program_rules?.stamps_required ?? 10;
           const currentStamps = lc.current_balance ?? 0;
           const totalVisits = lc.total_visits ?? 0;
-          const rewardsRedeemed = lc.redemptions?.length || 0;
+          const rewardsRedeemed = lc.redemptions?.filter(r => r.status === 'completed').length || 0;
           const progressPct = Math.min(100, (currentStamps / stampsRequired) * 100);
           return (
             <div key={lc.card_id} className="mt-3 pt-3 border-t border-gray-100">
@@ -107,7 +107,7 @@ function CustomerCard({ member, userData, onClick }) {
 export default function Customers() {
   const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
-
+  const [dateRange, setDateRange] = useState('3m');
   const [selectedMonth, setSelectedMonth] = useState('all');
   const [selectedCard, setSelectedCard] = useState('all');
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -157,66 +157,42 @@ export default function Customers() {
   const programIdsKey = useMemo(() => programIds.join(','), [programIds]);
 
   const { data: members = [], isLoading: membersLoading, isError: membersError } = useQuery({
-    queryKey: ['brandUsers', brandId, programIdsKey],
+    queryKey: ['brandUsers', brandId, programIdsKey, dateRange],
     queryFn: async () => {
       if (!brandId) return [];
 
-      // El backend requiere from/to y limita el rango a 4 meses máximo.
-      // Generamos ventanas de 3 meses para cubrir el último año.
       const now = new Date();
-      const windows = Array.from({ length: 4 }, (_, i) => {
-        const end = new Date(now.getFullYear(), now.getMonth() - i * 3, now.getDate() + 1);
-        const start = new Date(now.getFullYear(), now.getMonth() - i * 3 - 3, now.getDate());
-        return {
-          from: start.toISOString().slice(0, 10),
-          to: end.toISOString().slice(0, 10),
-        };
-      });
+      const monthsBack = dateRange === '1y' ? 12 : dateRange === '6m' ? 6 : 3;
+      const from = new Date(now.getFullYear(), now.getMonth() - monthsBack, now.getDate()).toISOString().slice(0, 10);
+      const to = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString().slice(0, 10);
 
-      // Build a Map for O(1) program lookups
       const programMap = new Map(programs.map(p => [p.program_id || p.id, p]));
 
       let allEntries = [];
 
       if (programIds.length > 0) {
-        const { from, to } = windows[0];
-
-        // Parallelize per-program fetches AND general fetch
-        const [perProgramResults, generalRes] = await Promise.all([
-          Promise.all(
-            programIds.map(pid =>
-              api.brands.getUsers(brandId, { programId: pid, from, to })
-                .then(r => {
-                  const items = Array.isArray(r?.data) ? r.data : Array.isArray(r) ? r : [];
-                  const program = programMap.get(pid);
-                  return items.map(entry => ({
-                    ...entry,
-                    _programId: pid,
-                    _programName: program?.program_name,
-                    _programRules: program?.program_rules,
-                  }));
-                })
-                .catch(() => [])
-            )
-          ),
-          api.brands.getUsers(brandId, { from, to }).catch(() => ({ data: [] })),
-        ]);
-
-        allEntries = perProgramResults.flat();
-        const generalEntries = Array.isArray(generalRes?.data) ? generalRes.data : Array.isArray(generalRes) ? generalRes : [];
-        allEntries = [...allEntries, ...generalEntries];
-      }
-
-      // Fallback: ventanas sin filtro de programa para cubrir todo el historial
-      if (allEntries.length === 0) {
-        const windowResults = await Promise.all(
-          windows.map(({ from, to }) =>
-            api.brands.getUsers(brandId, { from, to })
-              .then(r => Array.isArray(r?.data) ? r.data : Array.isArray(r) ? r : [])
+        const perProgramResults = await Promise.all(
+          programIds.map(pid =>
+            api.brands.getUsers(brandId, { programId: pid, from, to })
+              .then(r => {
+                const items = Array.isArray(r?.data) ? r.data : Array.isArray(r) ? r : [];
+                const program = programMap.get(pid);
+                return items.map(entry => ({
+                  ...entry,
+                  _programId: pid,
+                  _programName: program?.program_name,
+                  _programRules: program?.program_rules,
+                }));
+              })
               .catch(() => [])
           )
         );
-        allEntries = windowResults.flat();
+        allEntries = perProgramResults.flat();
+      }
+
+      if (allEntries.length === 0) {
+        const res = await api.brands.getUsers(brandId, { from, to }).catch(() => ({ data: [] }));
+        allEntries = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
       }
 
       const userMap = new Map();
@@ -347,6 +323,19 @@ export default function Customers() {
               className="pl-10 h-10 rounded-xl border-gray-200"
             />
           </div>
+
+          {/* Date Range Filter */}
+          <Select value={dateRange} onValueChange={(v) => { setDateRange(v); setSelectedMonth('all'); }}>
+            <SelectTrigger className="h-10 rounded-xl w-40">
+              <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="3m">Últimos 3 meses</SelectItem>
+              <SelectItem value="6m">Últimos 6 meses</SelectItem>
+              <SelectItem value="1y">Último año</SelectItem>
+            </SelectContent>
+          </Select>
 
           {/* Month Filter */}
           <Select value={selectedMonth} onValueChange={setSelectedMonth}>

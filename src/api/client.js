@@ -13,6 +13,25 @@ if (!isDev && !envApiUrl) {
 }
 const API_BASE_URL = isDev ? '/api' : envApiUrl;
 
+// Claves de localStorage relacionadas con la sesión del usuario
+const AUTH_STORAGE_KEYS = [
+  'auth_token',
+  'user_brand_id',
+  'user_type_user',
+  'user_email',
+  'user_full_name',
+  'user_onboarding_completed',
+  'brand_id',
+  'brand_name',
+  'operating_branch_id',
+  'programs-storage',
+  'stores-storage',
+];
+
+function clearAuthStorage() {
+  AUTH_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+}
+
 // Cache the auth token in memory to avoid reading localStorage on every request
 let _cachedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('auth_token') : null;
 
@@ -169,6 +188,7 @@ class ApiClient {
       const res = await this.post('/auth/login', { email, password });
       const token = res.token || res.data?.token;
       if (token) {
+        clearAuthStorage();
         setCachedToken(token);
         const decodedToken = decodeJWT(token);
         if (decodedToken && decodedToken.brand_id) {
@@ -309,12 +329,8 @@ class ApiClient {
     },
 
     logout: () => {
-      setCachedToken(null);
-      localStorage.removeItem('brand_id');
-      localStorage.removeItem('brand_name');
-      localStorage.removeItem('operating_branch_id');
-      localStorage.removeItem('programs-storage');
-      localStorage.removeItem('stores-storage');
+      _cachedToken = null;
+      clearAuthStorage();
     },
   };
 

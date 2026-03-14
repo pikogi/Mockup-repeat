@@ -1,3 +1,4 @@
+import React from "react";
 import { motion } from "framer-motion";
 import { Gift, CreditCard, Percent, DollarSign, Crown, Ticket, ChevronUp, Pencil, Check, Mail } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -96,9 +97,6 @@ function StampsGrid({ stampsRequired, currentStamps, stampImageUrl, backgroundCo
           width: `${stampSize}px`,
           height: `${stampSize}px`,
           borderRadius: '50%',
-          borderWidth: '3px',
-          borderStyle: 'solid',
-          borderColor: isFirst ? 'white' : 'rgba(255, 255, 255, 0.6)',
           overflow: 'hidden',
           backgroundColor: showImageInPreview ? 'transparent' : (isFirst ? 'white' : 'rgba(255, 255, 255, 0.35)'),
           boxShadow: isFirst ? '0 4px 8px rgba(0, 0, 0, 0.15)' : 'none',
@@ -112,15 +110,15 @@ function StampsGrid({ stampsRequired, currentStamps, stampImageUrl, backgroundCo
         {showImageInPreview && (
           <>
             <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  width: '100%',
-                  height: '100%',
-                  backgroundImage: `url(${imageUrl})`,
-                  backgroundSize: '100% 100%',
-                  backgroundPosition: 'center',
-                  borderRadius: '50%',
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                backgroundImage: `url(${imageUrl})`,
+                backgroundSize: '100% 100%',
+                backgroundPosition: 'center',
+                borderRadius: '50%',
               }}
             />
             <img
@@ -145,7 +143,7 @@ function StampsGrid({ stampsRequired, currentStamps, stampImageUrl, backgroundCo
 
   return (
     <div className="flex flex-col items-center gap-2 w-full px-2">
-      <div className={`flex gap-2 justify-center ${layout.rows === 1 ? 'flex-nowrap' : 'flex-wrap'}`}>
+      <div className="flex gap-2 justify-center flex-nowrap">
         {topStamps.map((_, index) => renderStamp(index, index < currentStamps))}
       </div>
       {layout.rows === 2 && (
@@ -538,52 +536,30 @@ function GoogleTextModule({ label, value, foregroundColor, align = 'left' }) {
   );
 }
 
-// Preview Stamps para Android - Estilo Google Wallet Loyalty Card
+// Preview Stamps para Android - mismo formato que iOS
 function AndroidStampsPreview({ card, backgroundColor, currentStamps, stampsRequired }) {
   return (
-    <div className="relative h-48">
-      {/* Hero image area */}
-      <div
-        className="h-20 w-full"
-        style={{
-          background: card.background_image_url
-            ? `url(${card.background_image_url}) center/cover`
-            : `linear-gradient(135deg, ${adjustColor(backgroundColor, 20)} 0%, ${backgroundColor} 100%)`
-        }}
-      />
-
-      {/* Content area */}
-      <div className="px-4 py-3 -mt-4">
-        {/* Points balance card */}
-        <div
-          className="bg-white rounded-xl p-3 shadow-md"
-          style={{ borderLeft: `4px solid ${backgroundColor}` }}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <p className="text-xs text-gray-500">Puntos acumulados</p>
-              <p className="text-2xl font-bold" style={{ color: backgroundColor }}>
-                {currentStamps}/{stampsRequired}
-              </p>
-            </div>
-            <div
-              className="w-12 h-12 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: `${backgroundColor}15` }}
-            >
-              <Gift className="w-6 h-6" style={{ color: backgroundColor }} />
-            </div>
-          </div>
-          {/* Progress bar estilo Material */}
-          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all"
-              style={{
-                width: `${(currentStamps / stampsRequired) * 100}%`,
-                backgroundColor: backgroundColor
-              }}
-            />
-          </div>
-        </div>
+    <div className="relative h-44 overflow-hidden">
+      {card.background_image_url ? (
+        <>
+          <img
+            src={card.background_image_url?.startsWith('http') || card.background_image_url?.startsWith('data:') ? card.background_image_url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3000'}${card.background_image_url}`}
+            alt="Background"
+            className="absolute inset-0 w-full h-full object-cover"
+            onError={(e) => { e.target.style.display = 'none'; }}
+          />
+          <div className="absolute inset-0 bg-black bg-opacity-20" />
+        </>
+      ) : (
+        <div className="absolute inset-0" style={{ backgroundColor: '#D1D5DB' }} />
+      )}
+      <div className="relative h-full flex items-center justify-center p-2">
+        <StampsGrid
+          stampsRequired={stampsRequired}
+          currentStamps={currentStamps}
+          stampImageUrl={card.stamp_image_url}
+          backgroundColor={backgroundColor}
+        />
       </div>
     </div>
   );
@@ -1230,23 +1206,12 @@ export default function ProgramPreviewComponent({
               <div className="absolute inset-0" style={{ backgroundColor: adjustColor(cardBackgroundColor, -30) }} />
             )}
             <div className="relative h-full flex items-center justify-center px-4">
-              <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${Math.min(stampsRequired, 5)}, 1fr)` }}>
-                {Array.from({ length: Math.min(stampsRequired, 5) }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 shadow-md"
-                    style={{ backgroundColor: `${cardBackgroundColor}80` }}
-                  >
-                    {card.stamp_image_url ? (
-                      <img src={card.stamp_image_url} className="w-full h-full object-cover" alt="" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <TypeIcon className="w-6 h-6 text-white/80" />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+              <StampsGrid
+                stampsRequired={stampsRequired}
+                currentStamps={currentStamps}
+                stampImageUrl={card.stamp_image_url}
+                backgroundColor={cardBackgroundColor}
+              />
             </div>
           </div>
         </div>

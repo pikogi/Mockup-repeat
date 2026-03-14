@@ -144,7 +144,7 @@ export default function Dashboard() {
   }, [currentBrand, brandId]);
 
   // Usar el store de Zustand para loyalty programs (sincronizado con CreateClub)
-  const { programs: loyaltyPrograms, isLoading: programsLoading, fetchPrograms } = useProgramsStore();
+  const { programs: loyaltyPrograms, isLoading: programsLoading, fetchPrograms, displayLogos } = useProgramsStore();
 
   // Cargar programas cuando hay brandId
   React.useEffect(() => {
@@ -155,9 +155,8 @@ export default function Dashboard() {
 
   // El logo siempre viene de S3 con URL determinista; el version-key rompe el caché del browser
   const logoVersion = brandId ? localStorage.getItem(`brand_logo_version_${brandId}`) : null;
-  const brandLogoUrl = brandId
-    ? `${api.images.getLogoUrl(brandId)}${logoVersion ? `?v=${logoVersion}` : ''}`
-    : null;
+  const brandLogoUrl = (brandId && displayLogos[brandId])
+    || (brandId ? `${api.images.getLogoUrl(brandId)}${logoVersion ? `?v=${logoVersion}` : ''}` : null);
 
   const [logoLoadError, setLogoLoadError] = React.useState(false);
 
@@ -320,7 +319,7 @@ export default function Dashboard() {
           {!loyaltyPrograms || loyaltyPrograms.length === 0 ? (
             <Step3CTA />
           ) : (
-            <DashboardHome />
+            <DashboardHome brandId={brandId} />
           )}
         </div>
       </div>

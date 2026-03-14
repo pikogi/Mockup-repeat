@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react';
+import { Loader2 } from 'lucide-react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Layout from './Layout';
 import Login from './Login';
@@ -40,7 +41,7 @@ export default function Pages() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>}>
+      <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-slate-50"><Loader2 className="w-8 h-8 animate-spin text-yellow-500" /></div>}>
       <Routes>
         {/* Rutas públicas - sin protección */}
         <Route path="/publicprogram" element={<PublicCard />} />

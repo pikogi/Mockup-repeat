@@ -20,6 +20,25 @@ import ProgramPreviewComponent from "@/components/programs/ProgramPreviewCompone
 
 // Escala la imagen proporcionalmente si supera las dimensiones máximas.
 // Usa PNG para preservar transparencia.
+// Comprime la imagen a JPEG reducido para enviar al endpoint de brands (limite de payload).
+function compressForBrandUpload(base64) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 300;
+      const ratio = Math.min(MAX / img.naturalWidth, MAX / img.naturalHeight, 1);
+      const w = Math.round(img.naturalWidth * ratio);
+      const h = Math.round(img.naturalHeight * ratio);
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', 0.8));
+    };
+    img.src = base64;
+  });
+}
+
 function resizeImageToMax(base64, maxWidth, maxHeight) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -153,7 +172,7 @@ export default function CreateClub() {
   const user = getCurrentUser();
 
   // Usar el store de Zustand
-  const { createProgram, updateProgram, isCreating, isUpdating, programs: storePrograms } = useProgramsStore();
+  const { createProgram, updateProgram, updateBrandLogo, setDisplayLogo, isCreating, isUpdating, programs: storePrograms } = useProgramsStore();
   const { stores, fetchStores } = useStoresStore();
 
   /* =========================
@@ -272,12 +291,13 @@ export default function CreateClub() {
       setProgramId(existingProgram.program_id);
       setNewUpload({ logo: false, background: false, stamp: false });
 
-      // GET /loyalty-programs/:id no devuelve `images` ni `wallet_design`; usamos el store como fallback
+      // GET /loyalty-programs/:id no devuelve `images`, `wallet_design` ni `metadata`; usamos el store como fallback
       const programFromStore = storePrograms.find(
         p => (p.program_id || p.id) === existingProgram.program_id
       );
       const images = existingProgram.images || programFromStore?.images || {};
-      const walletDesign = existingProgram.wallet_design || programFromStore?.wallet_design || {};
+      const walletDesign = { ...existingProgram.wallet_design, ...programFromStore?.wallet_design };
+      const metadata = existingProgram.metadata || programFromStore?.metadata || {};
 
       const savedImages = (() => {
         try { return JSON.parse(localStorage.getItem(`program_images_${existingProgram.program_id}`) || '{}'); }
@@ -297,14 +317,14 @@ export default function CreateClub() {
         card_color: walletDesign.hex_background_color || existingProgram.program_rules?.card_color || '#000000',
         foreground_color: walletDesign.hex_foreground_color || '#FFFFFF',
         label_color: walletDesign.hex_label_color || '#FFFFFF',
-        terms: existingProgram.program_rules?.terms_and_conditions || existingProgram.program_rules?.terms || '',
-        contact_email: existingProgram.program_rules?.contact_email || '',
-        contact_phone: existingProgram.program_rules?.contact_phone || '',
-        website: existingProgram.program_rules?.website || '',
+        terms: metadata.terms_and_conditions || existingProgram.program_rules?.terms_and_conditions || existingProgram.program_rules?.terms || '',
+        contact_email: metadata.contact_email || existingProgram.program_rules?.contact_email || '',
+        contact_phone: metadata.contact_phone || existingProgram.program_rules?.contact_phone || '',
+        website: metadata.website || existingProgram.program_rules?.website || '',
         security_ticket_required: existingProgram.program_rules?.security_ticket_required ?? false,
         security_geofence_required: existingProgram.program_rules?.security_geofence_required ?? false,
         security_cooldown_hours: existingProgram.program_rules?.security_cooldown_hours ?? 0,
-        validity_stamps_days: existingProgram.program_rules?.validity_stamps_days ?? 0,
+        validity_stamps_days: existingProgram.program_rules?.card_validity_days ?? existingProgram.program_rules?.validity_stamps_days ?? 0,
         validity_reward_days: existingProgram.program_rules?.validity_reward_days ?? 0,
         validity_duration_days: existingProgram.program_rules?.validity_duration_days ?? 0,
         collect_name: existingProgram.program_rules?.required_customer_fields?.name ?? true,
@@ -328,14 +348,14 @@ export default function CreateClub() {
         card_color: walletDesign.hex_background_color || existingProgram.program_rules?.card_color || '#000000',
         foreground_color: walletDesign.hex_foreground_color || '#FFFFFF',
         label_color: walletDesign.hex_label_color || '#FFFFFF',
-        terms: existingProgram.program_rules?.terms_and_conditions || existingProgram.program_rules?.terms || '',
-        contact_email: existingProgram.program_rules?.contact_email || '',
-        contact_phone: existingProgram.program_rules?.contact_phone || '',
-        website: existingProgram.program_rules?.website || '',
+        terms: existingProgram.metadata?.terms_and_conditions || existingProgram.program_rules?.terms_and_conditions || existingProgram.program_rules?.terms || '',
+        contact_email: existingProgram.metadata?.contact_email || existingProgram.program_rules?.contact_email || '',
+        contact_phone: existingProgram.metadata?.contact_phone || existingProgram.program_rules?.contact_phone || '',
+        website: existingProgram.metadata?.website || existingProgram.program_rules?.website || '',
         security_ticket_required: existingProgram.program_rules?.security_ticket_required ?? false,
         security_geofence_required: existingProgram.program_rules?.security_geofence_required ?? false,
         security_cooldown_hours: existingProgram.program_rules?.security_cooldown_hours ?? 0,
-        validity_stamps_days: existingProgram.program_rules?.validity_stamps_days ?? 0,
+        validity_stamps_days: existingProgram.program_rules?.card_validity_days ?? existingProgram.program_rules?.validity_stamps_days ?? 0,
         validity_reward_days: existingProgram.program_rules?.validity_reward_days ?? 0,
         validity_duration_days: existingProgram.program_rules?.validity_duration_days ?? 0,
         collect_name: existingProgram.program_rules?.required_customer_fields?.name ?? true,
@@ -354,14 +374,15 @@ export default function CreateClub() {
       p => (p.program_id || p.id) === existingProgram.program_id
     );
     const images = existingProgram.images || programFromStore?.images || {};
-    const walletDesign = existingProgram.wallet_design || programFromStore?.wallet_design || {};
+    const walletDesign = { ...existingProgram.wallet_design, ...programFromStore?.wallet_design };
     const savedImages = (() => {
       try { return JSON.parse(localStorage.getItem(`program_images_${existingProgram.program_id}`) || '{}'); }
       catch { return {}; }
     })();
     setFormData(prev => ({
       ...prev,
-      logo_url: newUpload.logo ? prev.logo_url : (walletDesign.logo_url || images.logo || savedImages.logo || existingProgram.program_rules?.logo_url || localStorage.getItem(`brand_logo_url_${existingProgram.program_id ? brandId : ''}`) || prev.logo_url),
+      // El logo viene del store (actualizado) o de la API; savedImages.logo puede ser stale
+      logo_url: newUpload.logo ? prev.logo_url : (walletDesign.logo_url || images.logo || savedImages.logo || existingProgram.program_rules?.logo_url || localStorage.getItem(`brand_logo_url_${brandId}`) || prev.logo_url),
       background_image_url: newUpload.background ? prev.background_image_url : (images.stamp_background || savedImages.background || prev.background_image_url),
       stamp_image_url: newUpload.stamp ? prev.stamp_image_url : (images.stamp_icon || savedImages.stamp || prev.stamp_image_url),
     }));
@@ -370,24 +391,17 @@ export default function CreateClub() {
   /* =========================
      HELPERS
   ========================= */
+  const getValidityTermsText = (days) =>
+    days > 0
+      ? `Plazo para juntar sellos: ${days} días, de lo contrario tu tarjeta vuelve a 0.`
+      : '';
+
   const buildProgramRules = (data) => {
     const rules = {};
 
     if (data.stamps_required) rules.stamps_required = data.stamps_required;
-    if (data.terms) rules.terms_and_conditions = data.terms;
-
-    // Contact info
-    if (data.contact_email) rules.contact_email = data.contact_email;
-    if (data.contact_phone) rules.contact_phone = data.contact_phone;
-    if (data.website) rules.website = data.website;
-
-    // Security
-    if (data.security_cooldown_hours) rules.security_cooldown_hours = data.security_cooldown_hours;
-
-    // Validity
-    if (data.validity_stamps_days) rules.validity_stamps_days = data.validity_stamps_days;
-    if (data.validity_reward_days) rules.validity_reward_days = data.validity_reward_days;
-    if (data.validity_duration_days) rules.validity_duration_days = data.validity_duration_days;
+    if (data.security_cooldown_hours) rules.interval_between_transactions_hours = data.security_cooldown_hours;
+    if (data.validity_stamps_days) rules.card_validity_days = data.validity_stamps_days;
 
     return rules;
   };
@@ -395,11 +409,19 @@ export default function CreateClub() {
   // Construir el objeto required_customer_fields que el backend espera
   const buildRequiredCustomerFields = (data) => {
     return {
-      name: data.collect_name !== false,
-      email: data.collect_email !== false,
       phone: data.collect_phone || false,
       birth_date: data.collect_birthday || false,
     };
+  };
+
+  // Construir el objeto metadata con datos de contacto del negocio
+  const buildMetadata = (data) => {
+    const metadata = {};
+    if (data.terms) metadata.terms_and_conditions = data.terms;
+    if (data.contact_email) metadata.contact_email = data.contact_email;
+    if (data.contact_phone) metadata.contact_phone = data.contact_phone;
+    if (data.website) metadata.website = data.website;
+    return Object.keys(metadata).length > 0 ? metadata : undefined;
   };
 
   /* =========================
@@ -438,6 +460,7 @@ export default function CreateClub() {
 
     const program_rules = buildProgramRules(formData);
     const required_customer_fields = buildRequiredCustomerFields(formData);
+    const metadata = buildMetadata(formData);
     const reward_rules = formData.reward_tiers?.length
       ? { reward_tiers: formData.reward_tiers }
       : undefined;
@@ -458,10 +481,7 @@ export default function CreateClub() {
       if (reward_rules && hasChanged('reward_tiers')) updateData.reward_rules = reward_rules;
 
       const programRulesFields = [
-        'stamps_required', 'terms', 'contact_email', 'contact_phone', 'website',
-        'security_ticket_required', 'security_geofence_required', 'security_cooldown_hours',
-        'validity_stamps_days', 'validity_reward_days', 'validity_duration_days',
-        'collect_name', 'collect_email', 'collect_phone', 'collect_birthday', 'logo_url',
+        'stamps_required', 'security_cooldown_hours', 'collect_phone', 'collect_birthday', 'validity_stamps_days',
       ];
       const programRulesChanged = programRulesFields.some(hasChanged);
       if (programRulesChanged) {
@@ -470,6 +490,19 @@ export default function CreateClub() {
           required_customer_fields,
         };
       }
+
+      const metadataFields = ['terms', 'contact_email', 'contact_phone', 'website'];
+      const metadataChanged = metadataFields.some(hasChanged);
+      if (metadataChanged) {
+        if (metadata) updateData.metadata = metadata;
+      }
+
+      // Calcular versión del logo una sola vez para este guardado
+      const logoVersion = newUpload.logo ? Date.now() : null;
+      const s3LogoUrl = api.images.getLogoUrl(brandId);
+      const versionedLogoUrl = logoVersion && s3LogoUrl
+        ? `${s3LogoUrl}?v=${logoVersion}`
+        : (s3LogoUrl || null);
 
       const walletDesignChanged =
         hasChanged('card_color') || hasChanged('foreground_color') || hasChanged('label_color') || newUpload.logo;
@@ -480,11 +513,17 @@ export default function CreateClub() {
           hex_label_color: formData.label_color || null,
           show_logo_text: false,
         };
-        const baseRules = updateData.program_rules || program_rules || {};
-        updateData.program_rules = {
-          ...baseRules,
-          required_customer_fields,
-        };
+        if (!updateData.program_rules) {
+          updateData.program_rules = { ...program_rules, required_customer_fields };
+        }
+      }
+
+      // Persistir la URL versionada del logo en program_rules para que sobreviva recargas
+      if (newUpload.logo && versionedLogoUrl) {
+        if (!updateData.program_rules) {
+          updateData.program_rules = { ...program_rules, required_customer_fields };
+        }
+        updateData.program_rules = { ...updateData.program_rules, logo_url: versionedLogoUrl };
       }
 
       if (hasChanged('selected_store_ids') && formData.selected_store_ids.length > 0) {
@@ -514,8 +553,13 @@ export default function CreateClub() {
         } catch { /* localStorage lleno, ignorar */ }
 
         if (hasNewLogo && formData.logo_url) {
-          try { localStorage.setItem(`brand_logo_version_${brandId}`, Date.now()); } catch {}
-          api.brands.update(brandId, { logo_url: formData.logo_url })
+          try { localStorage.setItem(`brand_logo_version_${brandId}`, logoVersion); } catch {}
+          if (versionedLogoUrl) { try { localStorage.setItem(`brand_logo_url_${brandId}`, versionedLogoUrl); } catch {} }
+          const compressed = await compressForBrandUpload(formData.logo_url);
+          try { localStorage.setItem(`logo_preview_${brandId}`, JSON.stringify({ data: compressed, expires: Date.now() + 120000 })); } catch {}
+          setDisplayLogo(brandId, formData.logo_url);
+          updateBrandLogo(brandId, versionedLogoUrl || formData.logo_url, idToUpdate);
+          await api.brands.update(brandId, { logo_url: compressed })
             .catch(err => console.warn('[CreateClub edit] Error actualizando logo en brand:', err));
         }
 
@@ -571,6 +615,7 @@ export default function CreateClub() {
           show_logo_text: false,
         },
         store_ids: storeIds,
+        ...(metadata && { metadata }),
       };
 
       const result = await createProgram(brandId, programData);
@@ -593,8 +638,13 @@ export default function CreateClub() {
 
             if (hasNewLogo && formData.logo_url) {
               const s3LogoUrl = api.images.getLogoUrl(brandId);
-              if (s3LogoUrl) { try { localStorage.setItem(`brand_logo_url_${brandId}`, `${s3LogoUrl}?v=${Date.now()}`); } catch {} }
-              api.brands.update(brandId, { logo_url: formData.logo_url })
+              const version = Date.now();
+              const versionedUrl = s3LogoUrl ? `${s3LogoUrl}?v=${version}` : null;
+              if (versionedUrl) { try { localStorage.setItem(`brand_logo_url_${brandId}`, versionedUrl); } catch {} }
+              setDisplayLogo(brandId, formData.logo_url);
+              updateBrandLogo(brandId, versionedUrl || formData.logo_url, newProgramId);
+              const compressedLogo = await compressForBrandUpload(formData.logo_url);
+              await api.brands.update(brandId, { logo_url: compressedLogo })
                 .catch(err => console.warn('[CreateClub] Error actualizando logo en brand:', err));
             }
 
@@ -610,6 +660,7 @@ export default function CreateClub() {
             console.warn('[CreateClub] Error generando stamp card image:', err);
             toast.warning('El programa se creó, pero hubo un problema al procesar las imágenes.');
           }
+
         }
         navigate(createPageUrl('MyPrograms'));
       }
@@ -1214,12 +1265,20 @@ export default function CreateClub() {
                     type="number"
                     min="0"
                     value={formData.validity_stamps_days || ''}
-                    onChange={(e) =>
-                      setFormData(prev => ({
-                        ...prev,
-                        validity_stamps_days: parseInt(e.target.value),
-                      }))
-                    }
+                    onChange={(e) => {
+                      const newDays = parseInt(e.target.value) || 0;
+                      setFormData(prev => {
+                        const prevAutoText = getValidityTermsText(prev.validity_stamps_days || 0);
+                        const newAutoText = getValidityTermsText(newDays);
+                        const shouldUpdateTerms =
+                          !prev.terms || prev.terms === prevAutoText;
+                        return {
+                          ...prev,
+                          validity_stamps_days: newDays,
+                          terms: shouldUpdateTerms ? newAutoText : prev.terms,
+                        };
+                      });
+                    }}
                     placeholder="0"
                     className="h-12 pr-16"
                   />
@@ -1228,6 +1287,7 @@ export default function CreateClub() {
                       <p className="text-xs text-gray-500">{t('noTimeLimit')}</p>
                     </div>
 
+                    {/* Vigencia del Club — deshabilitado por ahora
                     <div className="space-y-2">
                       <Label htmlFor="validity_duration">{t('programValidity')}</Label>
                       <div className="relative">
@@ -1249,6 +1309,7 @@ export default function CreateClub() {
                       </div>
                       <p className="text-xs text-gray-500">{t('alwaysActive')}</p>
                     </div>
+                    */}
                   </div>
                 </div>
 

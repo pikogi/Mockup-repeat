@@ -30,24 +30,8 @@ export default function PublicCard() {
 
   // Obtener datos de la marca (para el logo) — brand_id puede venir de la URL o del programa
   const [brandIdFromProgram, setBrandIdFromProgram] = useState(null);
-  const brandId = brandIdFromUrl || brandIdFromProgram;
+  const brandId = brandIdFromUrl || program?.brand_id || brandIdFromProgram;
 
-  const { data: brandData } = useQuery({
-    queryKey: ['publicBrand', brandId],
-    queryFn: async () => {
-      if (!brandId) return null;
-      try {
-        const res = await api.brands.getPublic(brandId);
-        return res?.data || res;
-      } catch {
-        return null;
-      }
-    },
-    enabled: !!brandId,
-    retry: false,
-    staleTime: 0,
-    gcTime: 0,
-  });
 
   // Obtener programa de lealtad directamente por ID (endpoint público)
   const { data: program, isLoading, error } = useQuery({
@@ -69,10 +53,8 @@ export default function PublicCard() {
           program_name: programData?.program_name,
           wallet_design: programData?.wallet_design,
           images: programData?.images,
-          program_rules_logo_url: programData?.program_rules?.logo_url
-            ? programData.program_rules.logo_url.substring(0, 60) + '...'
-            : null,
-          program_rules_card_color: programData?.program_rules?.card_color,
+          metadata: programData?.metadata,
+          program_rules: programData?.program_rules,
         });
         return programData;
       } catch (err) {
@@ -91,6 +73,15 @@ export default function PublicCard() {
     }
   }, [program, brandIdFromUrl]);
 
+  // Pre-cargar el logo en cuanto lleguen los datos del programa
+  useEffect(() => {
+    const logoUrl = program?.wallet_design?.logo_url || program?.program_rules?.logo_url || program?.images?.logo;
+    if (logoUrl) {
+      const img = new Image();
+      img.src = logoUrl;
+    }
+  }, [program]);
+
   console.log('[PublicCard] Programa encontrado:', {
     cardId,
     found: !!program,
@@ -99,20 +90,36 @@ export default function PublicCard() {
 
   // Cache-buster por sesión: la URL del logo en S3 es determinista, solo cambia el contenido.
   // Usamos updated_at si el backend lo provee; si no, el timestamp de carga de página.
-  const logoCacheBuster = program?.updated_at
-    ? new Date(program.updated_at).getTime()
-    : (brandData?.updated_at ? new Date(brandData.updated_at).getTime() : pageLoadTs);
+  const logoCacheBuster = (() => {
+    const storedVersion = brandId
+      ? localStorage.getItem(`brand_logo_version_${brandId}`)
+      : null;
+    return storedVersion ? Number(storedVersion) : pageLoadTs;
+  })();
   const addCacheBuster = (url) => {
     if (!url || url.startsWith('data:')) return url;
+    if (url.includes('?v=')) return url;
     return `${url}?v=${logoCacheBuster}`;
   };
+
+  const resolvedLogoUrl = program ? (() => {
+    const candidates = {
+      wallet_design: program.wallet_design?.logo_url,
+      program_rules: program.program_rules?.logo_url,
+      s3: api.images.getLogoUrl(brandId),
+      images_logo: typeof program.images?.logo === 'string' && program.images.logo.length < 300 ? program.images.logo : '(base64)',
+    };
+    const resolved = addCacheBuster(program.wallet_design?.logo_url) || addCacheBuster(program.program_rules?.logo_url) || addCacheBuster(api.images.getLogoUrl(brandId)) || addCacheBuster(program.images?.logo) || '';
+    console.log('[PublicCard] logo candidates:', candidates, '→ resolved:', resolved, '| brandId:', brandId, '| logoCacheBuster:', logoCacheBuster);
+    return resolved;
+  })() : '';
 
   const card = program ? {
     id: program.program_id || program.id,
     club_name: program.program_name,
     card_title: program.program_name,
     description: program.description,
-    logo_url: addCacheBuster(brandData?.logo_url) || addCacheBuster(brandData?.brand_logo_url) || addCacheBuster(program.program_rules?.logo_url) || addCacheBuster(program.wallet_design?.logo_url) || addCacheBuster(program.images?.logo) || addCacheBuster(api.images.getLogoUrl(brandId)) || '',
+    logo_url: resolvedLogoUrl,
     stamp_background: program.images?.stamp_background || '',
     stamp_icon: program.images?.stamp_icon || '',
     card_color: program.wallet_design?.hex_background_color || program.program_rules?.card_color || '#000000',
@@ -120,12 +127,12 @@ export default function PublicCard() {
     label_color: program.wallet_design?.hex_label_color || '#FFFFFF',
     gradient_color: program.program_rules?.gradient_color || '#F59E0B',
     reward_text: program.reward_description,
-    terms: program.terms || program.program_rules?.terms_and_conditions || program.program_rules?.terms || '',
+    terms: program.terms || program.metadata?.terms_and_conditions || program.program_rules?.terms_and_conditions || program.program_rules?.terms || '',
     stamps_required: program.stamps_required || program.program_rules?.stamps_required || 10,
     is_active: program.is_active !== false,
-    contact_email: program.program_rules?.contact_email || '',
-    contact_phone: program.program_rules?.contact_phone || '',
-    website: program.program_rules?.website || '',
+    contact_email: program.metadata?.contact_email || program.program_rules?.contact_email || '',
+    contact_phone: program.metadata?.contact_phone || program.program_rules?.contact_phone || '',
+    website: program.metadata?.website || program.program_rules?.website || '',
     collect_name: program.program_rules?.required_customer_fields?.name !== false,
     collect_email: program.program_rules?.required_customer_fields?.email !== false,
     collect_phone: program.program_rules?.required_customer_fields?.phone || false,
@@ -162,13 +169,6 @@ export default function PublicCard() {
       // Guardar card_id
       const newCardId = loyaltyCard.card_id || loyaltyCard.id;
       setCustomerCardId(newCardId);
-
-      // Enviar email de bienvenida (fire & forget — no bloquea el flujo)
-      if (newCardId) {
-        api.emails.sendWelcome(newCardId).catch(err =>
-          console.warn('[PublicCard] Error enviando email de bienvenida:', err)
-        );
-      }
 
       setCustomerData({
         customerName: loyaltyCard.customer_full_name || signupData.name,
@@ -381,7 +381,10 @@ export default function PublicCard() {
                     <img
                       src={card.logo_url}
                       alt={card.club_name}
-                      className="w-32 h-32 object-contain rounded-2xl mx-auto mb-4"
+                      className="w-32 h-32 object-contain rounded-2xl mx-auto mb-4 transition-opacity duration-300"
+                      style={{ opacity: 0 }}
+                      fetchpriority="high"
+                      onLoad={(e) => { e.currentTarget.style.opacity = '1'; }}
                       onError={(e) => { e.currentTarget.style.display = 'none'; }}
                     />
                   )}
@@ -445,7 +448,6 @@ export default function PublicCard() {
                     </div>
                   )}
 
-                  {/* TODO: Compartir programa — volver a activar con programa de referidos
                   <div className="relative my-4">
                     <div className="absolute inset-0 flex items-center">
                       <div className="w-full border-t border-gray-200" />
@@ -463,7 +465,6 @@ export default function PublicCard() {
                     <Share2 className="w-5 h-5" />
                     Compartir programa
                   </Button>
-                  */}
                 </div>
               </>
             )}
@@ -498,7 +499,7 @@ export default function PublicCard() {
                 )}
                 {card.website && (
                   <a
-                    href={card.website}
+                    href={card.website.startsWith('http') ? card.website : `https://${card.website}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-3 text-gray-600 hover:text-amber-600 transition-colors"
@@ -506,7 +507,7 @@ export default function PublicCard() {
                     <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
                       <Globe className="w-5 h-5 text-amber-600" />
                     </div>
-                    <span>Visitar sitio web</span>
+                    <span className="truncate max-w-[200px]">{card.website.replace(/^https?:\/\//, '')}</span>
                   </a>
                 )}
               </div>
