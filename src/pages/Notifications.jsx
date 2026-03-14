@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from "@/api/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -195,7 +195,7 @@ export default function Notifications() {
       });
 
   // Inicializar selección cuando cambia la categoría o el filtro de sucursal
-  React.useEffect(() => {
+  useEffect(() => {
     if (recipientModalMode === 'category' && recipientModalCategory) {
       const filtered = filterMembersByCategory(recipientModalCategory);
       setTempSelectedMemberIds(filtered.map(m => m.id));

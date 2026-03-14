@@ -51,21 +51,19 @@ export default function CustomerDetailModal({ customer, brandId, onClose }) {
     if (brandId) fetchStores(brandId);
   }, [brandId]);
 
-  // Auto-seleccionar tienda: desde localStorage o si solo hay una
+  // Auto-seleccionar tienda: valida localStorage contra las tiendas cargadas
   useEffect(() => {
+    if (stores.length === 0) return;
     const stored = localStorage.getItem('operating_branch_id');
-    if (stored) {
+    const isValid = stored && stores.some(s => (s.store_id || s.id) === stored);
+    if (isValid) {
       setSelectedStore(stored);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!selectedStore && stores.length === 1) {
+    } else if (stores.length === 1) {
       const storeId = stores[0].store_id || stores[0].id;
       setSelectedStore(storeId);
       localStorage.setItem('operating_branch_id', storeId);
     }
-  }, [stores, selectedStore]);
+  }, [stores]);
 
   const handleStoreSelect = (storeId) => {
     setSelectedStore(storeId);
@@ -108,7 +106,7 @@ export default function CustomerDetailModal({ customer, brandId, onClose }) {
       if (!selectedStore) throw new Error('Seleccioná una sucursal antes de agregar el sello.');
       if (!autoSelectedCardId) throw new Error('No se encontró la tarjeta del cliente.');
 
-      await api.transactions.create(autoSelectedCardId, selectedStore, 'stamp_added', 'stamp', 1);
+      await api.transactions.create(autoSelectedCardId, selectedStore, 'stamp_added', 'point', 1);
 
       const programId = activeCard?.program?.program_id;
       if (programId) {
