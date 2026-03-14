@@ -98,8 +98,8 @@ export default function PublicCard() {
   })();
   const addCacheBuster = (url) => {
     if (!url || url.startsWith('data:')) return url;
-    if (url.includes('?v=')) return url;
-    return `${url}?v=${logoCacheBuster}`;
+    const cleanUrl = url.replace(/([?&])v=[^&]*(&|$)/, (_, pre, post) => post === '&' ? pre : '').replace(/[?&]$/, '');
+    return `${cleanUrl}${cleanUrl.includes('?') ? '&' : '?'}v=${logoCacheBuster}`;
   };
 
   const resolvedLogoUrl = program ? (() => {
@@ -109,8 +109,19 @@ export default function PublicCard() {
       s3: api.images.getLogoUrl(brandId),
       images_logo: typeof program.images?.logo === 'string' && program.images.logo.length < 300 ? program.images.logo : '(base64)',
     };
-    const resolved = addCacheBuster(program.wallet_design?.logo_url) || addCacheBuster(program.program_rules?.logo_url) || addCacheBuster(api.images.getLogoUrl(brandId)) || addCacheBuster(program.images?.logo) || '';
-    console.log('[PublicCard] logo candidates:', candidates, '→ resolved:', resolved, '| brandId:', brandId, '| logoCacheBuster:', logoCacheBuster);
+    // Prefer base64 from backend (images.logo) — always reflects the latest saved logo,
+    // bypassing any S3/CloudFront caching that would serve stale content after an update.
+    const base64Logo =
+      typeof program.images?.logo === 'string' && program.images.logo.startsWith('data:')
+        ? program.images.logo
+        : null;
+    const resolved =
+      base64Logo ||
+      addCacheBuster(api.images.getLogoUrl(brandId)) ||
+      addCacheBuster(program.wallet_design?.logo_url) ||
+      addCacheBuster(program.program_rules?.logo_url) ||
+      '';
+    console.log('[PublicCard] logo candidates:', candidates, '→ resolved:', base64Logo ? '(base64)' : resolved, '| brandId:', brandId, '| logoCacheBuster:', logoCacheBuster);
     return resolved;
   })() : '';
 
