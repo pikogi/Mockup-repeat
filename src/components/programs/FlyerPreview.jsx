@@ -71,7 +71,6 @@ const FlyerPreview = forwardRef(({
                   src={logoUrl}
                   alt={title}
                   style={{ width: '72px', height: '72px', objectFit: 'contain' }}
-                  crossOrigin="anonymous"
                 />
               </div>
             ) : (
@@ -208,7 +207,6 @@ const FlyerPreview = forwardRef(({
                 objectFit: 'contain',
                 marginBottom: '24px'
               }}
-              crossOrigin="anonymous"
             />
           ) : (
             <div style={{
@@ -412,7 +410,6 @@ const FlyerPreview = forwardRef(({
                   src={logoUrl}
                   alt={title}
                   style={{ width: '52px', height: '52px', objectFit: 'contain' }}
-                  crossOrigin="anonymous"
                 />
               </div>
             ) : (
