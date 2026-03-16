@@ -588,6 +588,7 @@ export default function PublicCard() {
                   id="birthday"
                   type="date"
                   required
+                  max={new Date(new Date().getFullYear() - 10, new Date().getMonth(), new Date().getDate()).toISOString().slice(0, 10)}
                   value={signupData.birthday}
                   onChange={(e) => setSignupData({ ...signupData, birthday: e.target.value })}
                   className="h-12"

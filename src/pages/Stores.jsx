@@ -185,6 +185,7 @@ export default function Stores() {
                       onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                     />
                   </div>
+                  {/* Latitud y Longitud — deshabilitado temporalmente
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="lat">Latitud</Label>
@@ -215,6 +216,7 @@ export default function Stores() {
                       />
                     </div>
                   </div>
+                  */}
                   {/* Geolocalización - comentado temporalmente
                   <Button
                     type="button"

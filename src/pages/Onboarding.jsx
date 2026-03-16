@@ -216,6 +216,7 @@ export default function Onboarding() {
                   />
                 </div>
 
+                {/* Latitud, Longitud y geolocalización — deshabilitado temporalmente
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="lat" className="text-gray-700 font-medium text-sm">
@@ -256,6 +257,7 @@ export default function Onboarding() {
                   <MapPin className="w-4 h-4 mr-2" />
                   Usar mi ubicación actual
                 </Button>
+                */}
               </div>
             )}
           </div>

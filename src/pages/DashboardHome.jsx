@@ -111,16 +111,38 @@ export default function DashboardHome({ brandId }) {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Brand stats/users — time-series new members per day
-  const { data: statsUsersData } = useQuery({
-    queryKey: ['brandStatsUsers', brandId, dateFilter, storeId],
+  // Users within selected date range — same source as Customers page, used for members chart
+  const { data: rangedUsers = [] } = useQuery({
+    queryKey: ['brandRangedUsers', brandId, programIds.join(','), dateFilter, customDateKey],
     queryFn: async () => {
-      if (!brandId) return null;
+      if (!brandId) return [];
       const range = getDateRange();
       const from = format(range.start, 'yyyy-MM-dd');
-      const to = format(range.end, 'yyyy-MM-dd');
-      const res = await api.brands.getStatsUsers(brandId, { from, to, storeId });
-      return res?.data || res || null;
+      const to = format(addDays(range.end, 1), 'yyyy-MM-dd');
+
+      let allEntries = [];
+      if (programIds.length > 0) {
+        const results = await Promise.all(
+          programIds.map(pid =>
+            api.brands.getUsers(brandId, { programId: pid, from, to })
+              .then(r => (Array.isArray(r?.data) ? r.data : Array.isArray(r) ? r : []))
+              .catch(() => [])
+          )
+        );
+        allEntries = results.flat();
+      } else {
+        const res = await api.brands.getUsers(brandId, { from, to }).catch(() => ({ data: [] }));
+        allEntries = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+      }
+
+      // Deduplicate by email/user_id
+      const seen = new Set();
+      return allEntries.filter(e => {
+        const key = e.email || e.user_id || e.id;
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
     },
     enabled: !!brandId,
     staleTime: 5 * 60 * 1000,
@@ -139,25 +161,44 @@ export default function DashboardHome({ brandId }) {
   const rewardsCount = brandStats?.total_completed_redemptions ?? 0;
 
   const chartData = React.useMemo(() => {
-    const userHistory = Array.isArray(statsUsersData)
-      ? statsUsersData
-      : Array.isArray(statsUsersData?.data)
-        ? statsUsersData.data
-        : [];
-
-    if (userHistory.length === 0) return [];
-
+    const range = getDateRange();
     const totalStamps = brandStats?.transactions_by_type?.stamp_added ?? 0;
     const totalRedemptions = (brandStats?.total_completed_redemptions ?? 0) + (brandStats?.total_pending_redemptions ?? 0);
 
-    return userHistory.map((entry, i) => ({
-      date: format(new Date(entry.date), 'MMM d'),
-      fullDate: format(new Date(entry.date), 'd MMM yyyy'),
-      adds: entry.new_users ?? 0,
-      scans: i === userHistory.length - 1 ? totalStamps : 0,
-      redemptions: i === userHistory.length - 1 ? totalRedemptions : 0,
-    }));
-  }, [statsUsersData, brandStats]);
+    // Build a day-by-day map from rangedUsers grouped by created_at
+    const countsByDate = new Map();
+    rangedUsers.forEach(u => {
+      const raw = u.created_at || u.created_date;
+      if (!raw) return;
+      const day = raw.slice(0, 10); // 'YYYY-MM-DD'
+      countsByDate.set(day, (countsByDate.get(day) ?? 0) + 1);
+    });
+
+    // Generate one entry per day in the range
+    const days = [];
+    const cursor = new Date(range.start);
+    cursor.setHours(0, 0, 0, 0);
+    const end = new Date(range.end);
+    end.setHours(23, 59, 59, 999);
+
+    while (cursor <= end) {
+      days.push(new Date(cursor));
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    if (days.length === 0) return [];
+
+    return days.map((day, i) => {
+      const key = format(day, 'yyyy-MM-dd');
+      return {
+        date: format(day, 'MMM d'),
+        fullDate: format(day, 'd MMM yyyy'),
+        adds: countsByDate.get(key) ?? 0,
+        scans: i === days.length - 1 ? totalStamps : 0,
+        redemptions: i === days.length - 1 ? totalRedemptions : 0,
+      };
+    });
+  }, [rangedUsers, brandStats, dateFilter, customDateKey]);
 
   // ======================
   // UI (NO SE TOCA)
