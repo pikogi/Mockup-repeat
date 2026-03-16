@@ -294,6 +294,7 @@ export default function DashboardHome({ brandId }) {
             value={activePrograms}
             icon={CreditCard}
             gradient="bg-gradient-to-br from-emerald-500 to-emerald-600"
+            href={createPageUrl('MyPrograms')}
             loading={membersClubsLoading}
           />
           <MetricCard
