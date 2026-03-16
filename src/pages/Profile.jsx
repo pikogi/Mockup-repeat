@@ -13,7 +13,7 @@ import { useLanguage } from "@/components/auth/LanguageContext";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import PricingModal from "@/components/subscription/PricingModal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Profile() {
   const { t, language, changeLanguage } = useLanguage();
@@ -23,6 +23,14 @@ export default function Profile() {
 
   const user = getCurrentUser();
   const isLoading = false; // Ya no es asíncrono
+
+  const brandId = localStorage.getItem('brand_id');
+  const { stores, fetchStores } = useStoresStore();
+
+  // Cargar stores para mostrar el nombre de sucursal
+  useEffect(() => {
+    if (brandId) fetchStores(brandId);
+  }, [brandId]);
 
   // NOTA: api.brands.get() no existe en el YAML de Insomnia
   // const { data: brand } = useQuery({
@@ -40,20 +48,11 @@ export default function Profile() {
   // });
   // const cards = []; // TODO: integrate when API endpoint exists
 
-  // const { data: userBranch } = useQuery({
-  //   queryKey: ['userBranch', user?.branch_id],
-  //   queryFn: async () => {
-  //       if (!user?.branch_id) return null;
-  //       try {
-  //         return await api.entities.Branch.get(user.branch_id);
-  //       } catch (error) {
-  //         console.error('Error obteniendo sucursal:', error);
-  //         return null;
-  //       }
-  //   },
-  //   enabled: !!user?.branch_id,
-  // });
-  const userBranch = null;
+  // Buscar la sucursal asignada al usuario; si no tiene, mostrar la primera disponible
+  const assignedBranchId = user?.assigned_branch_id || user?.branch_id;
+  const userBranch = assignedBranchId
+    ? stores.find(s => (s.store_id || s.id) === assignedBranchId)
+    : stores[0];
 
   const resetPasswordMutation = useMutation({
     mutationFn: async (email) => {
@@ -159,7 +158,7 @@ export default function Profile() {
                     <Store className="w-4 h-4" />
                     <span className="text-sm">{t('store')}</span>
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">{userBranch?.name || t('unassigned')}</p>
+                  <p className="text-2xl font-bold text-gray-900">{userBranch?.store_name || userBranch?.name || t('unassigned')}</p>
                 </div>
               </div>
 

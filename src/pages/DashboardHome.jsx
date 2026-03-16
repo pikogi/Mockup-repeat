@@ -5,6 +5,8 @@ import useProgramsStore from "@/stores/useProgramsStore";
 import { api } from "@/api/client";
 import { createPageUrl } from '@/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   CreditCard,
   Users,
@@ -27,7 +29,7 @@ import { useLanguage } from "@/components/auth/LanguageContext";
 export default function DashboardHome({ brandId }) {
   const { t } = useLanguage();
   const [dateFilter, setDateFilter] = React.useState('default');
-  const [customDate] = React.useState({
+  const [customDate, setCustomDate] = React.useState({
     from: new Date(),
     to: new Date(),
   });
@@ -242,6 +244,38 @@ export default function DashboardHome({ brandId }) {
                   <SelectItem value="custom">{t('periodCustom')}</SelectItem>
                 </SelectContent>
               </Select>
+
+              {dateFilter === 'custom' && (
+                <div className="flex flex-col md:flex-row gap-2">
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs text-gray-500">Desde</Label>
+                    <Input
+                      type="date"
+                      className="bg-white w-full md:w-[160px] h-10"
+                      value={format(customDate.from, 'yyyy-MM-dd')}
+                      max={format(customDate.to, 'yyyy-MM-dd')}
+                      onChange={(e) => {
+                        if (!e.target.value) return;
+                        setCustomDate(prev => ({ ...prev, from: new Date(e.target.value + 'T00:00:00') }));
+                      }}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs text-gray-500">Hasta</Label>
+                    <Input
+                      type="date"
+                      className="bg-white w-full md:w-[160px] h-10"
+                      value={format(customDate.to, 'yyyy-MM-dd')}
+                      min={format(customDate.from, 'yyyy-MM-dd')}
+                      max={format(new Date(), 'yyyy-MM-dd')}
+                      onChange={(e) => {
+                        if (!e.target.value) return;
+                        setCustomDate(prev => ({ ...prev, to: new Date(e.target.value + 'T00:00:00') }));
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </motion.div>
