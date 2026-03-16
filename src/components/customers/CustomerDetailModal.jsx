@@ -106,7 +106,7 @@ export default function CustomerDetailModal({ customer, brandId, onClose }) {
       if (!selectedStore) throw new Error('Seleccioná una sucursal antes de agregar el sello.');
       if (!autoSelectedCardId) throw new Error('No se encontró la tarjeta del cliente.');
 
-      await api.transactions.create(autoSelectedCardId, selectedStore, 'stamp_added', 'point', 1);
+      await api.transactions.create(autoSelectedCardId, selectedStore, 'stamp_added', 'stamp', 1);
 
       const programId = activeCard?.program?.program_id;
       if (programId) {

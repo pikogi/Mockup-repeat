@@ -77,6 +77,40 @@ export default function DashboardHome({ brandId }) {
     placeholderData: (prev) => prev,
   });
 
+  // Total members without date filter — same logic as Customers page but no date bounds
+  const programIds = React.useMemo(
+    () => storedPrograms.map(p => p.program_id || p.id).filter(Boolean),
+    [storedPrograms]
+  );
+
+  const { data: totalMembersCount = 0 } = useQuery({
+    queryKey: ['brandTotalMembersCount', brandId, programIds.join(',')],
+    queryFn: async () => {
+      if (!brandId) return 0;
+
+      let allEntries = [];
+
+      if (programIds.length > 0) {
+        const results = await Promise.all(
+          programIds.map(pid =>
+            api.brands.getUsers(brandId, { programId: pid })
+              .then(r => (Array.isArray(r?.data) ? r.data : Array.isArray(r) ? r : []))
+              .catch(() => [])
+          )
+        );
+        allEntries = results.flat();
+      } else {
+        const res = await api.brands.getUsers(brandId).catch(() => ({ data: [] }));
+        allEntries = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+      }
+
+      const unique = new Set(allEntries.map(e => e.email || e.user_id || e.id).filter(Boolean));
+      return unique.size;
+    },
+    enabled: !!brandId,
+    staleTime: 5 * 60 * 1000,
+  });
+
   // Brand stats/users — time-series new members per day
   const { data: statsUsersData } = useQuery({
     queryKey: ['brandStatsUsers', brandId, dateFilter, storeId],
@@ -95,7 +129,7 @@ export default function DashboardHome({ brandId }) {
   const membersClubsLoading = brandStatsLoading || programsStoreLoading;
   const stampsRewardsLoading = brandStatsLoading;
 
-  const membersCount = brandStats?.total_users ?? 0;
+  const membersCount = totalMembersCount || brandStats?.total_users || 0;
   // Usar el store Zustand para reflejar toggles optimistas al instante
   const programsSource = storedPrograms;
   const activePrograms = programsSource.filter(p => p.is_active !== false).length;

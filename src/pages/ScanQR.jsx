@@ -253,7 +253,7 @@ export default function ScanQR() {
         cardData.cardId,
         selectedStore,
         'stamp_added',
-        'point',
+        'stamp',
         1
       );
       console.log('[ScanQR] Transacción creada exitosamente');
