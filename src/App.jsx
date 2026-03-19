@@ -1,15 +1,15 @@
 import './App.css'
-import Pages from "@/pages/index.jsx"
-import { Toaster } from "@/components/ui/toaster"
-import { Toaster as SonnerToaster } from "sonner"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import Pages from '@/pages/index.jsx'
+import { Toaster } from '@/components/ui/toaster'
+import { Toaster as SonnerToaster } from 'sonner'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 // Crear una instancia de QueryClient
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
-      refetchOnWindowFocus: false,
+      refetchOnWindowFocus: true,
       staleTime: 5 * 60 * 1000,
     },
   },
@@ -25,4 +25,4 @@ function App() {
   )
 }
 
-export default App 
+export default App
