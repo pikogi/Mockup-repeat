@@ -76,7 +76,12 @@ const useProgramsStore = create(
                 id,
                 program_id: id,
                 wallet_design: walletDesignMap[id]?.wallet_design,
-                brand: walletDesignMap[id]?.brand || program.brand,
+                brand: (() => {
+                  const apiBrand = walletDesignMap[id]?.brand || program.brand
+                  const brandId = apiBrand?.brand_id || program.brand_id
+                  const storedLogoUrl = brandId ? localStorage.getItem(`brand_logo_url_${brandId}`) : null
+                  return storedLogoUrl && apiBrand ? { ...apiBrand, logo_url: storedLogoUrl } : apiBrand
+                })(),
                 short_url: walletDesignMap[id]?.short_url || program.short_url || existing?.short_url || null,
                 images: program.images || existing?.images,
                 metadata: program.metadata || existing?.metadata,
@@ -122,7 +127,12 @@ const useProgramsStore = create(
               id,
               program_id: id,
               wallet_design: walletDesignMap[id]?.wallet_design,
-              brand: walletDesignMap[id]?.brand || program.brand,
+              brand: (() => {
+                const apiBrand = walletDesignMap[id]?.brand || program.brand
+                const brandId = apiBrand?.brand_id || program.brand_id
+                const storedLogoUrl = brandId ? localStorage.getItem(`brand_logo_url_${brandId}`) : null
+                return storedLogoUrl && apiBrand ? { ...apiBrand, logo_url: storedLogoUrl } : apiBrand
+              })(),
               short_url: walletDesignMap[id]?.short_url || program.short_url || existing?.short_url || null,
               images: program.images || existing?.images,
               metadata: program.metadata || existing?.metadata,
@@ -417,7 +427,11 @@ const useProgramsStore = create(
         set((state) => ({
           programs: state.programs.map((p) => {
             if (p.brand_id !== brandId || (p.program_id || p.id) === excludeProgramId) return p
-            return { ...p, wallet_design: { ...(p.wallet_design || {}), logo_url: logoUrl } }
+            return {
+              ...p,
+              brand: { ...(p.brand || {}), logo_url: logoUrl },
+              wallet_design: { ...(p.wallet_design || {}), logo_url: logoUrl },
+            }
           }),
         }))
 
