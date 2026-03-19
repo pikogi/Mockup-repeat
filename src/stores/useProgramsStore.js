@@ -40,13 +40,20 @@ const useProgramsStore = create(
               try {
                 const detail = await api.loyaltyPrograms.get(id)
                 const detailData = detail?.data || detail
-                return { id, wallet_design: detailData?.wallet_design, brand: detailData?.brand }
+                return {
+                  id,
+                  wallet_design: detailData?.wallet_design,
+                  brand: detailData?.brand,
+                  short_url: detailData?.short_url,
+                }
               } catch {
-                return { id, wallet_design: program.wallet_design, brand: program.brand }
+                return { id, wallet_design: program.wallet_design, brand: program.brand, short_url: program.short_url }
               }
             }),
           )
-          return Object.fromEntries(results.map((r) => [r.id, { wallet_design: r.wallet_design, brand: r.brand }]))
+          return Object.fromEntries(
+            results.map((r) => [r.id, { wallet_design: r.wallet_design, brand: r.brand, short_url: r.short_url }]),
+          )
         }
 
         // Si ya hay programas y no es refresh forzado
@@ -70,6 +77,7 @@ const useProgramsStore = create(
                 program_id: id,
                 wallet_design: walletDesignMap[id]?.wallet_design,
                 brand: walletDesignMap[id]?.brand || program.brand,
+                short_url: walletDesignMap[id]?.short_url || program.short_url || existing?.short_url || null,
                 images: program.images || existing?.images,
                 metadata: program.metadata || existing?.metadata,
                 // El backend no persiste is_active vía PATCH → preservar el valor local
@@ -115,6 +123,7 @@ const useProgramsStore = create(
               program_id: id,
               wallet_design: walletDesignMap[id]?.wallet_design,
               brand: walletDesignMap[id]?.brand || program.brand,
+              short_url: walletDesignMap[id]?.short_url || program.short_url || existing?.short_url || null,
               images: program.images || existing?.images,
               metadata: program.metadata || existing?.metadata,
               // El backend no persiste is_active vía PATCH → preservar el valor local
