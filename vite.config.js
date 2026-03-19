@@ -12,7 +12,7 @@ export default defineConfig({
     // Esta configuración asegura que funcione correctamente con React Router
     proxy: {
       '/api': {
-        target: 'https://uvlrwbjp35.execute-api.us-east-1.amazonaws.com/dev',
+        target: 'https://service-dev.repeat.la',
         changeOrigin: true,
         secure: true,
         rewrite: (path) => path.replace(/^\/api/, '')

@@ -243,7 +243,7 @@ export default function CreateClub() {
     description: '',
     reward_text: '',
     reward_tiers: [],
-    stamps_required: 10,
+    stamps_required: 5,
     logo_url: '',
     background_image_url: '',
     stamp_image_url: '',
@@ -310,7 +310,7 @@ export default function CreateClub() {
         description: existingProgram.description || '',
         reward_text: existingProgram.reward_description || '',
         reward_tiers: existingProgram.reward_rules?.reward_tiers || [],
-        stamps_required: existingProgram.program_rules?.stamps_required ?? 10,
+        stamps_required: existingProgram.program_rules?.stamps_required ?? 20,
         logo_url: walletDesign.logo_url || images.logo || savedImages.logo || existingProgram.program_rules?.logo_url || localStorage.getItem(`brand_logo_url_${brandId}`) || '',
         background_image_url: images.stamp_background || savedImages.background || '',
         stamp_image_url: images.stamp_icon || savedImages.stamp || '',
@@ -341,7 +341,7 @@ export default function CreateClub() {
         description: existingProgram.description || '',
         reward_text: existingProgram.reward_description || '',
         reward_tiers: existingProgram.reward_rules?.reward_tiers || [],
-        stamps_required: existingProgram.program_rules?.stamps_required ?? 10,
+        stamps_required: existingProgram.program_rules?.stamps_required ?? 20,
         logo_url: walletDesign.logo_url || images.logo || savedImages.logo || existingProgram.program_rules?.logo_url || localStorage.getItem(`brand_logo_url_${brandId}`) || '',
         background_image_url: images.stamp_background || savedImages.background || '',
         stamp_image_url: images.stamp_icon || savedImages.stamp || '',
@@ -366,6 +366,7 @@ export default function CreateClub() {
       };
       setDataLoaded(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existingProgram, dataLoaded]);
 
   useEffect(() => {
@@ -553,13 +554,13 @@ export default function CreateClub() {
         } catch { /* localStorage lleno, ignorar */ }
 
         if (hasNewLogo && formData.logo_url) {
-          try { localStorage.setItem(`brand_logo_version_${brandId}`, logoVersion); } catch {}
-          if (versionedLogoUrl) { try { localStorage.setItem(`brand_logo_url_${brandId}`, versionedLogoUrl); } catch {} }
+          try { localStorage.setItem(`brand_logo_version_${brandId}`, logoVersion); } catch (_) { /* ignore */ }
+          if (versionedLogoUrl) { try { localStorage.setItem(`brand_logo_url_${brandId}`, versionedLogoUrl); } catch (_) { /* ignore */ } }
           const compressed = await compressForBrandUpload(formData.logo_url);
-          try { localStorage.setItem(`logo_preview_${brandId}`, JSON.stringify({ data: compressed, expires: Date.now() + 120000 })); } catch {}
+          try { localStorage.setItem(`logo_preview_${brandId}`, JSON.stringify({ data: compressed, expires: Date.now() + 120000 })); } catch (_) { /* ignore */ }
           setDisplayLogo(brandId, formData.logo_url);
           updateBrandLogo(brandId, versionedLogoUrl || formData.logo_url, idToUpdate);
-          await api.brands.update(brandId, { logo_url: compressed })
+          await api.brands.update(brandId, { logo_image: compressed })
             .catch(err => console.warn('[CreateClub edit] Error actualizando logo en brand:', err));
         }
 
@@ -640,11 +641,11 @@ export default function CreateClub() {
               const s3LogoUrl = api.images.getLogoUrl(brandId);
               const version = Date.now();
               const versionedUrl = s3LogoUrl ? `${s3LogoUrl}?v=${version}` : null;
-              if (versionedUrl) { try { localStorage.setItem(`brand_logo_url_${brandId}`, versionedUrl); } catch {} }
+              if (versionedUrl) { try { localStorage.setItem(`brand_logo_url_${brandId}`, versionedUrl); } catch (_) { /* ignore */ } }
               setDisplayLogo(brandId, formData.logo_url);
               updateBrandLogo(brandId, versionedUrl || formData.logo_url, newProgramId);
               const compressedLogo = await compressForBrandUpload(formData.logo_url);
-              await api.brands.update(brandId, { logo_url: compressedLogo })
+              await api.brands.update(brandId, { logo_image: compressedLogo })
                 .catch(err => console.warn('[CreateClub] Error actualizando logo en brand:', err));
             }
 
@@ -1027,7 +1028,7 @@ export default function CreateClub() {
                     id="stamps_required"
                     type="number"
                     min="1"
-                    max="10"
+                    max="20"
                     value={formData.stamps_required || ''}
                     onChange={(e) => {
                       const inputValue = e.target.value;
@@ -1036,8 +1037,8 @@ export default function CreateClub() {
                         setFormData(prev => ({ ...prev, stamps_required: '' }));
                       } else {
                         const numValue = parseInt(inputValue);
-                        // Solo actualizar si es un número válido, >= 1 y <= 10
-                        if (!isNaN(numValue) && numValue >= 1 && numValue <= 10) {
+                        // Solo actualizar si es un número válido, >= 1 y <= 20
+                        if (!isNaN(numValue) && numValue >= 1 && numValue <= 20) {
                           setFormData(prev => ({ ...prev, stamps_required: numValue }));
                         }
                       }
@@ -1047,15 +1048,15 @@ export default function CreateClub() {
                       // Si el campo está vacío al perder el foco, establecer valor por defecto
                       const currentValue = e.target.value;
                       if (currentValue === '' || isNaN(parseInt(currentValue)) || parseInt(currentValue) < 1) {
-                        setFormData(prev => ({ ...prev, stamps_required: 10 }));
-                      } else if (parseInt(currentValue) > 10) {
-                        // Si el valor es mayor a 10, establecerlo a 10
-                        setFormData(prev => ({ ...prev, stamps_required: 10 }));
+                        setFormData(prev => ({ ...prev, stamps_required: 20 }));
+                      } else if (parseInt(currentValue) > 20) {
+                        // Si el valor es mayor a 20, establecerlo a 20
+                        setFormData(prev => ({ ...prev, stamps_required: 20 }));
                       }
                     }}
                     className="h-12"
                   />
-                  <p className="text-xs text-gray-500">Máximo 10 sellos</p>
+                  <p className="text-xs text-gray-500">Máximo 20 sellos</p>
                 </div>
 
                 <div className="space-y-2">
@@ -1371,11 +1372,10 @@ export default function CreateClub() {
                   </div>
                 </div>
 
-                {/* Seguridad y Fraude - Comentado temporalmente */}
-                {/* <div className="border-t pt-6 pb-6">
+                <div className="border-t pt-6 pb-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('securityAndFraud')}</h3>
                   <div className="grid gap-4">
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                    {/* <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                       <div className="space-y-0.5">
                         <Label className="text-base">{t('requireTicket')}</Label>
                         <p className="text-sm text-gray-500">{t('requireTicketDesc')}</p>
@@ -1399,7 +1399,7 @@ export default function CreateClub() {
                         onChange={(e) => setFormData({ ...formData, security_geofence_required: e.target.checked })}
                         className="w-6 h-6 accent-yellow-500"
                       />
-                    </div>
+                    </div> */}
 
                     <div className="space-y-2">
                       <Label htmlFor="cooldown">{t('cooldownTime')}</Label>
@@ -1407,15 +1407,15 @@ export default function CreateClub() {
                         id="cooldown"
                         type="number"
                         min="0"
-                        value={formData.security_cooldown_hours || 0}
-                        onChange={(e) => setFormData({ ...formData, security_cooldown_hours: parseInt(e.target.value) })}
-                        placeholder={t('noTimeLimit')}
+                        value={formData.security_cooldown_hours || ''}
+                        onChange={(e) => setFormData({ ...formData, security_cooldown_hours: parseInt(e.target.value) || 0 })}
+                        placeholder="0"
                         className="h-12"
                       />
                       <p className="text-sm text-gray-500">{t('cooldownTimeDesc')}</p>
                     </div>
                   </div>
-                </div> */}
+                </div>
 
 <div className="border-t pt-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Datos de tu Negocio</h3>

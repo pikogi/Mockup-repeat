@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -9,6 +10,7 @@ import { Mail, CreditCard, Stamp, Gift, Calendar, TrendingUp, Smartphone, Cake, 
 import { format } from 'date-fns';
 import { toast } from "sonner";
 import { api } from "@/api/client";
+import { getTransactionErrorMessage } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import useStoresStore from "@/stores/useStoresStore";
 
@@ -49,6 +51,7 @@ export default function CustomerDetailModal({ customer, brandId, onClose }) {
 
   useEffect(() => {
     if (brandId) fetchStores(brandId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [brandId]);
 
   // Auto-seleccionar tienda: valida localStorage contra las tiendas cargadas
@@ -133,7 +136,7 @@ export default function CustomerDetailModal({ customer, brandId, onClose }) {
     },
     onError: (err) => {
       setIsConfirming(false);
-      toast.error(err.message || 'Error al agregar sello');
+      toast.error(getTransactionErrorMessage(err, 'Error al agregar sello'));
     },
   });
 

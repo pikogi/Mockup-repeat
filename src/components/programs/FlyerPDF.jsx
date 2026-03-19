@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { Document, Page, View, Text, Image, StyleSheet, Svg, Path } from '@react-pdf/renderer';
 
 // Gift Icon as SVG component for react-pdf
@@ -58,7 +59,7 @@ const GiftIcon = ({ color = '#ffffff', size = 16 }) => {
 };
 
 // Classic Template
-const ClassicTemplate = ({ title, subtitle, reward, accentColor, qrUrl }) => {
+const ClassicTemplate = ({ title, subtitle, reward, accentColor, qrUrl, logoUrl }) => {
   const styles = StyleSheet.create({
     page: {
       backgroundColor: '#ffffff',
@@ -89,6 +90,12 @@ const ClassicTemplate = ({ title, subtitle, reward, accentColor, qrUrl }) => {
       color: '#ffffff',
       fontSize: 42,
       fontWeight: 'bold',
+    },
+    logoImage: {
+      width: 90,
+      height: 90,
+      borderRadius: 16,
+      marginBottom: 30,
     },
     title: {
       fontSize: 32,
@@ -161,9 +168,13 @@ const ClassicTemplate = ({ title, subtitle, reward, accentColor, qrUrl }) => {
     <Page size="A4" style={styles.page}>
       <View style={styles.topBar} />
       <View style={styles.content}>
-        <View style={styles.logoCircle}>
-          <Text style={styles.logoInitial}>{title.charAt(0).toUpperCase()}</Text>
-        </View>
+        {logoUrl ? (
+          <Image src={logoUrl} style={styles.logoImage} />
+        ) : (
+          <View style={styles.logoCircle}>
+            <Text style={styles.logoInitial}>{title.charAt(0).toUpperCase()}</Text>
+          </View>
+        )}
         <Text style={styles.title}>{title}</Text>
         <View style={styles.titleUnderline} />
         <View style={styles.qrContainer}>
@@ -184,7 +195,7 @@ const ClassicTemplate = ({ title, subtitle, reward, accentColor, qrUrl }) => {
 };
 
 // Minimal Template - With highlighted reward
-const MinimalTemplate = ({ title, subtitle, reward, accentColor, qrUrl }) => {
+const MinimalTemplate = ({ title, subtitle, reward, accentColor, qrUrl, logoUrl }) => {
   const styles = StyleSheet.create({
     page: {
       backgroundColor: '#ffffff',
@@ -210,6 +221,12 @@ const MinimalTemplate = ({ title, subtitle, reward, accentColor, qrUrl }) => {
       color: '#ffffff',
       fontSize: 24,
       fontWeight: 'bold',
+    },
+    logoImage: {
+      width: 55,
+      height: 55,
+      borderRadius: 14,
+      marginBottom: 35,
     },
     qrContainer: {
       padding: 28,
@@ -281,9 +298,13 @@ const MinimalTemplate = ({ title, subtitle, reward, accentColor, qrUrl }) => {
   return (
     <Page size="A4" style={styles.page}>
       <View style={styles.content}>
-        <View style={styles.logo}>
-          <Text style={styles.logoText}>{title.charAt(0).toUpperCase()}</Text>
-        </View>
+        {logoUrl ? (
+          <Image src={logoUrl} style={styles.logoImage} />
+        ) : (
+          <View style={styles.logo}>
+            <Text style={styles.logoText}>{title.charAt(0).toUpperCase()}</Text>
+          </View>
+        )}
         <View style={styles.qrContainer}>
           <Image style={styles.qrImage} src={qrUrl} />
         </View>
@@ -306,7 +327,7 @@ const MinimalTemplate = ({ title, subtitle, reward, accentColor, qrUrl }) => {
 };
 
 // Promo Template
-const PromoTemplate = ({ title, subtitle, reward, accentColor, qrUrl }) => {
+const PromoTemplate = ({ title, subtitle, reward, accentColor, qrUrl, logoUrl }) => {
   const styles = StyleSheet.create({
     page: {
       backgroundColor: '#ffffff',
@@ -364,6 +385,12 @@ const PromoTemplate = ({ title, subtitle, reward, accentColor, qrUrl }) => {
       fontSize: 28,
       fontWeight: 'bold',
       color: accentColor,
+    },
+    logoImage: {
+      width: 70,
+      height: 70,
+      borderRadius: 16,
+      marginRight: 20,
     },
     titleContainer: {
       flexShrink: 1,
@@ -438,9 +465,13 @@ const PromoTemplate = ({ title, subtitle, reward, accentColor, qrUrl }) => {
       </View>
       <View style={styles.content}>
         <View style={styles.logoRow}>
-          <View style={styles.logoBox}>
-            <Text style={styles.logoText}>{title.charAt(0).toUpperCase()}</Text>
-          </View>
+          {logoUrl ? (
+            <Image src={logoUrl} style={styles.logoImage} />
+          ) : (
+            <View style={styles.logoBox}>
+              <Text style={styles.logoText}>{title.charAt(0).toUpperCase()}</Text>
+            </View>
+          )}
           <View style={styles.titleContainer}>
             <Text style={styles.title}>{title}</Text>
             <Text style={styles.subLabel}>Club de Fidelidad</Text>
@@ -462,7 +493,7 @@ const PromoTemplate = ({ title, subtitle, reward, accentColor, qrUrl }) => {
 };
 
 // Main FlyerPDF component
-const FlyerPDF = ({ template, title, subtitle, reward, accentColor, qrUrl }) => {
+const FlyerPDF = ({ template, title, subtitle, reward, accentColor, qrUrl, logoUrl }) => {
   return (
     <Document>
       {template === 'classic' && (
@@ -472,6 +503,7 @@ const FlyerPDF = ({ template, title, subtitle, reward, accentColor, qrUrl }) => 
           reward={reward}
           accentColor={accentColor}
           qrUrl={qrUrl}
+          logoUrl={logoUrl}
         />
       )}
       {template === 'minimal' && (
@@ -481,6 +513,7 @@ const FlyerPDF = ({ template, title, subtitle, reward, accentColor, qrUrl }) => 
           reward={reward}
           accentColor={accentColor}
           qrUrl={qrUrl}
+          logoUrl={logoUrl}
         />
       )}
       {template === 'promo' && (
@@ -490,6 +523,7 @@ const FlyerPDF = ({ template, title, subtitle, reward, accentColor, qrUrl }) => 
           reward={reward}
           accentColor={accentColor}
           qrUrl={qrUrl}
+          logoUrl={logoUrl}
         />
       )}
     </Document>

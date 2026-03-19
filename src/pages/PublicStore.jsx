@@ -108,7 +108,7 @@ export default function PublicStore() {
           programs.map((program, i) => {
             const programId = program.program_id || program.id;
             const color = program.wallet_design?.hex_background_color || program.program_rules?.card_color || '#000000';
-            const stampsRequired = program.stamps_required || program.program_rules?.stamps_required || 10;
+            const stampsRequired = program.stamps_required || program.program_rules?.stamps_required || 20;
             const href = `/publicprogram?id=${programId}&brand_id=${brandId}`;
 
             return (

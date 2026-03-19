@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,10 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
   const brandId = localStorage.getItem('brand_id');
 
   const shareUrl = (() => {
+    if (card.short_url) {
+      const url = card.short_url;
+      return url.startsWith('http') ? url : `https://${url}`;
+    }
     try {
       const url = new URL('/publicprogram', window.location.origin);
       url.searchParams.set('id', card.id);
@@ -122,6 +127,7 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
           reward={reward}
           accentColor={accentColor}
           qrUrl={qrUrl}
+          logoUrl={card.logo_url || null}
         />
       ).toBlob();
 

@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useQueryClient } from "@tanstack/react-query";
 import { createPageUrl } from '@/utils';
 import { getCurrentUser } from "@/utils/jwt";
-import { LayoutDashboard, CreditCard, Plus, User, Users, Scan, Store, Menu, Bell, LogOut, ClipboardList, BookOpen, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, CreditCard, Plus, User, Users, QrCode, Store, Menu, Bell, LogOut, ClipboardList, BookOpen, HelpCircle } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/auth/LanguageContext";
@@ -245,7 +245,7 @@ export default function Sidebar() {
             to={createPageUrl('ScanQR')}
             className="flex items-center justify-center w-14 h-14 -mt-6 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full shadow-lg"
           >
-            <Scan className="w-7 h-7 text-white" />
+            <QrCode className="w-7 h-7 text-white" />
           </Link>
 
           {/* Right side: Profile & Stores */}

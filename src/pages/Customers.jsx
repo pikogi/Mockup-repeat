@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React, { useState, useMemo } from 'react';
 import { api } from "@/api/client";
 import { getCurrentUser } from "@/utils/jwt";
@@ -5,7 +6,7 @@ import { useQuery, useQueries } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Search, Users, Calendar, CreditCard, Mail, Smartphone, Stamp, TrendingUp, Gift, ArrowUpDown } from 'lucide-react';
+import { Search, Users, Calendar, CreditCard, Mail, Stamp, TrendingUp, Gift, ArrowUpDown } from 'lucide-react';
 import { motion } from "framer-motion";
 import { format } from 'date-fns';
 import CustomerDetailModal from '../components/customers/CustomerDetailModal';
@@ -15,7 +16,6 @@ function CustomerCard({ member, userData, onClick }) {
 
   const displayName = member.full_name || member.email || '?';
   const displayEmail = member.email || '';
-  const displayPhone = member.phone;
   const displayDate = member.created_at;
 
   return (
@@ -39,11 +39,6 @@ function CustomerCard({ member, userData, onClick }) {
               {member.programs?.length > 0 && (
                 <span>{member.programs.map(p => p.program_name).join(', ')}</span>
               )}
-              {displayPhone && (
-                <span className="flex items-center gap-1">
-                  <Smartphone className="w-3 h-3" />{displayPhone}
-                </span>
-              )}
             </div>
           </div>
         </div>
@@ -58,7 +53,7 @@ function CustomerCard({ member, userData, onClick }) {
       {/* Stats section */}
       {userData ? (
         userData.loyalty_cards?.map((lc) => {
-          const stampsRequired = lc.program?.program_rules?.stamps_required ?? 10;
+          const stampsRequired = lc.program?.program_rules?.stamps_required ?? 20;
           const currentStamps = lc.current_balance ?? 0;
           const totalVisits = lc.total_visits ?? 0;
           const rewardsRedeemed = lc.redemptions?.filter(r => r.status === 'completed').length || 0;

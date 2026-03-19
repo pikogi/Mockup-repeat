@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React from "react";
 import { motion } from "framer-motion";
 import { Gift, CreditCard, Percent, DollarSign, Crown, Ticket, ChevronUp, Pencil, Check, Mail } from 'lucide-react';
@@ -52,25 +53,31 @@ function StampsGrid({ stampsRequired, currentStamps, stampImageUrl, backgroundCo
     if (total <= 8) return 62;
     if (total <= 10) return 56;
     if (total <= 12) return 50;
-    return 46;
+    if (total <= 14) return 46;
+    return 42;
   };
 
   const getLayout = (total) => {
-    // Hasta 5 sellos: 1 línea
-    if (total <= 5) return { rows: 1, cols: total, topCount: total, bottomCount: 0 };
-    // 6+ sellos: dividir en 2 filas
-    // Primera fila: ceil(total/2), Segunda fila: floor(total/2)
-    // 6 -> 3,3 | 7 -> 4,3 | 8 -> 4,4 | 9 -> 5,4 | 10 -> 5,5
-    const topCount = Math.ceil(total / 2);
-    const bottomCount = Math.floor(total / 2);
-    return { rows: 2, cols: topCount, topCount, bottomCount };
+    if (total <= 5) return { rows: 1, topCount: total, midCount: 0, bottomCount: 0 };
+    if (total <= 14) {
+      const topCount = Math.ceil(total / 2);
+      const bottomCount = Math.floor(total / 2);
+      return { rows: 2, topCount, midCount: 0, bottomCount };
+    }
+    // 15+ stamps: 3 rows
+    const topCount = Math.ceil(total / 3);
+    const remaining = total - topCount;
+    const midCount = Math.ceil(remaining / 2);
+    const bottomCount = remaining - midCount;
+    return { rows: 3, topCount, midCount, bottomCount };
   };
 
   const layout = getLayout(stampsRequired);
   const stampSize = getStampSize(stampsRequired);
   const stamps = Array.from({ length: stampsRequired });
   const topStamps = stamps.slice(0, layout.topCount);
-  const bottomStamps = stamps.slice(layout.topCount, layout.topCount + layout.bottomCount);
+  const midStamps = stamps.slice(layout.topCount, layout.topCount + layout.midCount);
+  const bottomStamps = stamps.slice(layout.topCount + layout.midCount);
 
   const [imageErrors, setImageErrors] = React.useState({});
 
@@ -146,9 +153,21 @@ function StampsGrid({ stampsRequired, currentStamps, stampImageUrl, backgroundCo
       <div className="flex gap-2 justify-center flex-nowrap">
         {topStamps.map((_, index) => renderStamp(index, index < currentStamps))}
       </div>
-      {layout.rows === 2 && (
-        <div className="flex gap-2 justify-center">
-          {bottomStamps.map((_, index) => renderStamp(layout.topCount + index, layout.topCount + index < currentStamps))}
+      {layout.rows >= 2 && (
+        <div className="flex gap-2 justify-center flex-nowrap">
+          {(layout.rows === 2 ? bottomStamps : midStamps).map((_, index) =>
+            renderStamp(layout.topCount + index, layout.topCount + index < currentStamps),
+          )}
+        </div>
+      )}
+      {layout.rows === 3 && (
+        <div className="flex gap-2 justify-center flex-nowrap">
+          {bottomStamps.map((_, index) =>
+            renderStamp(
+              layout.topCount + layout.midCount + index,
+              layout.topCount + layout.midCount + index < currentStamps,
+            ),
+          )}
         </div>
       )}
     </div>

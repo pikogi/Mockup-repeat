@@ -75,7 +75,7 @@ export default function PublicCard() {
 
   // Pre-cargar el logo en cuanto lleguen los datos del programa
   useEffect(() => {
-    const logoUrl = program?.wallet_design?.logo_url || program?.program_rules?.logo_url || program?.images?.logo;
+    const logoUrl = program?.brand?.logo_url || program?.images?.logo || program?.wallet_design?.logo_url;
     if (logoUrl) {
       const img = new Image();
       img.src = logoUrl;
@@ -103,26 +103,17 @@ export default function PublicCard() {
   };
 
   const resolvedLogoUrl = program ? (() => {
-    const candidates = {
-      wallet_design: program.wallet_design?.logo_url,
-      program_rules: program.program_rules?.logo_url,
-      s3: api.images.getLogoUrl(brandId),
-      images_logo: typeof program.images?.logo === 'string' && program.images.logo.length < 300 ? program.images.logo : '(base64)',
-    };
-    // Prefer base64 from backend (images.logo) — always reflects the latest saved logo,
-    // bypassing any S3/CloudFront caching that would serve stale content after an update.
     const base64Logo =
       typeof program.images?.logo === 'string' && program.images.logo.startsWith('data:')
         ? program.images.logo
         : null;
-    const resolved =
+    return (
       base64Logo ||
+      program.brand?.logo_url ||
       addCacheBuster(api.images.getLogoUrl(brandId)) ||
       addCacheBuster(program.wallet_design?.logo_url) ||
-      addCacheBuster(program.program_rules?.logo_url) ||
-      '';
-    console.log('[PublicCard] logo candidates:', candidates, '→ resolved:', base64Logo ? '(base64)' : resolved, '| brandId:', brandId, '| logoCacheBuster:', logoCacheBuster);
-    return resolved;
+      ''
+    );
   })() : '';
 
   const card = program ? {
@@ -171,7 +162,9 @@ export default function PublicCard() {
       const response = await api.loyaltyCards.create(
         cardId,              // program_id de la URL
         signupData.email,
-        signupData.name
+        signupData.name,
+        signupData.phone || null,
+        signupData.birthday || null
       );
 
       const loyaltyCard = response?.data || response;
@@ -297,7 +290,7 @@ export default function PublicCard() {
             <p className="text-gray-600 mb-2">
               Este programa de fidelidad no existe o ha sido eliminado.
             </p>
-            {process.env.NODE_ENV === 'development' && (
+            {import.meta.env.DEV && (
               <p className="text-xs text-gray-400 mt-4 p-2 bg-gray-50 rounded">
                 Debug: ID buscado: {cardId}
               </p>
@@ -394,7 +387,7 @@ export default function PublicCard() {
                       alt={card.club_name}
                       className="w-32 h-32 object-contain rounded-2xl mx-auto mb-4 transition-opacity duration-300"
                       style={{ opacity: 0 }}
-                      fetchpriority="high"
+                      fetchPriority="high"
                       onLoad={(e) => { e.currentTarget.style.opacity = '1'; }}
                       onError={(e) => { e.currentTarget.style.display = 'none'; }}
                     />

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from "@/api/client";
 import { getCurrentUser } from "@/utils/jwt";
 import useProgramsStore from "@/stores/useProgramsStore";
-import { Loader2, Plus, LayoutDashboard, Check, Building2, Trash2 } from 'lucide-react';
+import { Loader2, Plus, LayoutDashboard, Check, Building2, Trash2, Pencil } from 'lucide-react';
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,6 +38,31 @@ export default function Dashboard() {
   
   const [brandToDelete, setBrandToDelete] = React.useState(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const [isUploadingLogo, setIsUploadingLogo] = React.useState(false);
+  const logoInputRef = React.useRef(null);
+
+  const handleLogoChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !brandId) return;
+    setIsUploadingLogo(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        const base64 = ev.target.result;
+        await api.brands.update(brandId, { logo_image: base64 });
+        setDisplayLogo(brandId, base64);
+        queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
+        toast.success('Logo actualizado');
+        setIsUploadingLogo(false);
+      };
+      reader.onerror = () => { toast.error('Error al leer la imagen'); setIsUploadingLogo(false); };
+      reader.readAsDataURL(file);
+    } catch {
+      toast.error('Error al actualizar el logo');
+      setIsUploadingLogo(false);
+    }
+    e.target.value = '';
+  };
 
   const { data: meData, isLoading: meLoading, isError: meError } = useQuery({
     queryKey: ['auth', 'me'],
@@ -50,6 +75,7 @@ export default function Dashboard() {
     retry: false,
   });
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const brands = meData?.brands || [];
   const brandIdFromStorage = localStorage.getItem('brand_id');
   const brandNameFromStorage = localStorage.getItem('brand_name');
@@ -144,7 +170,7 @@ export default function Dashboard() {
   }, [currentBrand, brandId]);
 
   // Usar el store de Zustand para loyalty programs (sincronizado con CreateClub)
-  const { programs: loyaltyPrograms, isLoading: programsLoading, fetchPrograms, displayLogos } = useProgramsStore();
+  const { programs: loyaltyPrograms, isLoading: programsLoading, fetchPrograms, displayLogos, setDisplayLogo } = useProgramsStore();
 
   // Cargar programas cuando hay brandId
   React.useEffect(() => {
@@ -198,16 +224,32 @@ export default function Dashboard() {
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 md:gap-3">
-                {brandLogoUrl && !logoLoadError ? (
-                  <img
-                    src={brandLogoUrl}
-                    alt={currentBrandName}
-                    className="w-10 h-10 md:w-14 md:h-14 object-contain rounded-lg"
-                    onError={() => setLogoLoadError(true)}
-                  />
-                ) : (
-                  <LayoutDashboard className="w-8 h-8 md:w-10 md:h-10 text-gray-700" />
-                )}
+                <div className="relative cursor-pointer" onClick={() => logoInputRef.current?.click()}>
+                  {brandLogoUrl && !logoLoadError ? (
+                    <img
+                      src={brandLogoUrl}
+                      alt={currentBrandName}
+                      className="w-10 h-10 md:w-14 md:h-14 object-contain rounded-lg"
+                      onError={() => setLogoLoadError(true)}
+                    />
+                  ) : (
+                    <LayoutDashboard className="w-8 h-8 md:w-10 md:h-10 text-gray-700" />
+                  )}
+                  <div className="absolute -bottom-1 -left-1 w-5 h-5 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-sm">
+                    {isUploadingLogo ? (
+                      <Loader2 className="w-2.5 h-2.5 text-gray-600 animate-spin" />
+                    ) : (
+                      <Pencil className="w-2.5 h-2.5 text-gray-600" />
+                    )}
+                  </div>
+                </div>
+                <input
+                  ref={logoInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg"
+                  className="hidden"
+                  onChange={handleLogoChange}
+                />
                 <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-600 to-black bg-clip-text text-transparent">
                   {currentBrandName}
                 </h1>
@@ -276,7 +318,7 @@ export default function Dashboard() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>¿Eliminar marca?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        ¿Estás seguro de que deseas eliminar "{brandToDelete?.brand_name}"? Esta acción no se puede deshacer.
+                        ¿Estás seguro de que deseas eliminar &quot;{brandToDelete?.brand_name}&quot;? Esta acción no se puede deshacer.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

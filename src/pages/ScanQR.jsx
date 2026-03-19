@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from "@/api/client";
+import { getTransactionErrorMessage } from "@/lib/utils";
 import { getCurrentUser } from "@/utils/jwt";
 import useStoresStore from "@/stores/useStoresStore";
 import { createPageUrl } from '@/utils';
@@ -20,7 +21,7 @@ function extractCardId(rawValue) {
   try {
     const data = JSON.parse(rawValue);
     if (data.card_id) return data.card_id;
-  } catch {}
+  } catch (_) { /* invalid JSON */ }
 
   // 2. URL con /card/UUID o ?card_id=UUID
   const urlCardPath = rawValue.match(/\/card(?:s)?\/([0-9a-f-]{36})/i);
@@ -64,6 +65,7 @@ export default function ScanQR() {
 
   useEffect(() => {
     if (brandId) fetchStores(brandId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [brandId]);
 
   // Store inicial desde usuario o localStorage (validado), o auto-selección si hay solo una
@@ -157,6 +159,7 @@ export default function ScanQR() {
 
     const interval = setInterval(detectCode, 500);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [barcodeDetector, scanning]);
 
   // Detección con jsQR (fallback para Safari / Firefox)
@@ -188,6 +191,7 @@ export default function ScanQR() {
 
     const interval = setInterval(detectCode, 500);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [useJsQR, scanning]);
 
   const handleClose = () => {
@@ -215,12 +219,18 @@ export default function ScanQR() {
         try {
           const progRes = await api.loyaltyPrograms.get(card.program_id);
           const program = progRes?.data || progRes;
+
+          if (program?.brand_id && brandId && program.brand_id !== brandId) {
+            throw new Error("Esta tarjeta no está registrada en tu negocio");
+          }
+
           const rules = typeof program?.program_rules === 'string'
             ? JSON.parse(program.program_rules)
             : (program?.program_rules || {});
-          stampsRequired = rules.stamps_required || 10;
-        } catch {
-          // usar fallback 10
+          stampsRequired = rules.stamps_required || 20;
+        } catch (err) {
+          if (err.message === "Esta tarjeta no está registrada en tu negocio") throw err;
+          // usar fallback 20
         }
       }
 
@@ -294,7 +304,7 @@ export default function ScanQR() {
       setIsAuthError(authFailed);
       setErrorMsg(authFailed
         ? 'Tu sesión expiró. Por favor inicia sesión nuevamente.'
-        : (err.message || "Error al agregar el sello"));
+        : getTransactionErrorMessage(err, 'Error al agregar el sello'));
     } finally {
       setProcessing(false);
     }
@@ -503,7 +513,7 @@ export default function ScanQR() {
               {step === 'review' && cardData && (() => {
                 const card = cardData.card;
                 const current = card.current_balance || 0;
-                const required = card.program?.program_rules?.stamps_required ?? cardData.stampsRequired ?? 10;
+                const required = card.program?.program_rules?.stamps_required ?? cardData.stampsRequired ?? 20;
                 const initials = (card.customer?.full_name || '?')
                   .split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 

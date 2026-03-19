@@ -2,7 +2,8 @@
 
 import { decodeJWT } from "@/utils/jwt";
 
-const STAMP_CARD_IMAGES_BASE_URL = 'https://repeat-program-images.s3.us-east-1.amazonaws.com';
+const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_PROGRAM_IMAGES || 'repeat-program-images-dev';
+const STAMP_CARD_IMAGES_BASE_URL = `https://${S3_BUCKET}.s3.us-east-1.amazonaws.com`;
 const envApiUrl = import.meta.env.VITE_API_URL;
 const isDev = import.meta.env.DEV;
 
@@ -473,13 +474,15 @@ class ApiClient {
 
   // ---------- LOYALTY CARDS ----------
   loyaltyCards = {
-    create: (programId, customerEmail, customerFullName) => {
+    create: (programId, customerEmail, customerFullName, phone, birthDate) => {
       return this.publicRequest('/loyalty-cards', {
         method: 'POST',
         body: JSON.stringify({
           program_id: programId,
           customer_email: customerEmail,
           customer_full_name: customerFullName,
+          ...(phone && { customer_phone: phone }),
+          ...(birthDate && { customer_birth_date: birthDate }),
         }),
       });
     },
@@ -547,6 +550,11 @@ class ApiClient {
   redemptions = {
     update: (redemptionId, status) =>
       this.patch(`/redemptions/${redemptionId}`, { status }),
+  };
+
+  // ---------- SHORT URLS ----------
+  shortUrls = {
+    resolve: (code) => this.publicRequest(`/short-urls/${code}`),
   };
 
   // ---------- ENTITIES (not yet in backend) ----------

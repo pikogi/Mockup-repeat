@@ -60,13 +60,13 @@ export default function MyPrograms() {
     club_name: program.program_name,
     card_title: program.program_name,
     description: program.description,
-    logo_url: (program.brand_id && displayLogos[program.brand_id]) || program.wallet_design?.logo_url || program.program_rules?.logo_url || '',
+    logo_url: (program.brand_id && displayLogos[program.brand_id]) || program.brand?.logo_url || program.wallet_design?.logo_url || program.program_rules?.logo_url || '',
     card_color: program.wallet_design?.hex_background_color || program.program_rules?.card_color || '#000000',
     gradient_color: program.program_rules?.gradient_color || '#F59E0B',
     reward_text: program.reward_description,
     reward_tiers: program.reward_rules?.reward_tiers || [],
     terms: program.program_rules?.terms || '',
-    stamps_required: program.program_rules?.stamps_required || 10,
+    stamps_required: program.program_rules?.stamps_required || 20,
     is_active: program.is_active !== false,
     contact_email: program.program_rules?.contact_email || '',
     contact_phone: program.program_rules?.contact_phone || '',
@@ -82,6 +82,7 @@ export default function MyPrograms() {
     collect_phone: program.program_rules?.collect_phone || false,
     collect_birthday: program.program_rules?.collect_birthday || false,
     created_date: program.created_date || program.start_date,
+    short_url: program.short_url || null,
   }));
 
   // Memoize program IDs for stable query keys
