@@ -46,10 +46,11 @@ repeat-app/
 
 ```env
 VITE_API_URL=https://your-api-gateway-url.execute-api.us-east-1.amazonaws.com/dev
+VITE_AWS_S3_BUCKET_PROGRAM_IMAGES=repeat-program-images-dev
 ```
 
-- **Development**: Not required. Vite proxies `/api` to the dev backend.
-- **Production**: Required. Injected at build time via GitHub Actions from GitHub Environments.
+- `VITE_API_URL` — **Development**: Not required (Vite proxies `/api` to the dev backend). **Production**: Required, injected at build time via GitHub Actions.
+- `VITE_AWS_S3_BUCKET_PROGRAM_IMAGES` — S3 bucket for program images (stamp cards and logos). Each environment has its own bucket. Falls back to `repeat-program-images-dev` if not set.
 
 ## Scripts
 
@@ -71,7 +72,7 @@ The project uses the following tools to maintain code quality:
 
 ## Releases & Changelog
 
-Releases are managed automatically with [release-please](https://github.com/googleapis/release-please). On pushes to `stage`, release-please analyzes commits (Conventional Commits) and maintains an open release PR. Merging that PR:
+Releases are managed automatically with [release-please](https://github.com/googleapis/release-please). On pushes to `main`, release-please analyzes commits (Conventional Commits) and maintains an open release PR. Merging that PR:
 
 - Bumps the version in `package.json`
 - Generates/updates `CHANGELOG.md`
@@ -93,7 +94,7 @@ Deployment is automated via GitHub Actions to AWS S3 + CloudFront.
 
 1. Push to a branch triggers the corresponding workflow
 2. Can be triggered manually via `workflow_dispatch`
-3. The workflow runs `npm ci` + `npm run build` with `VITE_API_URL` from the environment
+3. The workflow runs `npm ci` + `npm run build` with `VITE_API_URL` and `VITE_AWS_S3_BUCKET_PROGRAM_IMAGES` from the environment
 4. Uploads `dist/` to S3 with differentiated cache headers (hashed assets = immutable, root files = no-cache)
 5. Invalidates CloudFront cache
 
@@ -102,7 +103,8 @@ Deployment is automated via GitHub Actions to AWS S3 + CloudFront.
 **GitHub Environments** (dev, stg, prod) — per-environment variables:
 
 - `VITE_API_URL` — Backend API URL
-- `AWS_S3_BUCKET` — S3 bucket name
+- `VITE_AWS_S3_BUCKET_PROGRAM_IMAGES` — S3 bucket for program images
+- `AWS_S3_BUCKET` — S3 bucket for static site hosting
 - `AWS_CLOUDFRONT_DISTRIBUTION_ID` — CloudFront distribution ID
 
 **GitHub Secrets** (repository-level):

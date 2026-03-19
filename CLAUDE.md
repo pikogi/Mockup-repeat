@@ -19,7 +19,7 @@ No test framework is configured.
 
 ## Architecture
 
-**Routing**: React Router v7 with lazy-loaded pages (`src/pages/index.jsx`). `ProtectedRoute` checks JWT validity. Public routes: login, register, verify-email, reset-password, public program/store views.
+**Routing**: React Router v7 with lazy-loaded pages (`src/pages/index.jsx`). `ProtectedRoute` checks JWT validity. Public routes: login, register, verify-email, forgot-password, reset-password, public program/store views.
 
 **State management**: Dual approach:
 
@@ -51,18 +51,18 @@ No test framework is configured.
 
 ## Deployment
 
-Automated via GitHub Actions (`.github/workflows/deploy.yml`) to AWS S3 + CloudFront. Three stages: `develop` → dev, `stage` → stg, `main` → prod. Each stage uses a separate GitHub Environment with its own `VITE_API_URL`, `AWS_S3_BUCKET`, and `AWS_CLOUDFRONT_DISTRIBUTION_ID`.
+Automated via GitHub Actions (`.github/workflows/deploy.yml`) to AWS S3 + CloudFront. Three stages: `develop` → dev, `stage` → stg, `main` → prod. Each stage uses a separate GitHub Environment with its own `VITE_API_URL`, `VITE_AWS_S3_BUCKET_PROGRAM_IMAGES`, `AWS_S3_BUCKET`, and `AWS_CLOUDFRONT_DISTRIBUTION_ID`.
 
 ## Releases & Changelog
 
-Automated via [release-please](https://github.com/googleapis/release-please) (`.github/workflows/release-please.yml`). On pushes to `stage`, release-please analyzes Conventional Commit messages and maintains an open release PR. Merging that PR bumps `version` in `package.json`, updates `CHANGELOG.md`, and creates a GitHub Release with a tag. Config lives in `release-please-config.json` and `.release-please-manifest.json`.
+Automated via [release-please](https://github.com/googleapis/release-please) (`.github/workflows/release-please.yml`). On pushes to `main`, release-please analyzes Conventional Commit messages and maintains an open release PR. Merging that PR bumps `version` in `package.json`, updates `CHANGELOG.md`, and creates a GitHub Release with a tag. Config lives in `release-please-config.json` and `.release-please-manifest.json`.
 
 ## Environment
 
 - Node 22+ (see `.nvmrc`)
 - `VITE_API_URL` — backend API endpoint (only needed in prod; dev uses Vite proxy)
-- Backend API (dev): `https://uvlrwbjp35.execute-api.us-east-1.amazonaws.com/dev`
-- Images hosted on S3: `https://repeat-program-images.s3.us-east-1.amazonaws.com`
+- Backend API (dev): `https://service-dev.repeat.la` (Vite proxy target)
+- `VITE_AWS_S3_BUCKET_PROGRAM_IMAGES` — S3 bucket for program images (stamp cards and logos). Each environment has its own bucket; dev fallback: `repeat-program-images-dev`. URL pattern: `https://<bucket>.s3.us-east-1.amazonaws.com`
 
 ## Performance Patterns
 
