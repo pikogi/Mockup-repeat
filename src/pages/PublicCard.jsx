@@ -258,8 +258,8 @@ export default function PublicCard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 flex items-center justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-amber-500" />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-yellow-500" />
       </div>
     )
   }
