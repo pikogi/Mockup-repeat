@@ -1,53 +1,56 @@
-import { useEffect, useState } from 'react';
-import { api } from "@/api/client";
-import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Apple, Smartphone, Share2, CheckCircle, Mail, Phone, Globe, Loader2, Gift } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { toast } from "sonner";
-import { motion } from "framer-motion";
-import { useDeviceDetection } from "@/hooks/useDeviceDetection";
+import { useEffect, useState } from 'react'
+import { api } from '@/api/client'
+import { useQuery } from '@tanstack/react-query'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Apple, Smartphone, Share2, CheckCircle, Mail, Phone, Globe, Loader2, Gift } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { toast } from 'sonner'
+import { motion } from 'framer-motion'
+import { useDeviceDetection } from '@/hooks/useDeviceDetection'
 
 export default function PublicCard() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const cardId = urlParams.get('id'); // Este es el program_id
-  const brandIdFromUrl = urlParams.get('brand_id');
+  const urlParams = new URLSearchParams(window.location.search)
+  const cardId = urlParams.get('id') // Este es el program_id
+  const brandIdFromUrl = urlParams.get('brand_id')
 
-  const [pageLoadTs] = useState(() => Date.now());
-  const [added, setAdded] = useState(false);
-  const [, setCustomerCardId] = useState(null); // ID de la tarjeta del cliente
-  const [showSignUp, setShowSignUp] = useState(false);
-  const [signupData, setSignupData] = useState({ name: '', email: '', phone: '', birthday: '' });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [walletType, setWalletType] = useState(null);
-  const [customerData, setCustomerData] = useState(null); // Datos de la tarjeta del cliente
+  const [pageLoadTs] = useState(() => Date.now())
+  const [added, setAdded] = useState(false)
+  const [, setCustomerCardId] = useState(null) // ID de la tarjeta del cliente
+  const [showSignUp, setShowSignUp] = useState(false)
+  const [signupData, setSignupData] = useState({ name: '', email: '', phone: '', birthday: '' })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [walletType, setWalletType] = useState(null)
+  const [customerData, setCustomerData] = useState(null) // Datos de la tarjeta del cliente
 
   // Detectar sistema operativo usando el hook
-  const { preferredWallet, isMobile } = useDeviceDetection();
+  const { preferredWallet, isMobile } = useDeviceDetection()
 
   // Obtener datos de la marca (para el logo) — brand_id puede venir de la URL o del programa
-  const [brandIdFromProgram, setBrandIdFromProgram] = useState(null);
-  const brandId = brandIdFromUrl || program?.brand_id || brandIdFromProgram;
-
+  const [brandIdFromProgram, setBrandIdFromProgram] = useState(null)
+  const brandId = brandIdFromUrl || program?.brand_id || brandIdFromProgram
 
   // Obtener programa de lealtad directamente por ID (endpoint público)
-  const { data: program, isLoading, error } = useQuery({
+  const {
+    data: program,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['publicProgram', cardId],
     queryFn: async () => {
       if (!cardId) {
-        console.log('[PublicCard] Falta cardId (program_id)');
-        return null;
+        console.log('[PublicCard] Falta cardId (program_id)')
+        return null
       }
 
-      console.log('[PublicCard] Obteniendo programa:', { cardId });
+      console.log('[PublicCard] Obteniendo programa:', { cardId })
 
       try {
         // Obtener programa directamente por ID usando endpoint público
-        const res = await api.loyaltyPrograms.getPublic(cardId);
-        const programData = res?.data || res;
+        const res = await api.loyaltyPrograms.getPublic(cardId)
+        const programData = res?.data || res
         console.log('[PublicCard] Programa recibido:', {
           program_id: programData?.program_id,
           program_name: programData?.program_name,
@@ -55,207 +58,217 @@ export default function PublicCard() {
           images: programData?.images,
           metadata: programData?.metadata,
           program_rules: programData?.program_rules,
-        });
-        return programData;
+        })
+        return programData
       } catch (err) {
-        console.error('[PublicCard] Error al obtener programa:', err);
-        throw err;
+        console.error('[PublicCard] Error al obtener programa:', err)
+        throw err
       }
     },
     enabled: !!cardId,
     retry: false,
-  });
+  })
 
   // Extraer brand_id del programa si no vino en la URL
   useEffect(() => {
     if (program?.brand_id && !brandIdFromUrl) {
-      setBrandIdFromProgram(program.brand_id);
+      setBrandIdFromProgram(program.brand_id)
     }
-  }, [program, brandIdFromUrl]);
+  }, [program, brandIdFromUrl])
 
   // Pre-cargar el logo en cuanto lleguen los datos del programa
   useEffect(() => {
-    const logoUrl = program?.brand?.logo_url || program?.images?.logo || program?.wallet_design?.logo_url;
+    const logoUrl = program?.brand?.logo_url || program?.images?.logo || program?.wallet_design?.logo_url
     if (logoUrl) {
-      const img = new Image();
-      img.src = logoUrl;
+      const img = new Image()
+      img.src = logoUrl
     }
-  }, [program]);
+  }, [program])
 
   console.log('[PublicCard] Programa encontrado:', {
     cardId,
     found: !!program,
-    programName: program?.program_name
-  });
+    programName: program?.program_name,
+  })
 
   // Cache-buster por sesión: la URL del logo en S3 es determinista, solo cambia el contenido.
   // Usamos updated_at si el backend lo provee; si no, el timestamp de carga de página.
   const logoCacheBuster = (() => {
-    const storedVersion = brandId
-      ? localStorage.getItem(`brand_logo_version_${brandId}`)
-      : null;
-    return storedVersion ? Number(storedVersion) : pageLoadTs;
-  })();
+    const storedVersion = brandId ? localStorage.getItem(`brand_logo_version_${brandId}`) : null
+    return storedVersion ? Number(storedVersion) : pageLoadTs
+  })()
   const addCacheBuster = (url) => {
-    if (!url || url.startsWith('data:')) return url;
-    const cleanUrl = url.replace(/([?&])v=[^&]*(&|$)/, (_, pre, post) => post === '&' ? pre : '').replace(/[?&]$/, '');
-    return `${cleanUrl}${cleanUrl.includes('?') ? '&' : '?'}v=${logoCacheBuster}`;
-  };
+    if (!url || url.startsWith('data:')) return url
+    const cleanUrl = url.replace(/([?&])v=[^&]*(&|$)/, (_, pre, post) => (post === '&' ? pre : '')).replace(/[?&]$/, '')
+    return `${cleanUrl}${cleanUrl.includes('?') ? '&' : '?'}v=${logoCacheBuster}`
+  }
 
-  const resolvedLogoUrl = program ? (() => {
-    const base64Logo =
-      typeof program.images?.logo === 'string' && program.images.logo.startsWith('data:')
-        ? program.images.logo
-        : null;
-    return (
-      base64Logo ||
-      program.brand?.logo_url ||
-      addCacheBuster(api.images.getLogoUrl(brandId)) ||
-      addCacheBuster(program.wallet_design?.logo_url) ||
-      ''
-    );
-  })() : '';
+  const resolvedLogoUrl = program
+    ? (() => {
+        const base64Logo =
+          typeof program.images?.logo === 'string' && program.images.logo.startsWith('data:')
+            ? program.images.logo
+            : null
+        return base64Logo || program.brand?.logo_url || addCacheBuster(program.wallet_design?.logo_url) || ''
+      })()
+    : ''
 
-  const card = program ? {
-    id: program.program_id || program.id,
-    club_name: program.program_name,
-    card_title: program.program_name,
-    description: program.description,
-    logo_url: resolvedLogoUrl,
-    stamp_background: program.images?.stamp_background || '',
-    stamp_icon: program.images?.stamp_icon || '',
-    card_color: program.wallet_design?.hex_background_color || program.program_rules?.card_color || '#000000',
-    foreground_color: program.wallet_design?.hex_foreground_color || program.program_rules?.foreground_color || '#FFFFFF',
-    label_color: program.wallet_design?.hex_label_color || '#FFFFFF',
-    gradient_color: program.program_rules?.gradient_color || '#F59E0B',
-    reward_text: program.reward_description,
-    terms: program.terms || program.metadata?.terms_and_conditions || program.program_rules?.terms_and_conditions || program.program_rules?.terms || '',
-    stamps_required: program.stamps_required || program.program_rules?.stamps_required || 10,
-    is_active: program.is_active !== false,
-    contact_email: program.metadata?.contact_email || program.program_rules?.contact_email || '',
-    contact_phone: program.metadata?.contact_phone || program.program_rules?.contact_phone || '',
-    website: program.metadata?.website || program.program_rules?.website || '',
-    collect_name: program.program_rules?.required_customer_fields?.name !== false,
-    collect_email: program.program_rules?.required_customer_fields?.email !== false,
-    collect_phone: program.program_rules?.required_customer_fields?.phone || false,
-    collect_birthday: program.program_rules?.required_customer_fields?.birth_date || false,
-  } : null;
+  const card = program
+    ? {
+        id: program.program_id || program.id,
+        club_name: program.program_name,
+        card_title: program.program_name,
+        description: program.description,
+        logo_url: resolvedLogoUrl,
+        stamp_background: program.images?.stamp_background || '',
+        stamp_icon: program.images?.stamp_icon || '',
+        card_color: program.wallet_design?.hex_background_color || program.program_rules?.card_color || '#000000',
+        foreground_color:
+          program.wallet_design?.hex_foreground_color || program.program_rules?.foreground_color || '#FFFFFF',
+        label_color: program.wallet_design?.hex_label_color || '#FFFFFF',
+        gradient_color: program.program_rules?.gradient_color || '#F59E0B',
+        reward_text: program.reward_description,
+        terms:
+          program.terms ||
+          program.metadata?.terms_and_conditions ||
+          program.program_rules?.terms_and_conditions ||
+          program.program_rules?.terms ||
+          '',
+        stamps_required: program.stamps_required || program.program_rules?.stamps_required || 10,
+        is_active: program.is_active !== false,
+        contact_email: program.metadata?.contact_email || program.program_rules?.contact_email || '',
+        contact_phone: program.metadata?.contact_phone || program.program_rules?.contact_phone || '',
+        website: program.metadata?.website || program.program_rules?.website || '',
+        collect_name: program.program_rules?.required_customer_fields?.name !== false,
+        collect_email: program.program_rules?.required_customer_fields?.email !== false,
+        collect_phone: program.program_rules?.required_customer_fields?.phone || false,
+        collect_birthday: program.program_rules?.required_customer_fields?.birth_date || false,
+      }
+    : null
 
   const handleAddToWallet = (type) => {
     // Validar que el usuario esté en un dispositivo móvil
     if (!isMobile) {
-      toast.error("Solo puedes unirte al club desde un teléfono móvil (Android o iOS). Por favor, abre este enlace desde tu celular.", {
-        duration: 5000,
-      });
-      return;
+      toast.error(
+        'Solo puedes unirte al club desde un teléfono móvil (Android o iOS). Por favor, abre este enlace desde tu celular.',
+        {
+          duration: 5000,
+        },
+      )
+      return
     }
-    setWalletType(type);
-    setShowSignUp(true);
-  };
+    setWalletType(type)
+    setShowSignUp(true)
+  }
 
   const processAddToWallet = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+    e.preventDefault()
+    setIsSubmitting(true)
 
     try {
       // Llamar al API real para crear la tarjeta de lealtad
       const response = await api.loyaltyCards.create(
-        cardId,              // program_id de la URL
+        cardId, // program_id de la URL
         signupData.email,
         signupData.name,
         signupData.phone || null,
-        signupData.birthday || null
-      );
+        signupData.birthday || null,
+      )
 
-      const loyaltyCard = response?.data || response;
-      console.log('[PublicCard] Tarjeta creada:', loyaltyCard);
+      const loyaltyCard = response?.data || response
+      console.log('[PublicCard] Tarjeta creada:', loyaltyCard)
 
       // Guardar card_id
-      const newCardId = loyaltyCard.card_id || loyaltyCard.id;
-      setCustomerCardId(newCardId);
+      const newCardId = loyaltyCard.card_id || loyaltyCard.id
+      setCustomerCardId(newCardId)
 
       setCustomerData({
         customerName: loyaltyCard.customer_full_name || signupData.name,
         currentStamps: loyaltyCard.current_stamps || 0,
         cardId: newCardId,
-      });
+      })
 
-      setShowSignUp(false);
+      setShowSignUp(false)
 
       // Manejar descarga del pass según el tipo de wallet seleccionado
-      const walletUrl = loyaltyCard.save_to_wallet_url || loyaltyCard.google_wallet_url || loyaltyCard.wallet_url || loyaltyCard.pass_url;
+      const walletUrl =
+        loyaltyCard.save_to_wallet_url ||
+        loyaltyCard.google_wallet_url ||
+        loyaltyCard.wallet_url ||
+        loyaltyCard.pass_url
 
       if (walletUrl) {
-        const isApple = walletType === 'apple';
-        toast.success(isApple
-          ? "¡Te has unido al programa! Abriendo Apple Wallet..."
-          : "¡Te has unido al programa! Abriendo Google Wallet..."
-        );
-        window.location.href = walletUrl;
+        const isApple = walletType === 'apple'
+        toast.success(
+          isApple
+            ? '¡Te has unido al programa! Abriendo Apple Wallet...'
+            : '¡Te has unido al programa! Abriendo Google Wallet...',
+        )
+        window.location.href = walletUrl
       } else {
-        setAdded(true);
-        toast.success("¡Te has unido al programa exitosamente!");
+        setAdded(true)
+        toast.success('¡Te has unido al programa exitosamente!')
       }
     } catch (error) {
-      console.error("[PublicCard] Error al crear tarjeta:", error);
+      console.error('[PublicCard] Error al crear tarjeta:', error)
 
       // 500 = el backend falló generando el wallet pass, pero el usuario SÍ quedó creado en la DB.
       // Tratar como éxito parcial: el cliente se unió, solo no hay wallet pass por ahora.
       if (error.response?.status === 500) {
-        setShowSignUp(false);
-        setAdded(true);
-        toast.success("¡Te has unido al programa exitosamente!", { duration: 4000 });
+        setShowSignUp(false)
+        setAdded(true)
+        toast.success('¡Te has unido al programa exitosamente!', { duration: 4000 })
       } else if (error.message?.toLowerCase().includes('unsupported device')) {
-        toast.error("Solo puedes unirte al club desde un teléfono móvil (Android o iOS). Por favor, abre este enlace desde tu celular.", {
-          duration: 5000,
-        });
+        toast.error(
+          'Solo puedes unirte al club desde un teléfono móvil (Android o iOS). Por favor, abre este enlace desde tu celular.',
+          {
+            duration: 5000,
+          },
+        )
       } else {
-        toast.error(error.message || "Error al registrarte. Intenta nuevamente.");
+        toast.error(error.message || 'Error al registrarte. Intenta nuevamente.')
       }
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   const handleShare = async () => {
     const shareData = {
       title: card?.club_name,
       text: `¡Únete al programa de fidelidad ${card?.club_name}!`,
       url: window.location.href,
-    };
+    }
 
     if (navigator.share) {
       try {
-        await navigator.share(shareData);
+        await navigator.share(shareData)
       } catch (e) {
-        console.log(e);
+        console.log(e)
       }
     } else {
       try {
-        await navigator.clipboard.writeText(window.location.href);
-        toast.success('Link copiado al portapapeles');
+        await navigator.clipboard.writeText(window.location.href)
+        toast.success('Link copiado al portapapeles')
       } catch {
-        toast.error('No se pudo copiar el link');
+        toast.error('No se pudo copiar el link')
       }
     }
-  };
+  }
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 flex items-center justify-center">
         <Loader2 className="w-10 h-10 animate-spin text-amber-500" />
       </div>
-    );
+    )
   }
 
   if (error) {
-    console.error('[PublicCard] Error al cargar:', error);
+    console.error('[PublicCard] Error al cargar:', error)
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-        >
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
           <Card className="p-8 text-center max-w-md shadow-xl border-0">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Gift className="w-8 h-8 text-red-400" />
@@ -264,41 +277,32 @@ export default function PublicCard() {
             <p className="text-gray-600 mb-4">
               {error?.message || 'No se pudo cargar el programa de fidelidad. Por favor, intenta nuevamente.'}
             </p>
-            <p className="text-sm text-gray-500">
-              Si el problema persiste, verifica que el enlace sea correcto.
-            </p>
+            <p className="text-sm text-gray-500">Si el problema persiste, verifica que el enlace sea correcto.</p>
           </Card>
         </motion.div>
       </div>
-    );
+    )
   }
 
   if (!card) {
-    console.warn('[PublicCard] Programa no encontrado:', { cardId });
+    console.warn('[PublicCard] Programa no encontrado:', { cardId })
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-        >
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
           <Card className="p-8 text-center max-w-md shadow-xl border-0">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Gift className="w-8 h-8 text-gray-400" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Programa no encontrado</h2>
-            <p className="text-gray-600 mb-2">
-              Este programa de fidelidad no existe o ha sido eliminado.
-            </p>
+            <p className="text-gray-600 mb-2">Este programa de fidelidad no existe o ha sido eliminado.</p>
             {import.meta.env.DEV && (
-              <p className="text-xs text-gray-400 mt-4 p-2 bg-gray-50 rounded">
-                Debug: ID buscado: {cardId}
-              </p>
+              <p className="text-xs text-gray-400 mt-4 p-2 bg-gray-50 rounded">Debug: ID buscado: {cardId}</p>
             )}
           </Card>
         </motion.div>
       </div>
-    );
+    )
   }
 
   return (
@@ -314,9 +318,7 @@ export default function PublicCard() {
           className="max-w-2xl mx-auto text-center"
           style={{ color: program?.wallet_design?.hex_foreground_color || card?.foreground_color || '#FFFFFF' }}
         >
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">
-            ¡Bienvenido a nuestro Club de Fidelidad!
-          </h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">¡Bienvenido a nuestro Club de Fidelidad!</h1>
         </motion.div>
       </div>
 
@@ -388,13 +390,15 @@ export default function PublicCard() {
                       className="w-32 h-32 object-contain rounded-2xl mx-auto mb-4 transition-opacity duration-300"
                       style={{ opacity: 0 }}
                       fetchPriority="high"
-                      onLoad={(e) => { e.currentTarget.style.opacity = '1'; }}
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      onLoad={(e) => {
+                        e.currentTarget.style.opacity = '1'
+                      }}
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none'
+                      }}
                     />
                   )}
-<p className="text-gray-600">
-                    Guarda este programa en tu wallet y empieza a ganar recompensas
-                  </p>
+                  <p className="text-gray-600">Guarda este programa en tu wallet y empieza a ganar recompensas</p>
                 </div>
 
                 <div className="space-y-3">
@@ -446,9 +450,7 @@ export default function PublicCard() {
                   {card.terms && (
                     <div className="pt-4 border-t border-gray-100">
                       <h3 className="font-semibold text-gray-900 mb-2 text-sm">Términos y Condiciones</h3>
-                      <p className="text-xs text-gray-500 whitespace-pre-wrap break-words">
-                        {card.terms}
-                      </p>
+                      <p className="text-xs text-gray-500 whitespace-pre-wrap break-words">{card.terms}</p>
                     </div>
                   )}
 
@@ -519,9 +521,7 @@ export default function PublicCard() {
           )}
 
           {/* Footer */}
-          <div className="text-center py-8 text-gray-400 text-sm">
-            Powered by Repeat.la
-          </div>
+          <div className="text-center py-8 text-gray-400 text-sm">Powered by Repeat.la</div>
         </motion.div>
       </div>
 
@@ -581,7 +581,9 @@ export default function PublicCard() {
                   id="birthday"
                   type="date"
                   required
-                  max={new Date(new Date().getFullYear() - 10, new Date().getMonth(), new Date().getDate()).toISOString().slice(0, 10)}
+                  max={new Date(new Date().getFullYear() - 10, new Date().getMonth(), new Date().getDate())
+                    .toISOString()
+                    .slice(0, 10)}
                   value={signupData.birthday}
                   onChange={(e) => setSignupData({ ...signupData, birthday: e.target.value })}
                   className="h-12"
@@ -601,7 +603,7 @@ export default function PublicCard() {
                     Registrando...
                   </>
                 ) : (
-                  "Unirme al programa"
+                  'Unirme al programa'
                 )}
               </Button>
             </DialogFooter>
@@ -609,5 +611,5 @@ export default function PublicCard() {
         </DialogContent>
       </Dialog>
     </div>
-  );
+  )
 }

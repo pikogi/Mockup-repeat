@@ -1,12 +1,12 @@
-import React from 'react';
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from 'react-router-dom';
-import { api } from "@/api/client";
-import { getCurrentUser } from "@/utils/jwt";
-import useProgramsStore from "@/stores/useProgramsStore";
-import { Loader2, Plus, LayoutDashboard, Check, Building2, Trash2, Pencil } from 'lucide-react';
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import React from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
+import { api } from '@/api/client'
+import { getCurrentUser } from '@/utils/jwt'
+import useProgramsStore from '@/stores/useProgramsStore'
+import { Loader2, Plus, LayoutDashboard, Check, Building2, Trash2, Pencil } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,10 +14,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import Step3CTA from '@/components/dashboard/Step3CTA';
-import DashboardHome from './DashboardHome';
-import { useLanguage } from '@/components/auth/LanguageContext';
+} from '@/components/ui/dropdown-menu'
+import Step3CTA from '@/components/dashboard/Step3CTA'
+import DashboardHome from './DashboardHome'
+import { useLanguage } from '@/components/auth/LanguageContext'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,169 +27,182 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
+} from '@/components/ui/alert-dialog'
+import { toast } from 'sonner'
 
 export default function Dashboard() {
-  const user = React.useMemo(() => getCurrentUser(), []);
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const { t } = useLanguage();
-  
-  const [brandToDelete, setBrandToDelete] = React.useState(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
-  const [isUploadingLogo, setIsUploadingLogo] = React.useState(false);
-  const logoInputRef = React.useRef(null);
+  const user = React.useMemo(() => getCurrentUser(), [])
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const { t } = useLanguage()
+
+  const [brandToDelete, setBrandToDelete] = React.useState(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false)
+  const [isUploadingLogo, setIsUploadingLogo] = React.useState(false)
+  const logoInputRef = React.useRef(null)
 
   const handleLogoChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file || !brandId) return;
-    setIsUploadingLogo(true);
+    const file = e.target.files?.[0]
+    if (!file || !brandId) return
+    setIsUploadingLogo(true)
     try {
-      const reader = new FileReader();
+      const reader = new FileReader()
       reader.onload = async (ev) => {
-        const base64 = ev.target.result;
-        await api.brands.update(brandId, { logo_image: base64 });
-        setDisplayLogo(brandId, base64);
-        queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
-        toast.success('Logo actualizado');
-        setIsUploadingLogo(false);
-      };
-      reader.onerror = () => { toast.error('Error al leer la imagen'); setIsUploadingLogo(false); };
-      reader.readAsDataURL(file);
+        const base64 = ev.target.result
+        await api.brands.update(brandId, { logo_image: base64 })
+        setDisplayLogo(brandId, base64)
+        queryClient.invalidateQueries({ queryKey: ['auth', 'me'] })
+        queryClient.invalidateQueries({ queryKey: ['loyaltyPrograms', brandId] })
+        toast.success('Logo actualizado')
+        setIsUploadingLogo(false)
+      }
+      reader.onerror = () => {
+        toast.error('Error al leer la imagen')
+        setIsUploadingLogo(false)
+      }
+      reader.readAsDataURL(file)
     } catch {
-      toast.error('Error al actualizar el logo');
-      setIsUploadingLogo(false);
+      toast.error('Error al actualizar el logo')
+      setIsUploadingLogo(false)
     }
-    e.target.value = '';
-  };
+    e.target.value = ''
+  }
 
-  const { data: meData, isLoading: meLoading, isError: meError } = useQuery({
+  const {
+    data: meData,
+    isLoading: meLoading,
+    isError: meError,
+  } = useQuery({
     queryKey: ['auth', 'me'],
     queryFn: async () => {
-      const res = await api.auth.me();
-      return res?.data;
+      const res = await api.auth.me()
+      return res?.data
     },
     enabled: !!user,
     staleTime: 5 * 60 * 1000,
     retry: false,
-  });
+  })
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const brands = meData?.brands || [];
-  const brandIdFromStorage = localStorage.getItem('brand_id');
-  const brandNameFromStorage = localStorage.getItem('brand_name');
+  const brands = meData?.brands || []
+  const brandIdFromStorage = localStorage.getItem('brand_id')
+  const brandNameFromStorage = localStorage.getItem('brand_name')
 
   // Determinar brand_id activo:
   // 1. Si localStorage tiene un brand_id, usarlo (confiar mientras carga)
   // 2. Si brands ya cargó y el brand_id no existe, usar la primera marca
   // 3. Si no hay nada en localStorage, usar la primera marca disponible
-  const brandExistsInList = brands.length > 0 &&
-    brands.some(brand => brand.brand_id === brandIdFromStorage);
+  const brandExistsInList = brands.length > 0 && brands.some((brand) => brand.brand_id === brandIdFromStorage)
 
   const brandId = brandIdFromStorage
-    ? (brands.length === 0 || brandExistsInList ? brandIdFromStorage : brands[0]?.brand_id)
-    : (brands[0]?.brand_id || null);
+    ? brands.length === 0 || brandExistsInList
+      ? brandIdFromStorage
+      : brands[0]?.brand_id
+    : brands[0]?.brand_id || null
 
   // Encontrar la marca actual por brand_id
-  const currentBrand = brands.find(brand => brand.brand_id === brandId);
+  const currentBrand = brands.find((brand) => brand.brand_id === brandId)
 
   const handleSelectBrand = (brand) => {
-    if (!brand?.brand_id) return;
+    if (!brand?.brand_id) return
 
     // Guardar brand_id y brand_name en localStorage
-    localStorage.setItem('brand_id', brand.brand_id);
-    localStorage.setItem('brand_name', brand.brand_name);
-    
+    localStorage.setItem('brand_id', brand.brand_id)
+    localStorage.setItem('brand_name', brand.brand_name)
+
     // Invalidar queries relacionadas con brands y datos dependientes
-    queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
-    queryClient.invalidateQueries({ queryKey: ['loyaltyPrograms'] });
-    queryClient.invalidateQueries({ queryKey: ['stores'] });
-    queryClient.invalidateQueries({ queryKey: ['customers'] });
-    
+    queryClient.invalidateQueries({ queryKey: ['auth', 'me'] })
+    queryClient.invalidateQueries({ queryKey: ['loyaltyPrograms'] })
+    queryClient.invalidateQueries({ queryKey: ['stores'] })
+    queryClient.invalidateQueries({ queryKey: ['customers'] })
+
     // Recargar la página para actualizar todos los componentes
-    window.location.reload();
-  };
+    window.location.reload()
+  }
 
   const handleCreateBrand = () => {
-    navigate('/onboarding');
-  };
+    navigate('/onboarding')
+  }
 
   const handleDeleteBrand = async (brandIdToDelete) => {
     try {
-      await api.brands.delete(brandIdToDelete);
-      
+      await api.brands.delete(brandIdToDelete)
+
       // Si se eliminó la marca activa, cambiar a otra marca o redirigir
       if (brandIdToDelete === brandId) {
-        const remainingBrands = brands.filter(b => b.brand_id !== brandIdToDelete);
+        const remainingBrands = brands.filter((b) => b.brand_id !== brandIdToDelete)
         if (remainingBrands.length > 0) {
           // Cambiar a la primera marca disponible
-          localStorage.setItem('brand_id', remainingBrands[0].brand_id);
-          localStorage.setItem('brand_name', remainingBrands[0].brand_name);
+          localStorage.setItem('brand_id', remainingBrands[0].brand_id)
+          localStorage.setItem('brand_name', remainingBrands[0].brand_name)
         } else {
           // No hay más marcas, redirigir a onboarding
-          localStorage.removeItem('brand_id');
-          localStorage.removeItem('brand_name');
-          navigate('/onboarding');
-          return;
+          localStorage.removeItem('brand_id')
+          localStorage.removeItem('brand_name')
+          navigate('/onboarding')
+          return
         }
       }
-      
+
       // Invalidar queries para actualizar datos
-      queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
-      queryClient.invalidateQueries({ queryKey: ['loyaltyPrograms'] });
-      queryClient.invalidateQueries({ queryKey: ['stores'] });
-      queryClient.invalidateQueries({ queryKey: ['customers'] });
-      
-      toast.success('Marca eliminada exitosamente');
+      queryClient.invalidateQueries({ queryKey: ['auth', 'me'] })
+      queryClient.invalidateQueries({ queryKey: ['loyaltyPrograms'] })
+      queryClient.invalidateQueries({ queryKey: ['stores'] })
+      queryClient.invalidateQueries({ queryKey: ['customers'] })
+
+      toast.success('Marca eliminada exitosamente')
     } catch (error) {
-      console.error('Error al eliminar marca:', error);
-      toast.error(error?.response?.data?.message || 'Error al eliminar la marca');
+      console.error('Error al eliminar marca:', error)
+      toast.error(error?.response?.data?.message || 'Error al eliminar la marca')
     }
-  };
+  }
 
   // Sincronizar localStorage con brand_id válido cuando hay marcas disponibles
   React.useEffect(() => {
     if (brands.length > 0 && brandId) {
-      const storedBrandId = localStorage.getItem('brand_id');
+      const storedBrandId = localStorage.getItem('brand_id')
       // Solo guardar si no hay brand_id en localStorage
       if (!storedBrandId) {
-        localStorage.setItem('brand_id', brandId);
+        localStorage.setItem('brand_id', brandId)
         if (currentBrand?.brand_name) {
-          localStorage.setItem('brand_name', currentBrand.brand_name);
+          localStorage.setItem('brand_name', currentBrand.brand_name)
         }
       }
     }
-  }, [brands, brandId, currentBrand]);
+  }, [brands, brandId, currentBrand])
 
   // Sincronizar brand_name en localStorage cuando se actualiza currentBrand
   React.useEffect(() => {
     if (currentBrand?.brand_name && currentBrand.brand_id === brandId) {
-      localStorage.setItem('brand_name', currentBrand.brand_name);
+      localStorage.setItem('brand_name', currentBrand.brand_name)
     }
-  }, [currentBrand, brandId]);
+  }, [currentBrand, brandId])
 
   // Usar el store de Zustand para loyalty programs (sincronizado con CreateClub)
-  const { programs: loyaltyPrograms, isLoading: programsLoading, fetchPrograms, displayLogos, setDisplayLogo } = useProgramsStore();
+  const {
+    programs: loyaltyPrograms,
+    isLoading: programsLoading,
+    fetchPrograms,
+    displayLogos,
+    setDisplayLogo,
+  } = useProgramsStore()
 
   // Cargar programas cuando hay brandId
   React.useEffect(() => {
     if (brandId) {
-      fetchPrograms(brandId);
+      fetchPrograms(brandId)
     }
-  }, [brandId, fetchPrograms]);
+  }, [brandId, fetchPrograms])
 
-  // El logo siempre viene de S3 con URL determinista; el version-key rompe el caché del browser
-  const logoVersion = brandId ? localStorage.getItem(`brand_logo_version_${brandId}`) : null;
-  const brandLogoUrl = (brandId && displayLogos[brandId])
-    || (brandId ? `${api.images.getLogoUrl(brandId)}${logoVersion ? `?v=${logoVersion}` : ''}` : null);
+  // El logo viene de brand.logo_url devuelto por el endpoint de programas
+  const brandLogoUrl = (brandId && displayLogos[brandId]) || loyaltyPrograms[0]?.brand?.logo_url || null
 
-  const [logoLoadError, setLogoLoadError] = React.useState(false);
+  const [logoLoadError, setLogoLoadError] = React.useState(false)
 
-  // Resetear el error cuando cambia la marca o versión del logo
+  // Resetear el error cuando cambia la marca o el logo
   React.useEffect(() => {
-    setLogoLoadError(false);
-  }, [brandId, logoVersion]);
+    setLogoLoadError(false)
+  }, [brandId, brandLogoUrl])
 
   // Mostrar loader solo en la primera carga
   if ((meLoading && !meData) || (programsLoading && loyaltyPrograms.length === 0)) {
@@ -197,7 +210,7 @@ export default function Dashboard() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-purple-50">
         <Loader2 className="w-8 h-8 animate-spin text-yellow-500" />
       </div>
-    );
+    )
   }
 
   // Mostrar error si falla la carga de datos del usuario
@@ -206,21 +219,17 @@ export default function Dashboard() {
       <div className="min-h-screen flex items-center justify-center text-gray-500 bg-gradient-to-br from-slate-50 via-white to-purple-50">
         Error cargando el dashboard
       </div>
-    );
+    )
   }
 
-  const currentBrandName = currentBrand?.brand_name || brandNameFromStorage || 'Dashboard';
-  const hasBrands = brands.length > 0;
+  const currentBrandName = currentBrand?.brand_name || brandNameFromStorage || 'Dashboard'
+  const hasBrands = brands.length > 0
 
   return (
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
         {/* Encabezado con título de marca y botón + - siempre visible */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 md:gap-3">
@@ -256,7 +265,11 @@ export default function Dashboard() {
                 {hasBrands && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="h-8 md:h-9 gap-1 md:gap-2 px-2 md:px-3 hover:bg-accent transition-colors text-xs md:text-sm self-end -mt-1 md:mt-2.5">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 md:h-9 gap-1 md:gap-2 px-2 md:px-3 hover:bg-accent transition-colors text-xs md:text-sm self-end -mt-1 md:mt-2.5"
+                      >
                         <Plus className="w-2 h-2 md:w-4 md:h-4" />
                         <span>Mis Marcas</span>
                       </Button>
@@ -271,9 +284,7 @@ export default function Dashboard() {
                               key={brand.brand_id}
                               onClick={() => handleSelectBrand(brand)}
                               className={`group flex items-center justify-between cursor-pointer ${
-                                brand.brand_id === brandId 
-                                  ? 'bg-accent font-medium' 
-                                  : 'hover:bg-accent/50'
+                                brand.brand_id === brandId ? 'bg-accent font-medium' : 'hover:bg-accent/50'
                               }`}
                             >
                               <div className="flex items-center gap-2">
@@ -281,15 +292,13 @@ export default function Dashboard() {
                                 <span>{brand.brand_name}</span>
                               </div>
                               <div className="flex items-center gap-2">
-                                {brand.brand_id === brandId && (
-                                  <Check className="w-4 h-4 text-primary" />
-                                )}
+                                {brand.brand_id === brandId && <Check className="w-4 h-4 text-primary" />}
                                 {brands.length > 1 && (
                                   <button
                                     onClick={(e) => {
-                                      e.stopPropagation();
-                                      setBrandToDelete(brand);
-                                      setIsDeleteDialogOpen(true);
+                                      e.stopPropagation()
+                                      setBrandToDelete(brand)
+                                      setIsDeleteDialogOpen(true)
                                     }}
                                     className="p-1 hover:bg-red-50 rounded transition-colors"
                                   >
@@ -302,7 +311,7 @@ export default function Dashboard() {
                         </>
                       )}
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         onClick={handleCreateBrand}
                         className="flex items-center gap-2 cursor-pointer hover:bg-accent/50 text-primary font-medium"
                       >
@@ -312,25 +321,24 @@ export default function Dashboard() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
-                
+
                 <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle>¿Eliminar marca?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        ¿Estás seguro de que deseas eliminar &quot;{brandToDelete?.brand_name}&quot;? Esta acción no se puede deshacer.
+                        ¿Estás seguro de que deseas eliminar &quot;{brandToDelete?.brand_name}&quot;? Esta acción no se
+                        puede deshacer.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>
-                        Cancelar
-                      </AlertDialogCancel>
+                      <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>Cancelar</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={async () => {
                           if (brandToDelete) {
-                            await handleDeleteBrand(brandToDelete.brand_id);
-                            setIsDeleteDialogOpen(false);
-                            setBrandToDelete(null);
+                            await handleDeleteBrand(brandToDelete.brand_id)
+                            setIsDeleteDialogOpen(false)
+                            setBrandToDelete(null)
                           }
                         }}
                         className="bg-red-600 hover:bg-red-700"
@@ -341,12 +349,7 @@ export default function Dashboard() {
                   </AlertDialogContent>
                 </AlertDialog>
                 {!hasBrands && (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-9 w-9"
-                    onClick={handleCreateBrand}
-                  >
+                  <Button variant="outline" size="icon" className="h-9 w-9" onClick={handleCreateBrand}>
                     <Plus className="w-4 h-4" />
                   </Button>
                 )}
@@ -358,13 +361,9 @@ export default function Dashboard() {
 
         {/* Contenido del dashboard */}
         <div className="mt-8">
-          {!loyaltyPrograms || loyaltyPrograms.length === 0 ? (
-            <Step3CTA />
-          ) : (
-            <DashboardHome brandId={brandId} />
-          )}
+          {!loyaltyPrograms || loyaltyPrograms.length === 0 ? <Step3CTA /> : <DashboardHome brandId={brandId} />}
         </div>
       </div>
     </div>
-  );
+  )
 }
