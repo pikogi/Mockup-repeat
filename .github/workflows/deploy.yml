@@ -42,6 +42,7 @@ jobs:
         run: npm run build
         env:
           VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_AWS_S3_BUCKET_PROGRAM_IMAGES: ${{ vars.VITE_AWS_S3_BUCKET_PROGRAM_IMAGES }}
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v5.1.0
         with:
@@ -84,6 +85,7 @@ jobs:
         run: npm run build
         env:
           VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_AWS_S3_BUCKET_PROGRAM_IMAGES: ${{ vars.VITE_AWS_S3_BUCKET_PROGRAM_IMAGES }}
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v5.1.0
         with:
@@ -126,6 +128,7 @@ jobs:
         run: npm run build
         env:
           VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_AWS_S3_BUCKET_PROGRAM_IMAGES: ${{ vars.VITE_AWS_S3_BUCKET_PROGRAM_IMAGES }}
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v5.1.0
         with:
