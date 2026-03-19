@@ -53,6 +53,9 @@ export default function Dashboard() {
         setDisplayLogo(brandId, base64)
         queryClient.invalidateQueries({ queryKey: ['auth', 'me'] })
         queryClient.invalidateQueries({ queryKey: ['loyaltyPrograms', brandId] })
+        queryClient.invalidateQueries({ queryKey: ['brand', brandId] })
+        queryClient.invalidateQueries({ queryKey: ['loyaltyProgram'] })
+        fetchPrograms(brandId, true)
         toast.success('Logo actualizado')
         setIsUploadingLogo(false)
       }

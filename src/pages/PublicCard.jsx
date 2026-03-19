@@ -234,21 +234,21 @@ export default function PublicCard() {
   }
 
   const handleShare = async () => {
-    const shareData = {
-      title: card?.club_name,
-      text: `¡Únete al programa de fidelidad ${card?.club_name}!`,
-      url: window.location.href,
-    }
+    const shareUrl = program?.short_url || window.location.href
+    const shareText = `¡Únete al programa de fidelidad ${card?.club_name}!`
 
     if (navigator.share) {
       try {
-        await navigator.share(shareData)
+        await navigator.share({
+          title: card?.club_name,
+          text: `${shareText}\n${shareUrl}`,
+        })
       } catch (e) {
         console.log(e)
       }
     } else {
       try {
-        await navigator.clipboard.writeText(window.location.href)
+        await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`)
         toast.success('Link copiado al portapapeles')
       } catch {
         toast.error('No se pudo copiar el link')
@@ -258,8 +258,8 @@ export default function PublicCard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 flex items-center justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-amber-500" />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-yellow-500" />
       </div>
     )
   }
