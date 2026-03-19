@@ -241,8 +241,7 @@ export default function PublicCard() {
       try {
         await navigator.share({
           title: card?.club_name,
-          text: shareText,
-          url: shareUrl,
+          text: `${shareText}\n${shareUrl}`,
         })
       } catch (e) {
         console.log(e)
