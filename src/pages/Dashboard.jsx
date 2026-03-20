@@ -50,7 +50,26 @@ export default function Dashboard() {
       reader.onload = async (ev) => {
         const base64 = ev.target.result
         await api.brands.update(brandId, { logo_image: base64 })
+        // Compute versioned S3 URL to bust browser cache
+        const s3LogoUrl = api.images.getLogoUrl(brandId)
+        const version = Date.now()
+        const versionedUrl = s3LogoUrl ? `${s3LogoUrl}?v=${version}` : null
+        // Persist versioned URL so it survives page refreshes
+        if (versionedUrl) {
+          try {
+            localStorage.setItem(`brand_logo_url_${brandId}`, versionedUrl)
+          } catch {
+            /* ignore */
+          }
+          try {
+            localStorage.setItem(`brand_logo_version_${brandId}`, String(version))
+          } catch {
+            /* ignore */
+          }
+        }
+        // Update store: ephemeral base64 for immediate display + versioned URL for persistence
         setDisplayLogo(brandId, base64)
+        updateBrandLogo(brandId, versionedUrl || base64)
         queryClient.invalidateQueries({ queryKey: ['auth', 'me'] })
         queryClient.invalidateQueries({ queryKey: ['loyaltyPrograms', brandId] })
         queryClient.invalidateQueries({ queryKey: ['brand', brandId] })
@@ -188,6 +207,7 @@ export default function Dashboard() {
     fetchPrograms,
     displayLogos,
     setDisplayLogo,
+    updateBrandLogo,
   } = useProgramsStore()
 
   // Cargar programas cuando hay brandId
