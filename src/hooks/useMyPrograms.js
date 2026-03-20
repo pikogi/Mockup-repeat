@@ -92,6 +92,7 @@ export function useMyPrograms(brandId) {
 
     try {
       await api.loyaltyPrograms.delete(programId)
+      queryClient.invalidateQueries({ queryKey: ['brandUsers'] })
       toast.success('Programa eliminado exitosamente')
     } catch (error) {
       const isNotFound = error?.response?.status === 404

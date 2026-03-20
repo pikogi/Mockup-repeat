@@ -11,8 +11,6 @@ const useProgramsStore = create(
       isLoading: false,
       error: null,
       lastModified: null, // Timestamp de última modificación local
-      displayLogos: {}, // { [brandId]: base64 } — no persisted, for immediate display after logo upload
-
       // Estados de mutación
       isCreating: false,
       isUpdating: false,
@@ -412,49 +410,6 @@ const useProgramsStore = create(
       },
 
       clearPrograms: () => set({ programs: [], isLoading: false, error: null }),
-
-      setDisplayLogo: (brandId, logoUrl) =>
-        set((state) => ({
-          displayLogos: { ...state.displayLogos, [brandId]: logoUrl },
-        })),
-
-      // Actualiza el logo en todos los programas de la brand (excepto el que ya se acaba de guardar)
-      updateBrandLogo: (brandId, logoUrl, excludeProgramId = null) => {
-        const { programs } = get()
-        const toUpdate = programs.filter((p) => p.brand_id === brandId && (p.program_id || p.id) !== excludeProgramId)
-
-        // Actualizar store optimistamente
-        set((state) => ({
-          programs: state.programs.map((p) => {
-            if (p.brand_id !== brandId || (p.program_id || p.id) === excludeProgramId) return p
-            return {
-              ...p,
-              brand: { ...(p.brand || {}), logo_url: logoUrl },
-              wallet_design: { ...(p.wallet_design || {}), logo_url: logoUrl },
-            }
-          }),
-        }))
-
-        // Limpiar logo stale de localStorage y persistir en backend
-        toUpdate.forEach((p) => {
-          const programId = p.program_id || p.id
-
-          // Actualizar savedImages en localStorage para que no sobreescriba el nuevo logo
-          try {
-            const key = `program_images_${programId}`
-            const saved = JSON.parse(localStorage.getItem(key) || '{}')
-            localStorage.setItem(key, JSON.stringify({ ...saved, logo: logoUrl }))
-          } catch {
-            /* ignore */
-          }
-
-          api.loyaltyPrograms
-            .update(programId, {
-              wallet_design: { ...(p.wallet_design || {}), logo_url: logoUrl },
-            })
-            .catch((err) => console.warn(`[updateBrandLogo] Error en programa ${programId}:`, err))
-        })
-      },
     }),
     {
       name: 'programs-storage',
