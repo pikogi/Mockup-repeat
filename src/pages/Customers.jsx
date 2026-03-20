@@ -68,12 +68,10 @@ export default function Customers() {
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <Users className="w-8 h-8 text-gray-700" />
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-600 to-black bg-clip-text text-transparent">
-              {t('customers')}
-            </h1>
+            <Users className="w-8 h-8 text-gray-700 dark:text-gray-300" />
+            <h1 className="text-4xl font-bold text-foreground">{t('customers')}</h1>
           </div>
-          <p className="text-gray-600">{t('customersSubtitle')}</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('customersSubtitle')}</p>
         </motion.div>
 
         {/* Filters */}
@@ -89,12 +87,12 @@ export default function Customers() {
               placeholder={t('searchEmail')}
               value={searchQuery}
               onChange={handleSearchChange}
-              className="pl-10 h-10 rounded-xl border-gray-200"
+              className="pl-10 h-10 rounded-xl border-gray-200 dark:border-gray-700"
             />
           </div>
 
           <Select value={selectedCard} onValueChange={handleCardChange}>
-            <SelectTrigger className="h-10 rounded-xl w-40">
+            <SelectTrigger className="h-10 rounded-xl w-full sm:w-40">
               <CreditCard className="w-4 h-4 mr-2 text-gray-400" />
               <SelectValue placeholder={t('filterProgram')} />
             </SelectTrigger>
@@ -109,7 +107,7 @@ export default function Customers() {
           </Select>
 
           <Select value={sortBy} onValueChange={handleSortChange}>
-            <SelectTrigger className="h-10 rounded-xl w-44">
+            <SelectTrigger className="h-10 rounded-xl w-full sm:w-44">
               <ArrowUpDown className="w-4 h-4 mr-2 text-gray-400" />
               <span className="text-sm">Ordenar por</span>
             </SelectTrigger>
@@ -123,9 +121,9 @@ export default function Customers() {
 
         {/* Stats */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="mb-6">
-          <p className="text-gray-600">
-            Mostrando <span className="font-semibold text-gray-900">{sortedMembers.length}</span> de{' '}
-            <span className="font-semibold text-gray-900">{totalCount}</span> {t('customersCount')}
+          <p className="text-gray-600 dark:text-gray-400">
+            Mostrando <span className="font-semibold text-gray-900 dark:text-gray-100">{sortedMembers.length}</span> de{' '}
+            <span className="font-semibold text-gray-900 dark:text-gray-100">{totalCount}</span> {t('customersCount')}
           </p>
         </motion.div>
 
@@ -140,12 +138,7 @@ export default function Customers() {
           <>
             <div className="space-y-3">
               {sortedMembers.map((member, index) => (
-                <motion.div
-                  key={member.user_id || index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: Math.min(index * 0.05, 0.5) }}
-                >
+                <motion.div key={member.user_id || index} layout transition={{ layout: { duration: 0.2 } }}>
                   <CustomerCard member={member} userData={userStatsMap[member.user_id]} onClick={handleCustomerClick} />
                 </motion.div>
               ))}

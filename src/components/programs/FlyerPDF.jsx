@@ -1,5 +1,4 @@
-/* eslint-disable react/prop-types */
-import { Document, Page, View, Text, Image, StyleSheet, Svg, Path } from '@react-pdf/renderer';
+import { Document, Page, View, Text, Image, StyleSheet, Svg, Path } from '@react-pdf/renderer'
 
 // Gift Icon as SVG component for react-pdf
 // Using simplified paths for better compatibility with react-pdf
@@ -8,55 +7,21 @@ const GiftIcon = ({ color = '#ffffff', size = 16 }) => {
     <View style={{ width: size, height: size }}>
       <Svg width={size} height={size} viewBox="0 0 24 24">
         {/* Bottom box - gift base */}
-        <Path
-          d="M 4 12 L 20 12 L 20 22 L 4 22 Z"
-          stroke={color}
-          strokeWidth={2}
-          fill="none"
-        />
+        <Path d="M 4 12 L 20 12 L 20 22 L 4 22 Z" stroke={color} strokeWidth={2} fill="none" />
         {/* Top box - gift lid */}
-        <Path
-          d="M 2 7 L 22 7 L 22 12 L 2 12 Z"
-          stroke={color}
-          strokeWidth={2}
-          fill="none"
-        />
+        <Path d="M 2 7 L 22 7 L 22 12 L 2 12 Z" stroke={color} strokeWidth={2} fill="none" />
         {/* Vertical ribbon line */}
-        <Path
-          d="M 12 7 L 12 22"
-          stroke={color}
-          strokeWidth={2}
-        />
+        <Path d="M 12 7 L 12 22" stroke={color} strokeWidth={2} />
         {/* Left bow curve */}
-        <Path
-          d="M 12 7 Q 9 4 7.5 7"
-          stroke={color}
-          strokeWidth={2}
-          fill="none"
-        />
-        <Path
-          d="M 7.5 7 Q 9 2 12 2"
-          stroke={color}
-          strokeWidth={2}
-          fill="none"
-        />
+        <Path d="M 12 7 Q 9 4 7.5 7" stroke={color} strokeWidth={2} fill="none" />
+        <Path d="M 7.5 7 Q 9 2 12 2" stroke={color} strokeWidth={2} fill="none" />
         {/* Right bow curve */}
-        <Path
-          d="M 12 7 Q 15 4 16.5 7"
-          stroke={color}
-          strokeWidth={2}
-          fill="none"
-        />
-        <Path
-          d="M 16.5 7 Q 15 2 12 2"
-          stroke={color}
-          strokeWidth={2}
-          fill="none"
-        />
+        <Path d="M 12 7 Q 15 4 16.5 7" stroke={color} strokeWidth={2} fill="none" />
+        <Path d="M 16.5 7 Q 15 2 12 2" stroke={color} strokeWidth={2} fill="none" />
       </Svg>
     </View>
-  );
-};
+  )
+}
 
 // Classic Template
 const ClassicTemplate = ({ title, subtitle, reward, accentColor, qrUrl, logoUrl }) => {
@@ -162,7 +127,7 @@ const ClassicTemplate = ({ title, subtitle, reward, accentColor, qrUrl, logoUrl 
       color: accentColor,
       fontWeight: 'bold',
     },
-  });
+  })
 
   return (
     <Page size="A4" style={styles.page}>
@@ -191,8 +156,8 @@ const ClassicTemplate = ({ title, subtitle, reward, accentColor, qrUrl, logoUrl 
         <Text style={styles.footerBrand}>Repeat.la</Text>
       </View>
     </Page>
-  );
-};
+  )
+}
 
 // Minimal Template - With highlighted reward
 const MinimalTemplate = ({ title, subtitle, reward, accentColor, qrUrl, logoUrl }) => {
@@ -293,7 +258,7 @@ const MinimalTemplate = ({ title, subtitle, reward, accentColor, qrUrl, logoUrl 
       color: '#cccccc',
       fontWeight: 'bold',
     },
-  });
+  })
 
   return (
     <Page size="A4" style={styles.page}>
@@ -323,8 +288,8 @@ const MinimalTemplate = ({ title, subtitle, reward, accentColor, qrUrl, logoUrl 
         <Text style={styles.footerText}>repeat.la</Text>
       </View>
     </Page>
-  );
-};
+  )
+}
 
 // Promo Template
 const PromoTemplate = ({ title, subtitle, reward, accentColor, qrUrl, logoUrl }) => {
@@ -452,7 +417,7 @@ const PromoTemplate = ({ title, subtitle, reward, accentColor, qrUrl, logoUrl })
       color: accentColor,
       fontWeight: 'bold',
     },
-  });
+  })
 
   return (
     <Page size="A4" style={styles.page}>
@@ -489,8 +454,8 @@ const PromoTemplate = ({ title, subtitle, reward, accentColor, qrUrl, logoUrl })
         <Text style={styles.footerBrand}>Repeat.la</Text>
       </View>
     </Page>
-  );
-};
+  )
+}
 
 // Main FlyerPDF component
 const FlyerPDF = ({ template, title, subtitle, reward, accentColor, qrUrl, logoUrl }) => {
@@ -527,7 +492,7 @@ const FlyerPDF = ({ template, title, subtitle, reward, accentColor, qrUrl, logoU
         />
       )}
     </Document>
-  );
-};
+  )
+}
 
-export default FlyerPDF;
+export default FlyerPDF

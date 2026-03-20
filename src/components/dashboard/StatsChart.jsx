@@ -1,8 +1,9 @@
-import { Card } from "@/components/ui/card";
-import { motion } from "framer-motion";
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import React from 'react'
+import { Card } from '@/components/ui/card'
+import { motion } from 'framer-motion'
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 
-export default function StatsChart({ title, data, color = '#3B82F6', dataKey, loading }) {
+const StatsChart = React.memo(function StatsChart({ title, data, color = '#3B82F6', dataKey, loading }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -11,11 +12,8 @@ export default function StatsChart({ title, data, color = '#3B82F6', dataKey, lo
     >
       <Card className="border-0 shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
         <div className="flex items-center gap-3 mb-4">
-          <div
-            className="w-3 h-3 rounded-full"
-            style={{ backgroundColor: color }}
-          />
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
         </div>
         <div className="h-64">
           {loading ? (
@@ -23,7 +21,7 @@ export default function StatsChart({ title, data, color = '#3B82F6', dataKey, lo
               {[40, 65, 35, 80, 55, 90, 45].map((h, i) => (
                 <div key={i} className="flex items-end gap-2 flex-1">
                   <div
-                    className="w-full rounded-t-md bg-gray-200 animate-pulse"
+                    className="w-full rounded-t-md bg-gray-200 dark:bg-gray-700 animate-pulse"
                     style={{ height: `${h}%`, opacity: 0.4 + i * 0.08 }}
                   />
                 </div>
@@ -34,35 +32,44 @@ export default function StatsChart({ title, data, color = '#3B82F6', dataKey, lo
               <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id={`gradient-${dataKey}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={color} stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor={color} stopOpacity={0.05}/>
+                    <stop offset="5%" stopColor={color} stopOpacity={0.4} />
+                    <stop offset="95%" stopColor={color} stopOpacity={0.05} />
                   </linearGradient>
                 </defs>
                 <XAxis
                   dataKey="date"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
                 />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
                   allowDecimals={false}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: 'white',
+                    backgroundColor: 'hsl(var(--tooltip-bg))',
                     border: 'none',
                     borderRadius: '12px',
-                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
-                    padding: '12px 16px'
+                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)',
+                    padding: '12px 16px',
                   }}
-                  labelStyle={{ color: '#374151', fontWeight: 600, marginBottom: 4 }}
+                  labelStyle={{ color: 'hsl(var(--tooltip-label))', fontWeight: 600, marginBottom: 4 }}
                   itemStyle={{ color: color }}
                   labelFormatter={(label, payload) => payload?.[0]?.payload?.fullDate ?? label}
-                  formatter={(value, name) => [value, name === 'redemptions' ? 'Premios' : name === 'adds' ? 'Miembros' : name === 'scans' ? 'Sellos' : name]}
-                  cursor={{ stroke: '#D1D5DB', strokeWidth: 1, strokeDasharray: '4 4' }}
+                  formatter={(value, name) => [
+                    value,
+                    name === 'redemptions'
+                      ? 'Premios'
+                      : name === 'adds'
+                        ? 'Miembros'
+                        : name === 'scans'
+                          ? 'Sellos'
+                          : name,
+                  ]}
+                  cursor={{ stroke: 'hsl(var(--border))', strokeWidth: 1, strokeDasharray: '4 4' }}
                 />
                 <Area
                   type="monotone"
@@ -79,5 +86,7 @@ export default function StatsChart({ title, data, color = '#3B82F6', dataKey, lo
         </div>
       </Card>
     </motion.div>
-  );
-}
+  )
+})
+
+export default StatsChart

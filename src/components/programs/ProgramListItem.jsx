@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -193,7 +192,7 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
           >
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center text-white">
-                <h4 className="font-bold text-lg mb-1">{card.club_name}</h4>
+                <h4 className="font-bold text-lg mb-1 truncate px-2">{card.club_name}</h4>
               </div>
             </div>
           </div>
@@ -202,15 +201,17 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
           <div className="flex-1 p-6">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">{card.club_name}</h3>
-                <p className="text-gray-600 text-sm mb-2">{card.reward_text}</p>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1 truncate">{card.club_name}</h3>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">{card.reward_text}</p>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <Switch
                       checked={card.is_active}
                       onCheckedChange={(checked) => onToggleActive && onToggleActive(card, checked)}
                     />
-                    <span className={`text-sm font-medium ${card.is_active ? 'text-emerald-600' : 'text-gray-500'}`}>
+                    <span
+                      className={`text-sm font-medium ${card.is_active ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'}`}
+                    >
                       {card.is_active ? 'Activa' : 'Inactiva'}
                     </span>
                   </div>
@@ -222,23 +223,25 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
               </div>
             </div>
 
-            {card.description && <p className="text-gray-600 text-sm mb-4 line-clamp-2">{card.description}</p>}
+            {card.description && (
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">{card.description}</p>
+            )}
 
             {/* Actions */}
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" className="gap-2" onClick={handlePreview}>
+              <Button variant="outline" size="sm" className="gap-2 h-10 md:h-8" onClick={handlePreview}>
                 <Eye className="w-4 h-4" />
                 Preview
               </Button>
-              <Button variant="outline" size="sm" className="gap-2" onClick={() => onEdit(card)}>
+              <Button variant="outline" size="sm" className="gap-2 h-10 md:h-8" onClick={() => onEdit(card)}>
                 <Edit className="w-4 h-4" />
                 Editar
               </Button>
-              <Button variant="outline" size="sm" className="gap-2" onClick={handleShowQr}>
+              <Button variant="outline" size="sm" className="gap-2 h-10 md:h-8" onClick={handleShowQr}>
                 <QrCode className="w-4 h-4" />
                 Ver QR
               </Button>
-              <Button variant="outline" size="sm" className="gap-2" onClick={handleShare}>
+              <Button variant="outline" size="sm" className="gap-2 h-10 md:h-8" onClick={handleShare}>
                 <Share2 className="w-4 h-4" />
                 Compartir Link
               </Button>
@@ -249,7 +252,7 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
                     <Button
                       variant="outline"
                       size="sm"
-                      className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                      className="gap-2 h-10 md:h-8 text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 border-red-200 dark:border-red-800"
                     >
                       <Trash2 className="w-4 h-4" />
                       Eliminar
@@ -309,17 +312,20 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
             {/* Solo QR Tab */}
             <TabsContent value="qr" className="mt-4">
               <div className="flex flex-col items-center space-y-6 py-4">
-                <div className="bg-white p-4 rounded-xl shadow-lg border border-gray-100">
+                <div className="bg-white dark:bg-gray-900 p-4 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800">
                   <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`}
-                    alt="Program QR Code"
+                    alt={`Código QR de ${card.club_name}`}
                     className="w-48 h-48"
+                    loading="lazy"
                   />
                 </div>
-                <div className="text-center text-sm text-gray-500">
-                  <p className="font-medium text-gray-900">{card.club_name}</p>
+                <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+                  <p className="font-medium text-gray-900 dark:text-gray-100">{card.club_name}</p>
                   <p className="text-xs mt-1 break-all max-w-xs">{shareUrl}</p>
-                  <p className="text-xs text-gray-400 mt-2">Escanea para unirte al programa de fidelidad</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                    Escanea para unirte al programa de fidelidad
+                  </p>
                 </div>
               </div>
               <div className="flex justify-center gap-2 mt-4">
@@ -360,8 +366,8 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
                           onClick={() => setFlyerTemplate(t.id)}
                           className={`p-3 rounded-lg border-2 text-sm font-medium transition-all ${
                             flyerTemplate === t.id
-                              ? 'border-violet-500 bg-violet-50 text-violet-700'
-                              : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                              ? 'border-violet-500 bg-violet-50 dark:bg-violet-950 text-violet-700 dark:text-violet-300'
+                              : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 text-gray-600 dark:text-gray-400'
                           }`}
                         >
                           {t.name}
@@ -431,7 +437,7 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
                 {/* Right Side: Preview */}
                 <div className="flex flex-col items-center">
                   <Label className="text-sm font-medium mb-2 block w-full">Vista Previa</Label>
-                  <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm bg-gray-50 p-2">
+                  <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm bg-gray-50 dark:bg-gray-800 p-2">
                     <div
                       style={{
                         transform: 'scale(0.45)',
@@ -450,7 +456,9 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
                       />
                     </div>
                   </div>
-                  <p className="text-xs text-gray-400 mt-2 text-center">El flyer se descargará en PDF</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 text-center">
+                    El flyer se descargará en PDF
+                  </p>
                 </div>
               </div>
             </TabsContent>

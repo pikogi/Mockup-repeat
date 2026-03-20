@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -194,7 +193,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
           <AnimatePresence>
             {showRedeemSuccess && (
               <motion.div
-                className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/95 backdrop-blur-sm rounded-lg overflow-hidden"
+                className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg overflow-hidden"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -213,15 +212,15 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
 
                 {/* Message */}
                 <motion.div
-                  className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4"
+                  className="w-20 h-20 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mb-4"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: 'spring', delay: 0.15, stiffness: 200 }}
                 >
-                  <CheckCircle2 className="w-10 h-10 text-green-600" />
+                  <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
                 </motion.div>
                 <motion.h3
-                  className="text-2xl font-bold text-gray-900 mb-1"
+                  className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
@@ -229,7 +228,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                   ¡Premio Canjeado!
                 </motion.h3>
                 <motion.p
-                  className="text-sm text-gray-500"
+                  className="text-sm text-gray-500 dark:text-gray-400"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.45 }}
@@ -248,18 +247,18 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
             {/* Customer Info */}
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                  <Mail className="w-6 h-6 text-gray-600" />
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-100 dark:from-gray-800 to-gray-200 dark:to-gray-700 flex items-center justify-center">
+                  <Mail className="w-6 h-6 text-gray-600 dark:text-gray-400" />
                 </div>
-                <div>
-                  <p className="font-semibold text-gray-900">{customerName}</p>
-                  <p className="text-sm text-gray-500">{customerEmail}</p>
+                <div className="min-w-0">
+                  <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">{customerName}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{customerEmail}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-y-2 gap-x-4">
                 {customerCreatedAt && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                     <Calendar className="w-4 h-4" />
                     <span>
                       Se unió: <strong>{format(new Date(customerCreatedAt), 'dd MMM yyyy')}</strong>
@@ -268,7 +267,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                 )}
 
                 {customerPhone && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                     <Smartphone className="w-4 h-4" />
                     <span>
                       Cel: <strong>{customerPhone}</strong>
@@ -277,7 +276,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                 )}
 
                 {customerBirthDate && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                     <Cake className="w-4 h-4" />
                     <span>
                       Cumple: <strong>{format(new Date(customerBirthDate), 'dd MMM')}</strong>
@@ -290,7 +289,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
             {/* Program selector (arriba, solo si hay múltiples) */}
             {multipleCards && (
               <div className="flex items-center gap-3">
-                <CreditCard className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <CreditCard className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
                 <Select value={selectedCardId || ''} onValueChange={setSelectedCardId}>
                   <SelectTrigger className="h-10 flex-1">
                     <SelectValue placeholder="Seleccioná un programa" />
@@ -310,41 +309,49 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
             {userLoading ? (
               <div className="grid grid-cols-3 gap-3">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-20 bg-gray-100 rounded-xl animate-pulse" />
+                  <div key={i} className="h-20 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
                 ))}
               </div>
             ) : multipleCards && !activeCard ? (
-              <p className="text-sm text-gray-400 text-center py-2">Seleccioná un programa para ver las métricas</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-2">
+                Seleccioná un programa para ver las métricas
+              </p>
             ) : activeCard ? (
               <div className="space-y-3">
                 <div className="grid grid-cols-3 gap-3">
                   <Card className="p-3 text-center">
-                    <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-2">
+                    <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto mb-2">
                       <Stamp className="w-4 h-4" />
                     </div>
-                    <p className="text-2xl font-bold text-gray-900">{activeCard.current_balance ?? 0}</p>
-                    <p className="text-xs text-gray-500">Sellos Actuales</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
+                      {activeCard.current_balance ?? 0}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Sellos Actuales</p>
                   </Card>
                   <Card className="p-3 text-center">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-2">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto mb-2">
                       <TrendingUp className="w-4 h-4" />
                     </div>
-                    <p className="text-2xl font-bold text-gray-900">{activeCard.total_visits ?? 0}</p>
-                    <p className="text-xs text-gray-500">Visitas Totales</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
+                      {activeCard.total_visits ?? 0}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Visitas Totales</p>
                   </Card>
                   <Card className="p-3 text-center">
-                    <div className="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto mb-2">
+                    <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 flex items-center justify-center mx-auto mb-2">
                       <Gift className="w-4 h-4" />
                     </div>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
                       {activeCard.redemptions?.filter((r) => r.status === 'completed').length || 0}
                     </p>
-                    <p className="text-xs text-gray-500">Premios Canjeados</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Premios Canjeados</p>
                   </Card>
                 </div>
-                <Card className="p-4 bg-gradient-to-r from-amber-50 to-yellow-50">
-                  <p className="text-sm font-medium text-gray-700 mb-2">Progreso al próximo premio</p>
-                  <div className="w-full bg-gray-200 rounded-full h-3">
+                <Card className="p-4 bg-gradient-to-r from-amber-50 dark:from-amber-950 to-yellow-50 dark:to-yellow-950">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Progreso al próximo premio
+                  </p>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                     <div
                       className="bg-gradient-to-r from-amber-400 to-yellow-500 h-3 rounded-full transition-all"
                       style={{
@@ -352,7 +359,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                       }}
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     {activeCard.current_balance ?? 0} de {activeCard.program?.program_rules?.stamps_required ?? 10}{' '}
                     sellos
                   </p>
@@ -365,12 +372,16 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
               const pending = activeCard?.redemptions?.find((r) => r.status === 'pending')
               if (!pending) return null
               return (
-                <div className="p-3 bg-green-50 border border-green-200 rounded-xl">
+                <div className="p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-xl">
                   <div className="flex items-center gap-2 mb-1">
-                    <Gift className="w-4 h-4 text-green-600" />
-                    <span className="text-sm font-semibold text-green-800">Premio pendiente de canje</span>
+                    <Gift className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    <span className="text-sm font-semibold text-green-800 dark:text-green-200">
+                      Premio pendiente de canje
+                    </span>
                   </div>
-                  <p className="text-xs text-green-700 mb-2">{activeCard.program?.reward_description}</p>
+                  <p className="text-xs text-green-700 dark:text-green-300 mb-2">
+                    {activeCard.program?.reward_description}
+                  </p>
                   <Button
                     size="sm"
                     className="w-full bg-green-600 hover:bg-green-700 text-white"
@@ -387,9 +398,11 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
             {/* Store indicator / selector */}
             {stores.length > 0 && (
               <div className="flex items-center gap-3">
-                <Store className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <Store className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
                 {stores.length === 1 ? (
-                  <span className="text-sm text-gray-700">{stores[0].store_name || stores[0].name}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    {stores[0].store_name || stores[0].name}
+                  </span>
                 ) : (
                   <Select value={selectedStore || ''} onValueChange={handleStoreSelect}>
                     <SelectTrigger className="h-10 flex-1">
@@ -440,7 +453,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
             <AlertDialog open={showSuccess} onOpenChange={setShowSuccess}>
               <AlertDialogContent className="sm:max-w-xs">
                 <div className="flex flex-col items-center justify-center text-center py-4">
-                  <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 mb-4">
+                  <div className="h-12 w-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-green-600 dark:text-green-400 mb-4">
                     <CheckCircle2 className="h-6 w-6" />
                   </div>
                   <AlertDialogHeader>

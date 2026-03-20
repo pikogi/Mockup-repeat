@@ -61,16 +61,14 @@ export default function MyPrograms() {
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <CreditCard className="w-8 h-8 text-gray-700" />
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-600 to-black bg-clip-text text-transparent">
-                  {t('myPrograms')}
-                </h1>
+                <CreditCard className="w-8 h-8 text-gray-700 dark:text-gray-300" />
+                <h1 className="text-4xl font-bold text-foreground">{t('myPrograms')}</h1>
               </div>
-              <p className="text-gray-600">{t('myProgramsSubtitle')}</p>
+              <p className="text-gray-600 dark:text-gray-400">{t('myProgramsSubtitle')}</p>
             </div>
           </div>
 
@@ -91,7 +89,7 @@ export default function MyPrograms() {
                   placeholder={t('Buscar Clubes')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 h-12 rounded-xl border-gray-200 focus:border-yellow-500"
+                  className="pl-10 h-12 rounded-xl border-gray-200 dark:border-gray-700 focus:border-yellow-500"
                 />
               </div>
             </div>

@@ -51,7 +51,7 @@ export default function Pages() {
       <ScrollToTop />
       <Suspense
         fallback={
-          <div className="flex items-center justify-center min-h-screen bg-slate-50">
+          <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-gray-950">
             <Loader2 className="w-8 h-8 animate-spin text-yellow-500" />
           </div>
         }

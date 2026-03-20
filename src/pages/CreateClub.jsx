@@ -55,7 +55,7 @@ export default function CreateClub() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-yellow-50">
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
           <Link to={createPageUrl('MyPrograms')}>
@@ -65,7 +65,7 @@ export default function CreateClub() {
             </Button>
           </Link>
 
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-600 to-black bg-clip-text text-transparent mb-8">
+          <h1 className="text-4xl font-bold text-foreground mb-8">
             {editId ? t('editProgram') : t('createNewProgram')}
           </h1>
         </motion.div>

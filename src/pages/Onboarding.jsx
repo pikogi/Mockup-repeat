@@ -1,69 +1,69 @@
-import { Fragment, useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { api } from "@/api/client";
-import { useQueryClient } from "@tanstack/react-query";
-import { getCurrentUser } from "@/utils/jwt";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2, MapPin, Store } from 'lucide-react';
-import { toast } from "sonner";
+import { Fragment, useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { api } from '@/api/client'
+import { useQueryClient } from '@tanstack/react-query'
+import { getCurrentUser } from '@/utils/jwt'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Loader2, Store } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function Onboarding() {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const user = useMemo(() => getCurrentUser(), []);
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const user = useMemo(() => getCurrentUser(), [])
 
-  const [currentStep, setCurrentStep] = useState(1);
-  const [brandName, setBrandName] = useState('');
-  const [storeFormData, setStoreFormData] = useState({ name: '', address: '', city: '', lat: 0, lng: 0 });
-  const [isFinalizing, setIsFinalizing] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1)
+  const [brandName, setBrandName] = useState('')
+  const [storeFormData, setStoreFormData] = useState({ name: '', address: '', city: '', lat: 0, lng: 0 })
+  const [isFinalizing, setIsFinalizing] = useState(false)
 
   const handleNextStep = () => {
     if (currentStep === 1) {
       if (!brandName.trim()) {
-        toast.error('Por favor ingresa un nombre para tu marca');
-        return;
+        toast.error('Por favor ingresa un nombre para tu marca')
+        return
       }
       setCurrentStep(2)
     }
-  };
+  }
 
   const handleFinalizeFromStep1 = async () => {
-    setIsFinalizing(true);
+    setIsFinalizing(true)
     try {
       const res = await api.brands.create(brandName, '', user.user_id)
-      const { brand_id } = res?.data
+      const brand_id = res?.data?.brand_id
 
-      localStorage.setItem('brand_id', brand_id);
-      localStorage.setItem('brand_name', brandName);
+      localStorage.setItem('brand_id', brand_id)
+      localStorage.setItem('brand_name', brandName)
 
       // Crear sucursal por defecto (igual que en handleFinalize)
       const new_name = brandName + ' - Sucursal Principal'
       await api.stores.create(brand_id, new_name, '', '', 0, 0)
 
-      await api.auth.updateBrandAdmin({ onboarding_completed: true });
+      await api.auth.updateBrandAdmin({ onboarding_completed: true })
 
       // Limpiar cache completamente para que Dashboard cargue datos frescos
-      queryClient.removeQueries({ queryKey: ['auth', 'me'] });
+      queryClient.removeQueries({ queryKey: ['auth', 'me'] })
 
-      navigate('/dashboard');
+      navigate('/dashboard')
     } catch {
-      toast.error('No se pudo crear la marca');
+      toast.error('No se pudo crear la marca')
     } finally {
-      setIsFinalizing(false);
+      setIsFinalizing(false)
     }
-  };
+  }
 
   const handleFinalize = async () => {
-    setIsFinalizing(true);
+    setIsFinalizing(true)
     try {
       const res = await api.brands.create(brandName, '', user.user_id)
-      const { brand_id } = res?.data
+      const brand_id = res?.data?.brand_id
 
-      localStorage.setItem('brand_id', brand_id);
-      localStorage.setItem('brand_name', brandName);
+      localStorage.setItem('brand_id', brand_id)
+      localStorage.setItem('brand_name', brandName)
 
       const { name, address, city, lat, lng } = storeFormData
 
@@ -71,34 +71,18 @@ export default function Onboarding() {
 
       await api.stores.create(brand_id, new_name, address, city, lat, lng)
 
-      await api.auth.updateBrandAdmin({ onboarding_completed: true });
+      await api.auth.updateBrandAdmin({ onboarding_completed: true })
 
       // Limpiar cache completamente para que Dashboard cargue datos frescos
-      queryClient.removeQueries({ queryKey: ['auth', 'me'] });
+      queryClient.removeQueries({ queryKey: ['auth', 'me'] })
 
-      navigate('/dashboard');
+      navigate('/dashboard')
     } catch {
-      toast.error('No se pudo crear la marca');
+      toast.error('No se pudo crear la marca')
     } finally {
-      setIsFinalizing(false);
+      setIsFinalizing(false)
     }
-  };
-
-  const handleGetLocation = () => {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setStoreFormData(prev => ({
-          ...prev,
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude
-        }));
-        toast.success('Ubicación actual obtenida');
-      },
-      () => {
-        toast.error('No se pudo obtener la ubicación');
-      }
-    );
-  };
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -108,14 +92,13 @@ export default function Onboarding() {
             {currentStep === 1 ? 'Crear tu Marca' : 'Crear tu Primera Sucursal'}
           </CardTitle>
           <CardDescription className="text-base">
-            {currentStep === 1 
+            {currentStep === 1
               ? 'Para comenzar, necesitamos el nombre de tu marca. Este nombre aparecerá en tus programas y panel de control.'
               : 'Crea tu primera sucursal. Si no completas los datos y haces clic en "Finalizar", se creará una sucursal por defecto.'}
           </CardDescription>
         </CardHeader>
-        
-        <CardContent className="space-y-6">
 
+        <CardContent className="space-y-6">
           {/* Indicador de pasos */}
           <div className="flex items-center justify-center gap-2 py-6">
             {[1, 2].map((step) => (
@@ -125,24 +108,16 @@ export default function Onboarding() {
                     step === currentStep
                       ? 'bg-black text-white'
                       : step < currentStep
-                      ? 'bg-gray-800 text-white'
-                      : 'bg-gray-300 text-gray-600'
+                        ? 'bg-gray-800 text-white'
+                        : 'bg-gray-300 text-gray-600'
                   }`}
                 >
                   {step}
                 </div>
-                {step < 2 && (
-                  <div
-                    className={`h-1 w-12 ${
-                      step < currentStep ? 'bg-gray-800' : 'bg-gray-300'
-                    }`}
-                  />
-                )}
+                {step < 2 && <div className={`h-1 w-12 ${step < currentStep ? 'bg-gray-800' : 'bg-gray-300'}`} />}
               </Fragment>
             ))}
-            <span className="ml-2 text-sm text-gray-500">
-              Paso {currentStep} de 2
-            </span>
+            <span className="ml-2 text-sm text-gray-500">Paso {currentStep} de 2</span>
           </div>
 
           {/* Contenido del formulario */}
@@ -177,9 +152,7 @@ export default function Onboarding() {
                     type="text"
                     placeholder="Ej: Sucursal Centro"
                     value={storeFormData.name}
-                    onChange={(e) =>
-                      setStoreFormData({ ...storeFormData, name: e.target.value })
-                    }
+                    onChange={(e) => setStoreFormData({ ...storeFormData, name: e.target.value })}
                     className="h-12"
                   />
                 </div>
@@ -193,9 +166,7 @@ export default function Onboarding() {
                     type="text"
                     placeholder="Ej: Calle Principal 123"
                     value={storeFormData.address}
-                    onChange={(e) =>
-                      setStoreFormData({ ...storeFormData, address: e.target.value })
-                    }
+                    onChange={(e) => setStoreFormData({ ...storeFormData, address: e.target.value })}
                     className="h-12"
                   />
                 </div>
@@ -209,9 +180,7 @@ export default function Onboarding() {
                     type="text"
                     placeholder="Ej: Ciudad"
                     value={storeFormData.city}
-                    onChange={(e) =>
-                      setStoreFormData({ ...storeFormData, city: e.target.value })
-                    }
+                    onChange={(e) => setStoreFormData({ ...storeFormData, city: e.target.value })}
                     className="h-12"
                   />
                 </div>
@@ -307,5 +276,5 @@ export default function Onboarding() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

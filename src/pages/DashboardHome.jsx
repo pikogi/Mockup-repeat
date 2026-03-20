@@ -201,13 +201,13 @@ export default function DashboardHome({ brandId }) {
   // ======================
   return (
     <div>
-      <div className="max-w-7xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
+      <div>
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col md:flex-row gap-2">
               {stores.length > 1 && (
                 <Select value={selectedStore} onValueChange={setSelectedStore}>
-                  <SelectTrigger className="w-full md:w-[200px] bg-white">
+                  <SelectTrigger className="w-full md:w-[200px] bg-white dark:bg-gray-900">
                     <Store className="w-4 h-4 mr-2 text-gray-500" />
                     <SelectValue placeholder={t('filterStore')} />
                   </SelectTrigger>
@@ -223,7 +223,7 @@ export default function DashboardHome({ brandId }) {
               )}
 
               <Select value={dateFilter} onValueChange={setDateFilter}>
-                <SelectTrigger className="w-full md:w-[200px] bg-white">
+                <SelectTrigger className="w-full md:w-[200px] bg-white dark:bg-gray-900">
                   <CalendarIcon className="w-4 h-4 mr-2 text-gray-500" />
                   <SelectValue placeholder={t('filterPeriod')} />
                 </SelectTrigger>
@@ -241,7 +241,7 @@ export default function DashboardHome({ brandId }) {
                     <Label className="text-xs text-gray-500">Desde</Label>
                     <Input
                       type="date"
-                      className="bg-white w-full md:w-[160px] h-10"
+                      className="bg-white dark:bg-gray-900 w-full md:w-[160px] h-10"
                       value={format(customDate.from, 'yyyy-MM-dd')}
                       max={format(customDate.to, 'yyyy-MM-dd')}
                       onChange={(e) => {
@@ -254,7 +254,7 @@ export default function DashboardHome({ brandId }) {
                     <Label className="text-xs text-gray-500">Hasta</Label>
                     <Input
                       type="date"
-                      className="bg-white w-full md:w-[160px] h-10"
+                      className="bg-white dark:bg-gray-900 w-full md:w-[160px] h-10"
                       value={format(customDate.to, 'yyyy-MM-dd')}
                       min={format(customDate.from, 'yyyy-MM-dd')}
                       max={format(new Date(), 'yyyy-MM-dd')}

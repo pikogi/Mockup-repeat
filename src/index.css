@@ -109,6 +109,8 @@ button:focus-visible {
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --tooltip-bg: 0 0% 100%;
+    --tooltip-label: 0 0% 21.6%;
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -143,6 +145,8 @@ button:focus-visible {
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --tooltip-bg: 220 26% 14%;
+    --tooltip-label: 220 14% 90%;
   }
 }
 

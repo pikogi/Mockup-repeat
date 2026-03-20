@@ -6,15 +6,13 @@ import { Loader2, Upload } from 'lucide-react'
 import { useLanguage } from '@/components/auth/LanguageContext'
 import { getProgramTypeDescription } from '@/constants/programTypes'
 
-/* eslint-disable react/prop-types */
-
 export function StoreSelector({ stores, formData, setFormData }) {
   if (stores.length <= 1) return null
 
   return (
     <div className="space-y-2">
       <Label>Sucursales *</Label>
-      <p className="text-xs text-gray-500">Seleccioná las sucursales donde aplica este programa</p>
+      <p className="text-xs text-gray-500 dark:text-gray-400">Seleccioná las sucursales donde aplica este programa</p>
       <div className="space-y-2 pt-1">
         {stores.map((store) => {
           const storeId = store.store_id || store.id
@@ -22,7 +20,7 @@ export function StoreSelector({ stores, formData, setFormData }) {
           return (
             <label
               key={storeId}
-              className="flex items-center gap-3 cursor-pointer p-3 rounded-lg border hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-3 cursor-pointer p-3 rounded-lg border hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               <input
                 type="checkbox"
@@ -37,7 +35,9 @@ export function StoreSelector({ stores, formData, setFormData }) {
                 }}
                 className="w-4 h-4 accent-black"
               />
-              <span className="text-sm font-medium text-gray-800">{store.store_name || store.name}</span>
+              <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                {store.store_name || store.name}
+              </span>
             </label>
           )
         })}
@@ -61,7 +61,7 @@ export function ProgramTypeSelector({ formData, setFormData, className }) {
           <SelectItem value="7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc151">Sellos</SelectItem>
         </SelectContent>
       </Select>
-      <div className="mt-3 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
+      <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-950 border border-yellow-300 rounded-lg">
         <p className="text-xs text-yellow-900 leading-relaxed">{getProgramTypeDescription(formData.program_type_id)}</p>
       </div>
     </div>
@@ -89,7 +89,7 @@ export function BasicInfoFields({ formData, setFormData, setIsFlipped }) {
       <div className="space-y-2 ">
         <div className="flex items-center gap-2">
           <Label htmlFor="description">{t('description')}</Label>
-          <span className="text-xs text-gray-400">Solo para control interno</span>
+          <span className="text-xs text-gray-400 dark:text-gray-500">Solo para control interno</span>
         </div>
         <Textarea
           id="description"
@@ -113,7 +113,7 @@ export function BasicInfoFields({ formData, setFormData, setIsFlipped }) {
           maxLength={35}
           className="h-12"
         />
-        <p className="text-xs text-gray-500">{formData.reward_text?.length || 0}/35 caracteres</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">{formData.reward_text?.length || 0}/35 caracteres</p>
       </div>
 
       <div className="space-y-2">
@@ -146,7 +146,7 @@ export function BasicInfoFields({ formData, setFormData, setIsFlipped }) {
           }}
           className="h-12"
         />
-        <p className="text-xs text-gray-500">Máximo 20 sellos</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">Máximo 20 sellos</p>
       </div>
     </>
   )
@@ -157,7 +157,7 @@ function ImageUploadButton({ uploading, label, onChange, onClick }) {
     <label className="cursor-pointer">
       <input type="file" accept="image/*" onChange={onChange} className="hidden" disabled={uploading} />
       <div
-        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-2 transition-colors"
+        className="px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg flex items-center gap-2 transition-colors"
         onClick={onClick}
       >
         {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
@@ -244,7 +244,7 @@ export function ColorPickerGroup({ formData, setFormData }) {
   const { t } = useLanguage()
 
   return (
-    <div className="grid grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
       <div className="space-y-2">
         <Label htmlFor="card_color">{t('primaryColor')}</Label>
         <Input
@@ -284,7 +284,7 @@ export function ValiditySection({ formData, setFormData, getValidityTermsText })
 
   return (
     <div className="border-t pt-6 pb-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('validityAndTerms')}</h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('validityAndTerms')}</h3>
       <div className="flex flex-col gap-4">
         <div className="space-y-2">
           <Label htmlFor="validity_stamps">{t('stampsValidity')}</Label>
@@ -310,9 +310,11 @@ export function ValiditySection({ formData, setFormData, getValidityTermsText })
               placeholder="0"
               className="h-12 pr-16"
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">{t('days')}</span>
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 text-sm">
+              {t('days')}
+            </span>
           </div>
-          <p className="text-xs text-gray-500">{t('noTimeLimit')}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{t('noTimeLimit')}</p>
         </div>
       </div>
     </div>
@@ -322,30 +324,30 @@ export function ValiditySection({ formData, setFormData, getValidityTermsText })
 export function CustomerDataFields({ formData, setFormData }) {
   return (
     <div className="border-t pt-6 pb-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Datos a Solicitar al Cliente</h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Datos a Solicitar al Cliente</h3>
       <div className="grid gap-4">
-        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl opacity-75">
+        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl opacity-75">
           <div className="space-y-0.5">
             <Label className="text-base">
-              Nombre <span className="text-xs text-gray-400">(requerido)</span>
+              Nombre <span className="text-xs text-gray-400 dark:text-gray-500">(requerido)</span>
             </Label>
-            <p className="text-sm text-gray-500">Solicitar nombre al cliente</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Solicitar nombre al cliente</p>
           </div>
           <Input type="checkbox" checked={true} disabled className="w-6 h-6 accent-yellow-500 cursor-not-allowed" />
         </div>
-        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl opacity-75">
+        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl opacity-75">
           <div className="space-y-0.5">
             <Label className="text-base">
-              Email <span className="text-xs text-gray-400">(requerido)</span>
+              Email <span className="text-xs text-gray-400 dark:text-gray-500">(requerido)</span>
             </Label>
-            <p className="text-sm text-gray-500">Solicitar email al cliente</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Solicitar email al cliente</p>
           </div>
           <Input type="checkbox" checked={true} disabled className="w-6 h-6 accent-yellow-500 cursor-not-allowed" />
         </div>
-        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
           <div className="space-y-0.5">
             <Label className="text-base">Teléfono</Label>
-            <p className="text-sm text-gray-500">Solicitar número de celular</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Solicitar número de celular</p>
           </div>
           <Input
             type="checkbox"
@@ -354,10 +356,10 @@ export function CustomerDataFields({ formData, setFormData }) {
             className="w-6 h-6 accent-yellow-500"
           />
         </div>
-        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
           <div className="space-y-0.5">
             <Label className="text-base">Cumpleaños</Label>
-            <p className="text-sm text-gray-500">Solicitar fecha de nacimiento</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Solicitar fecha de nacimiento</p>
           </div>
           <Input
             type="checkbox"
@@ -376,7 +378,7 @@ export function SecuritySection({ formData, setFormData }) {
 
   return (
     <div className="border-t pt-6 pb-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('securityAndFraud')}</h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('securityAndFraud')}</h3>
       <div className="grid gap-4">
         <div className="space-y-2">
           <Label htmlFor="cooldown">{t('cooldownTime')}</Label>
@@ -389,7 +391,7 @@ export function SecuritySection({ formData, setFormData }) {
             placeholder="0"
             className="h-12"
           />
-          <p className="text-sm text-gray-500">{t('cooldownTimeDesc')}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{t('cooldownTimeDesc')}</p>
         </div>
       </div>
     </div>
@@ -402,7 +404,7 @@ export function BusinessInfoSection({ formData, setFormData, setIsFlipped }) {
   return (
     <>
       <div className="border-t pt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Datos de tu Negocio</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Datos de tu Negocio</h3>
 
         <Label htmlFor="contact_email">{t('contactEmail')}</Label>
         <Input
@@ -451,7 +453,7 @@ export function BusinessInfoSection({ formData, setFormData, setIsFlipped }) {
           rows={3}
           maxLength={300}
         />
-        <p className="text-xs text-gray-500">{formData.terms?.length || 0}/300 caracteres</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">{formData.terms?.length || 0}/300 caracteres</p>
       </div>
     </>
   )

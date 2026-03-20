@@ -230,7 +230,7 @@ export default function Dashboard() {
   // Mostrar loader solo en la primera carga
   if ((meLoading && !meData) || (programsLoading && loyaltyPrograms.length === 0)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-purple-50">
+      <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-yellow-500" />
       </div>
     )
@@ -239,7 +239,7 @@ export default function Dashboard() {
   // Mostrar error si falla la carga de datos del usuario
   if (meError || !meData) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-500 bg-gradient-to-br from-slate-50 via-white to-purple-50">
+      <div className="min-h-screen flex items-center justify-center text-muted-foreground">
         Error cargando el dashboard
       </div>
     )
@@ -255,8 +255,13 @@ export default function Dashboard() {
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className="relative cursor-pointer" onClick={() => logoInputRef.current?.click()}>
+              <div className="flex items-center gap-2 md:gap-3 min-w-0">
+                <button
+                  type="button"
+                  className="relative cursor-pointer"
+                  aria-label="Cambiar logo"
+                  onClick={() => logoInputRef.current?.click()}
+                >
                   {brandLogoUrl && !logoLoadError ? (
                     <img
                       src={brandLogoUrl}
@@ -265,16 +270,16 @@ export default function Dashboard() {
                       onError={() => setLogoLoadError(true)}
                     />
                   ) : (
-                    <LayoutDashboard className="w-8 h-8 md:w-10 md:h-10 text-gray-700" />
+                    <LayoutDashboard className="w-8 h-8 md:w-10 md:h-10 text-gray-700 dark:text-gray-300" />
                   )}
-                  <div className="absolute -bottom-1 -left-1 w-5 h-5 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-sm">
+                  <div className="absolute -bottom-1 -left-1 w-5 h-5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center shadow-sm">
                     {isUploadingLogo ? (
-                      <Loader2 className="w-2.5 h-2.5 text-gray-600 animate-spin" />
+                      <Loader2 className="w-2.5 h-2.5 text-gray-600 dark:text-gray-400 animate-spin" />
                     ) : (
-                      <Pencil className="w-2.5 h-2.5 text-gray-600" />
+                      <Pencil className="w-2.5 h-2.5 text-gray-600 dark:text-gray-400" />
                     )}
                   </div>
-                </div>
+                </button>
                 <input
                   ref={logoInputRef}
                   type="file"
@@ -282,7 +287,7 @@ export default function Dashboard() {
                   className="hidden"
                   onChange={handleLogoChange}
                 />
-                <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-600 to-black bg-clip-text text-transparent">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground truncate min-w-0">
                   {currentBrandName}
                 </h1>
                 {hasBrands && (
@@ -291,7 +296,7 @@ export default function Dashboard() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-8 md:h-9 gap-1 md:gap-2 px-2 md:px-3 hover:bg-accent transition-colors text-xs md:text-sm self-end -mt-1 md:mt-2.5"
+                        className="h-10 md:h-9 gap-1 md:gap-2 px-2 md:px-3 hover:bg-accent transition-colors text-xs md:text-sm self-end -mt-1 md:mt-2.5"
                       >
                         <Plus className="w-2 h-2 md:w-4 md:h-4" />
                         <span>Mis Marcas</span>
@@ -318,12 +323,13 @@ export default function Dashboard() {
                                 {brand.brand_id === brandId && <Check className="w-4 h-4 text-primary" />}
                                 {brands.length > 1 && (
                                   <button
+                                    aria-label={`Eliminar ${brand.brand_name}`}
                                     onClick={(e) => {
                                       e.stopPropagation()
                                       setBrandToDelete(brand)
                                       setIsDeleteDialogOpen(true)
                                     }}
-                                    className="p-1 hover:bg-red-50 rounded transition-colors"
+                                    className="p-1 hover:bg-red-50 dark:hover:bg-red-950 rounded transition-colors"
                                   >
                                     <Trash2 className="w-3 h-3 text-red-500" />
                                   </button>
@@ -378,7 +384,7 @@ export default function Dashboard() {
                 )}
               </div>
             </div>
-            <p className="text-gray-600 text-lg">{t('dashboardSubtitle')}</p>
+            <p className="text-gray-600 dark:text-gray-400 text-lg">{t('dashboardSubtitle')}</p>
           </div>
         </motion.div>
 
