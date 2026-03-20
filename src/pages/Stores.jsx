@@ -129,7 +129,7 @@ export default function Stores() {
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <Store className="w-8 h-8 text-gray-700 dark:text-gray-300" />
-                <h1 className="text-4xl font-bold text-foreground">Sucursales</h1>
+                <h1 className="text-4xl font-bold leading-tight text-foreground">Sucursales</h1>
               </div>
               <p className="text-gray-600 dark:text-gray-400">Gestiona las ubicaciones de tu negocio</p>
             </div>

@@ -29,7 +29,7 @@ const MetricCard = React.memo(function MetricCard({ title, value, icon: Icon, tr
               {loading ? (
                 <div className="w-12 h-7 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse flex-shrink-0" />
               ) : (
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex-shrink-0">
+                <p className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100 flex-shrink-0">
                   {(value ?? 0).toLocaleString()}
                 </p>
               )}
@@ -52,7 +52,9 @@ const MetricCard = React.memo(function MetricCard({ title, value, icon: Icon, tr
                 {loading ? (
                   <div className="w-24 h-9 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse mt-1" />
                 ) : (
-                  <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{(value ?? 0).toLocaleString()}</p>
+                  <p className="text-3xl font-bold tabular-nums text-gray-900 dark:text-gray-100">
+                    {(value ?? 0).toLocaleString()}
+                  </p>
                 )}
               </div>
             </div>

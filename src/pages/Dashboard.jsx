@@ -287,7 +287,7 @@ export default function Dashboard() {
                   className="hidden"
                   onChange={handleLogoChange}
                 />
-                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground truncate min-w-0">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-foreground truncate min-w-0">
                   {currentBrandName}
                 </h1>
                 {hasBrands && (

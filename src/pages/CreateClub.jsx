@@ -65,7 +65,7 @@ export default function CreateClub() {
             </Button>
           </Link>
 
-          <h1 className="text-4xl font-bold text-foreground mb-8">
+          <h1 className="text-4xl font-bold leading-tight text-foreground mb-8">
             {editId ? t('editProgram') : t('createNewProgram')}
           </h1>
         </motion.div>

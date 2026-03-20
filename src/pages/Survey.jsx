@@ -40,8 +40,8 @@ export default function Survey() {
             Próximamente
           </span>
         </div>
-        <h1 className="text-4xl font-bold text-foreground mb-2">Encuesta de Satisfacción</h1>
-        <p className="text-lg text-gray-500 dark:text-gray-400">Conoce la experiencia real de tus clientes</p>
+        <h1 className="text-4xl font-bold leading-tight text-foreground mb-2">Encuesta de Satisfacción</h1>
+        <p className="text-lg text-gray-600 dark:text-gray-400">Conoce la experiencia real de tus clientes</p>
       </motion.div>
 
       {/* ¿Qué es? */}
@@ -79,7 +79,7 @@ export default function Survey() {
             >
               <Card className="p-5 h-full border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
                 <div className="text-3xl mb-3">{b.icon}</div>
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">{b.title}</h3>
+                <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">{b.title}</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">{b.desc}</p>
               </Card>
             </motion.div>

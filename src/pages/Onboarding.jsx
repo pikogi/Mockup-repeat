@@ -85,10 +85,10 @@ export default function Onboarding() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 p-4">
       <Card className="w-full max-w-2xl shadow-xl border-0">
         <CardHeader className="text-center pb-6">
-          <CardTitle className="text-3xl font-bold text-gray-900 mb-2">
+          <CardTitle className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
             {currentStep === 1 ? 'Crear tu Marca' : 'Crear tu Primera Sucursal'}
           </CardTitle>
           <CardDescription className="text-base">
@@ -109,15 +109,19 @@ export default function Onboarding() {
                       ? 'bg-black text-white'
                       : step < currentStep
                         ? 'bg-gray-800 text-white'
-                        : 'bg-gray-300 text-gray-600'
+                        : 'bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                   }`}
                 >
                   {step}
                 </div>
-                {step < 2 && <div className={`h-1 w-12 ${step < currentStep ? 'bg-gray-800' : 'bg-gray-300'}`} />}
+                {step < 2 && (
+                  <div
+                    className={`h-1 w-12 ${step < currentStep ? 'bg-gray-800 dark:bg-gray-200' : 'bg-gray-300 dark:bg-gray-700'}`}
+                  />
+                )}
               </Fragment>
             ))}
-            <span className="ml-2 text-sm text-gray-500">Paso {currentStep} de 2</span>
+            <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">Paso {currentStep} de 2</span>
           </div>
 
           {/* Contenido del formulario */}
@@ -128,7 +132,7 @@ export default function Onboarding() {
                   <Store className="w-16 h-16 text-yellow-500" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="brandName" className="text-gray-700 font-medium">
+                  <Label htmlFor="brandName" className="text-gray-700 dark:text-gray-300 font-medium">
                     Nombre de la Marca
                   </Label>
                   <Input
@@ -144,7 +148,7 @@ export default function Onboarding() {
             ) : (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="storeName" className="text-gray-700 font-medium">
+                  <Label htmlFor="storeName" className="text-gray-700 dark:text-gray-300 font-medium">
                     Nombre de la Sucursal
                   </Label>
                   <Input
@@ -158,7 +162,7 @@ export default function Onboarding() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="address" className="text-gray-700 font-medium">
+                  <Label htmlFor="address" className="text-gray-700 dark:text-gray-300 font-medium">
                     Dirección
                   </Label>
                   <Input
@@ -172,7 +176,7 @@ export default function Onboarding() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="city" className="text-gray-700 font-medium">
+                  <Label htmlFor="city" className="text-gray-700 dark:text-gray-300 font-medium">
                     Ciudad
                   </Label>
                   <Input
@@ -237,7 +241,7 @@ export default function Onboarding() {
                 <Button
                   onClick={handleNextStep}
                   variant="outline"
-                  className="flex-1 bg-white hover:bg-gray-50 border-2 border-black text-black h-12"
+                  className="flex-1 bg-white hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 border-2 border-black dark:border-white text-black dark:text-white h-12"
                 >
                   Agregar Sucursal
                 </Button>

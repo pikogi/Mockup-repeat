@@ -66,7 +66,7 @@ export default function MyPrograms() {
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <CreditCard className="w-8 h-8 text-gray-700 dark:text-gray-300" />
-                <h1 className="text-4xl font-bold text-foreground">{t('myPrograms')}</h1>
+                <h1 className="text-4xl font-bold leading-tight text-foreground">{t('myPrograms')}</h1>
               </div>
               <p className="text-gray-600 dark:text-gray-400">{t('myProgramsSubtitle')}</p>
             </div>

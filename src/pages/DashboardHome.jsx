@@ -238,7 +238,7 @@ export default function DashboardHome({ brandId }) {
               {dateFilter === 'custom' && (
                 <div className="flex flex-col md:flex-row gap-2">
                   <div className="flex flex-col gap-1">
-                    <Label className="text-xs text-gray-500">Desde</Label>
+                    <Label className="text-xs text-gray-500 dark:text-gray-400">Desde</Label>
                     <Input
                       type="date"
                       className="bg-white dark:bg-gray-900 w-full md:w-[160px] h-10"
@@ -251,7 +251,7 @@ export default function DashboardHome({ brandId }) {
                     />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <Label className="text-xs text-gray-500">Hasta</Label>
+                    <Label className="text-xs text-gray-500 dark:text-gray-400">Hasta</Label>
                     <Input
                       type="date"
                       className="bg-white dark:bg-gray-900 w-full md:w-[160px] h-10"

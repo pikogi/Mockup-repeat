@@ -323,7 +323,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                     <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto mb-2">
                       <Stamp className="w-4 h-4" />
                     </div>
-                    <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    <p className="text-xl sm:text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">
                       {activeCard.current_balance ?? 0}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">Sellos Actuales</p>
@@ -332,7 +332,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                     <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto mb-2">
                       <TrendingUp className="w-4 h-4" />
                     </div>
-                    <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    <p className="text-xl sm:text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">
                       {activeCard.total_visits ?? 0}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">Visitas Totales</p>
@@ -341,7 +341,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                     <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 flex items-center justify-center mx-auto mb-2">
                       <Gift className="w-4 h-4" />
                     </div>
-                    <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    <p className="text-xl sm:text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">
                       {activeCard.redemptions?.filter((r) => r.status === 'completed').length || 0}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">Premios Canjeados</p>

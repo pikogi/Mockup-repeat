@@ -13,7 +13,7 @@ export function useCustomers() {
 
   const user = getCurrentUser()
 
-  const { data: meData } = useQuery({
+  const { data: meData, isLoading: meLoading } = useQuery({
     queryKey: ['auth', 'me'],
     queryFn: async () => {
       const res = await api.auth.me()
@@ -74,7 +74,7 @@ export function useCustomers() {
     staleTime: 5 * 60 * 1000,
   })
 
-  const isLoading = !programsFetched || membersLoading
+  const isLoading = meLoading || (!brandId ? false : !programsFetched || membersLoading)
 
   // Flatten paginated results into members array
   const members = useMemo(() => {
