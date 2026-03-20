@@ -26,7 +26,7 @@ export default function Step3CTA() {
 
           <Button
             size="lg"
-            className="h-14 px-8 text-lg bg-black hover:bg-gray-800 gap-3 shadow-lg hover:shadow-xl transition-all"
+            className="h-14 px-8 text-lg bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black gap-3 shadow-lg hover:shadow-xl transition-all"
             onClick={() => navigate(createPageUrl('CreateClub'))}
           >
             <Plus className="w-6 h-6" />

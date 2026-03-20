@@ -146,8 +146,8 @@ export function useDashboardHome(brandId) {
     return days.map((day) => {
       const key = format(day, 'yyyy-MM-dd')
       return {
-        date: format(day, 'MMM d'),
-        fullDate: format(day, 'd MMM yyyy'),
+        date: day.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+        fullDate: day.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }),
         adds: usersByDate.get(key) ?? 0,
         scans: stampsByDate.get(key) ?? 0,
         redemptions: redemptionsByDate.get(key) ?? 0,

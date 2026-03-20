@@ -28,6 +28,7 @@ import {
   Plus,
   CheckCircle2,
   Store,
+  Clock,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
@@ -188,7 +189,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
 
   return (
     <Dialog open={!!customer} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <div className="relative">
           <AnimatePresence>
             {showRedeemSuccess && (
@@ -394,6 +395,33 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                 </div>
               )
             })()}
+
+            {/* Transaction history */}
+            {activeCard?.transactions?.length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Historial</h4>
+                </div>
+                <Card className="max-h-48 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
+                  {[...activeCard.transactions]
+                    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                    .map((tx) => (
+                      <div key={tx.transaction_id} className="flex items-center justify-between px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <Stamp className="w-3.5 h-3.5 text-amber-500" />
+                          <span className="text-sm text-gray-700 dark:text-gray-300">
+                            {tx.transaction_type === 'stamp_added' ? 'Sello agregado' : tx.transaction_type}
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-400 dark:text-gray-500 tabular-nums">
+                          {format(new Date(tx.created_at), 'dd MMM yyyy, HH:mm')}
+                        </span>
+                      </div>
+                    ))}
+                </Card>
+              </div>
+            )}
 
             {/* Store indicator / selector */}
             {stores.length > 0 && (

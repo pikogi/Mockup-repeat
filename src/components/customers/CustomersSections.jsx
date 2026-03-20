@@ -132,8 +132,8 @@ export function CustomerEmptyState() {
   const { t } = useLanguage()
 
   return (
-    <Card className="p-12 text-center">
-      <Users className="w-12 h-12 text-blue-300 dark:text-blue-700 mx-auto mb-4" />
+    <Card className="p-12 text-center bg-gray-50 dark:bg-gray-800 border-dashed">
+      <Users className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
       <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{t('noCustomersTitle')}</h3>
       <p className="text-gray-500 dark:text-gray-400">{t('noCustomersDesc')}</p>
     </Card>

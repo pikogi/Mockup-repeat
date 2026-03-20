@@ -665,6 +665,16 @@ paths:
                                         status: { type: string }
                                         created_at: { type: string, format: date-time }
                                         updated_at: { type: string, format: date-time }
+                                  transactions:
+                                    type: array
+                                    items:
+                                      type: object
+                                      properties:
+                                        transaction_id: { type: string, format: uuid }
+                                        transaction_type: { type: string }
+                                        amount: { type: number }
+                                        unit_type: { type: string }
+                                        created_at: { type: string, format: date-time }
                       pagination:
                         $ref: '#/components/schemas/CursorPagination'
         '400':
