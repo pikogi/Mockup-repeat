@@ -30,7 +30,6 @@ export default function PublicCard() {
 
   // Obtener datos de la marca (para el logo) — brand_id puede venir de la URL o del programa
   const [brandIdFromProgram, setBrandIdFromProgram] = useState(null)
-  const brandId = brandIdFromUrl || program?.brand_id || brandIdFromProgram
 
   // Obtener programa de lealtad directamente por ID (endpoint público)
   const {
@@ -68,6 +67,8 @@ export default function PublicCard() {
     enabled: !!cardId,
     retry: false,
   })
+
+  const brandId = brandIdFromUrl || program?.brand_id || brandIdFromProgram
 
   // Extraer brand_id del programa si no vino en la URL
   useEffect(() => {
