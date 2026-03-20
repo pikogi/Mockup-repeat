@@ -27,8 +27,8 @@ export default function DashboardHome({ brandId }) {
     statsLoading,
   } = useDashboardHome(brandId)
 
-  // Show CTA when stats confirm no active programs (and stats have loaded)
-  if (!statsLoading && activePrograms === 0) {
+  // Show CTA only when no filters are applied and brand truly has no active programs
+  if (!statsLoading && activePrograms === 0 && dateFilter === 'default' && selectedStore === 'all') {
     return <Step3CTA />
   }
 
