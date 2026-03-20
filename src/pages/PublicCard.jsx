@@ -234,7 +234,14 @@ export default function PublicCard() {
   }
 
   const handleShare = async () => {
-    const shareUrl = program?.short_url || window.location.href
+    const shareUrl = (() => {
+      if (program?.short_url) {
+        const raw = program.short_url
+        if (raw.startsWith('http')) return raw
+        return `${window.location.origin}/s/${raw}`
+      }
+      return window.location.href
+    })()
     const shareText = `¡Únete al programa de fidelidad ${card?.club_name}!`
 
     if (navigator.share) {

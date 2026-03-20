@@ -32,11 +32,12 @@ repeat-app/
 ├── src/
 │   ├── api/             # API client (client.js)
 │   ├── components/      # React components (shadcn/ui + Radix)
-│   ├── hooks/           # Custom hooks
+│   ├── constants/       # Shared constants (programTypes.js)
+│   ├── hooks/           # Custom hooks (useClubForm, useMyPrograms, useCustomers)
 │   ├── pages/           # Pages (lazy-loaded via React.lazy)
-│   ├── stores/          # Global state (Zustand)
+│   ├── stores/          # Global state (Zustand, legacy — being migrated to React Query)
 │   ├── lib/             # Utilities (cn, etc.)
-│   └── utils/           # Helpers
+│   └── utils/           # Helpers (jwt, image processing)
 ├── public/              # Static assets
 ├── vite.config.js       # Vite config (proxy, build)
 └── .env.example         # Environment variables reference
@@ -49,7 +50,7 @@ VITE_API_URL=https://your-api-gateway-url.execute-api.us-east-1.amazonaws.com/de
 VITE_AWS_S3_BUCKET_PROGRAM_IMAGES=repeat-program-images-dev
 ```
 
-- `VITE_API_URL` — **Development**: Not required (Vite proxies `/api` to the dev backend). **Production**: Required, injected at build time via GitHub Actions.
+- `VITE_API_URL` — **Development**: Not required (Vite proxies `/api` to the dev backend; `.env.development` sets the dev URL). **Production**: Required, injected at build time via GitHub Actions. `.env` provides an empty default to suppress Vite HTML replacement warnings.
 - `VITE_AWS_S3_BUCKET_PROGRAM_IMAGES` — S3 bucket for program images (stamp cards and logos). Each environment has its own bucket. Falls back to `repeat-program-images-dev` if not set.
 
 ## Scripts
