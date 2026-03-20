@@ -399,6 +399,15 @@ class ApiClient {
       return this.get(`/brands/${brandId}/stats/transactions${query ? `?${query}` : ''}`)
     },
 
+    getStatsRedemptions: (brandId, { from, to, storeId } = {}) => {
+      const params = new URLSearchParams()
+      if (from) params.append('from', from)
+      if (to) params.append('to', to)
+      if (storeId) params.append('store_id', storeId)
+      const query = params.toString()
+      return this.get(`/brands/${brandId}/stats/redemptions${query ? `?${query}` : ''}`)
+    },
+
     update: (brandId, data) => this.patch(`/brands/${brandId}`, data),
 
     delete: (brandId) => this.delete(`/brands/${brandId}`),

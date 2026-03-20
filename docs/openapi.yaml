@@ -472,6 +472,88 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequestError'
 
+  /brands/{id}/stats/transactions:
+    get:
+      tags: [brands]
+      summary: Get daily transaction history
+      operationId: getBrandTransactionHistory
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+        - name: store_id
+          in: query
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/FromDate'
+        - $ref: '#/components/parameters/ToDate'
+      responses:
+        '200':
+          description: Daily transaction history
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            date: { type: string, format: date }
+                            transactions: { type: integer }
+                            stamp_added: { type: integer }
+                            purchase: { type: integer }
+                            reward_redeemed: { type: integer }
+                            giftcard_purchase: { type: integer }
+                            giftcard_redeem: { type: integer }
+                            discount_applied: { type: integer }
+                            cashback_earned: { type: integer }
+                            membership_purchase: { type: integer }
+                            coupon_used: { type: integer }
+                            refund: { type: integer }
+                            adjustment: { type: integer }
+                            bonus: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+
+  /brands/{id}/stats/redemptions:
+    get:
+      tags: [brands]
+      summary: Get daily redemption history
+      operationId: getBrandRedemptionHistory
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+        - name: store_id
+          in: query
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/FromDate'
+        - $ref: '#/components/parameters/ToDate'
+      responses:
+        '200':
+          description: Daily redemption history
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            date: { type: string, format: date }
+                            redemptions: { type: integer }
+                            pending: { type: integer }
+                            completed: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+
   /brands/{id}/stats/users/{userId}:
     get:
       tags: [brands]

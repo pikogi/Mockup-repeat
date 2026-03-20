@@ -73,25 +73,60 @@ export function useDashboardHome(brandId) {
     staleTime: 5 * 60 * 1000,
   })
 
+  // Daily transaction history for stamps chart
+  const { data: transactionHistory = [] } = useQuery({
+    queryKey: ['brandTransactionHistory', brandId, storeId, dateFilter, customDateKey],
+    queryFn: async () => {
+      if (!brandId) return []
+      const range = getDateRange()
+      const from = format(range.start, 'yyyy-MM-dd')
+      const to = format(addDays(range.end, 1), 'yyyy-MM-dd')
+      const res = await api.brands.getStatsTransactions(brandId, { from, to })
+      return res?.data || res || []
+    },
+    enabled: !!brandId,
+    staleTime: 5 * 60 * 1000,
+  })
+
+  // Daily redemption history for rewards chart
+  const { data: redemptionHistory = [] } = useQuery({
+    queryKey: ['brandRedemptionHistory', brandId, storeId, dateFilter, customDateKey],
+    queryFn: async () => {
+      if (!brandId) return []
+      const range = getDateRange()
+      const from = format(range.start, 'yyyy-MM-dd')
+      const to = format(addDays(range.end, 1), 'yyyy-MM-dd')
+      const res = await api.brands.getStatsRedemptions(brandId, { from, to, storeId })
+      return res?.data || res || []
+    },
+    enabled: !!brandId,
+    staleTime: 5 * 60 * 1000,
+  })
+
   // Derived stats — directly from brandStats, no extra queries needed
   const membersCount = brandStats?.total_users ?? 0
   const activePrograms = brandStats?.total_active_programs ?? 0
   const stampsCount = brandStats?.transactions_by_type?.stamp_added ?? 0
   const rewardsCount = brandStats?.total_completed_redemptions ?? 0
 
-  // Chart data combining stats + user history
+  // Chart data combining user history + transaction history + redemption history
   const chartData = useMemo(() => {
     const range = getDateRange()
-    const totalStamps = brandStats?.transactions_by_type?.stamp_added ?? 0
-    const totalRedemptions =
-      (brandStats?.total_completed_redemptions ?? 0) + (brandStats?.total_pending_redemptions ?? 0)
 
-    // Build a day-by-day map from userHistory
-    const countsByDate = new Map()
+    // Build day-by-day maps
+    const usersByDate = new Map()
     userHistory.forEach((entry) => {
-      if (entry.date) {
-        countsByDate.set(entry.date, entry.new_users ?? 0)
-      }
+      if (entry.date) usersByDate.set(entry.date, entry.new_users ?? 0)
+    })
+
+    const stampsByDate = new Map()
+    transactionHistory.forEach((entry) => {
+      if (entry.date) stampsByDate.set(entry.date, entry.stamp_added ?? 0)
+    })
+
+    const redemptionsByDate = new Map()
+    redemptionHistory.forEach((entry) => {
+      if (entry.date) redemptionsByDate.set(entry.date, entry.completed ?? 0)
     })
 
     // Generate one entry per day in the range
@@ -108,17 +143,17 @@ export function useDashboardHome(brandId) {
 
     if (days.length === 0) return []
 
-    return days.map((day, i) => {
+    return days.map((day) => {
       const key = format(day, 'yyyy-MM-dd')
       return {
         date: format(day, 'MMM d'),
         fullDate: format(day, 'd MMM yyyy'),
-        adds: countsByDate.get(key) ?? 0,
-        scans: i === days.length - 1 ? totalStamps : 0,
-        redemptions: i === days.length - 1 ? totalRedemptions : 0,
+        adds: usersByDate.get(key) ?? 0,
+        scans: stampsByDate.get(key) ?? 0,
+        redemptions: redemptionsByDate.get(key) ?? 0,
       }
     })
-  }, [userHistory, brandStats, getDateRange])
+  }, [userHistory, transactionHistory, redemptionHistory, getDateRange])
 
   return {
     // Filters
