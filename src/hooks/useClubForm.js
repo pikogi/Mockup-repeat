@@ -560,6 +560,7 @@ export function useClubForm() {
       const response = await api.loyaltyPrograms.create(dataToSend)
       newProgram = response?.data || response
       toast.success('Programa creado exitosamente')
+      queryClient.invalidateQueries({ queryKey: ['loyaltyPrograms', brandId] })
     } catch (error) {
       toast.error(error?.message || 'Error al crear el programa')
       return
