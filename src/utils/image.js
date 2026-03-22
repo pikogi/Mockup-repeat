@@ -67,6 +67,25 @@ export function cropToCircle(base64, size) {
   })
 }
 
+// Compress image to JPEG for stamp-card endpoint (payload limit).
+// Flattens transparency onto bgColor (default white).
+export function compressForStampCard(base64, quality = 0.85, bgColor = '#FFFFFF') {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = img.naturalWidth
+      canvas.height = img.naturalHeight
+      const ctx = canvas.getContext('2d')
+      ctx.fillStyle = bgColor
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.drawImage(img, 0, 0)
+      resolve(canvas.toDataURL('image/jpeg', quality))
+    }
+    img.src = base64
+  })
+}
+
 // Sample the color at the circle edge of the image (4 cardinal points, just inside the border).
 // Used to set the stamp slot background color, making it seamless.
 export function sampleCircleEdgeColor(base64, size = 300) {

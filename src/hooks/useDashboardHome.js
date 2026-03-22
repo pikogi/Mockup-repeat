@@ -81,7 +81,7 @@ export function useDashboardHome(brandId) {
       const range = getDateRange()
       const from = format(range.start, 'yyyy-MM-dd')
       const to = format(addDays(range.end, 1), 'yyyy-MM-dd')
-      const res = await api.brands.getStatsTransactions(brandId, { from, to })
+      const res = await api.brands.getStatsTransactions(brandId, { from, to, storeId })
       return res?.data || res || []
     },
     enabled: !!brandId,

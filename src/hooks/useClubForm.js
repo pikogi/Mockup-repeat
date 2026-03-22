@@ -5,7 +5,13 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { createPageUrl } from '@/utils'
 import { toast } from 'sonner'
-import { compressForBrandUpload, resizeImageToMax, cropToCircle, sampleCircleEdgeColor } from '@/utils/image'
+import {
+  compressForBrandUpload,
+  compressForStampCard,
+  resizeImageToMax,
+  cropToCircle,
+  sampleCircleEdgeColor,
+} from '@/utils/image'
 
 const DEFAULT_FORM_DATA = {
   club_name: '',
@@ -437,6 +443,30 @@ export function useClubForm() {
       /* localStorage full */
     }
 
+    const shouldRegenerateImage = hasNewBackground || hasNewStamp || hasNewLogo || hasStampsRequiredChanged
+    const hasLocalImages =
+      (hasNewBackground ? formData.background_image_url : prevImages.background) ||
+      (hasNewStamp ? formData.stamp_image_url : prevImages.stamp) ||
+      (hasNewLogo ? formData.logo_url : prevImages.logo)
+
+    // Compress all images in parallel (brand logo + stamp card images)
+    const stampBgColor = hasNewStamp ? formData.stamp_icon_bg_color : prevImages.color || formData.stamp_icon_bg_color
+    const rawBg = hasNewBackground
+      ? formData.background_image_url
+      : prevImages.background || formData.background_image_url || null
+    const rawStamp = hasNewStamp ? formData.stamp_image_url : prevImages.stamp || null
+    const rawLogo = hasNewLogo ? formData.logo_url : prevImages.logo || null
+
+    const [compBg, compStamp, compLogo, compBrandLogo] = await Promise.all([
+      shouldRegenerateImage && hasLocalImages && rawBg ? compressForStampCard(rawBg) : null,
+      shouldRegenerateImage && hasLocalImages && rawStamp ? compressForStampCard(rawStamp, 0.85, stampBgColor) : null,
+      shouldRegenerateImage && hasLocalImages && rawLogo ? compressForStampCard(rawLogo) : null,
+      hasNewLogo && formData.logo_url ? compressForBrandUpload(formData.logo_url) : null,
+    ])
+
+    // Run brand logo update and stamp card generation in parallel
+    const parallelTasks = []
+
     if (hasNewLogo && formData.logo_url) {
       try {
         localStorage.setItem(`brand_logo_version_${brandId}`, logoVersion)
@@ -450,43 +480,31 @@ export function useClubForm() {
           /* ignore */
         }
       }
-      const compressed = await compressForBrandUpload(formData.logo_url)
       try {
         localStorage.setItem(
           `logo_preview_${brandId}`,
-          JSON.stringify({ data: compressed, expires: Date.now() + 120000 }),
+          JSON.stringify({ data: compBrandLogo, expires: Date.now() + 120000 }),
         )
       } catch {
         /* ignore */
       }
       updateOtherProgramsLogo(programsList, idToUpdate, versionedLogoUrl || formData.logo_url)
-      await api.brands
-        .update(brandId, { logo_image: compressed })
-        .catch((err) => console.warn('[CreateClub edit] Error actualizando logo en brand:', err))
+      parallelTasks.push(
+        api.brands
+          .update(brandId, { logo_image: compBrandLogo })
+          .catch((err) => console.warn('[CreateClub edit] Error actualizando logo en brand:', err)),
+      )
     }
-
-    const shouldRegenerateImage = hasNewBackground || hasNewStamp || hasNewLogo || hasStampsRequiredChanged
-
-    const hasLocalImages =
-      (hasNewBackground ? formData.background_image_url : prevImages.background) ||
-      (hasNewStamp ? formData.stamp_image_url : prevImages.stamp) ||
-      (hasNewLogo ? formData.logo_url : prevImages.logo)
 
     if (shouldRegenerateImage && hasLocalImages) {
-      try {
-        await api.images.createStampCard(
-          idToUpdate,
-          hasNewBackground
-            ? formData.background_image_url
-            : prevImages.background || formData.background_image_url || null,
-          hasNewStamp ? formData.stamp_image_url : prevImages.stamp || null,
-          hasNewLogo ? formData.logo_url : prevImages.logo || null,
-          hasNewStamp ? formData.stamp_icon_bg_color : prevImages.color || formData.stamp_icon_bg_color,
-        )
-      } catch (err) {
-        console.warn('[CreateClub edit] Error generating stamp card image:', err)
-      }
+      parallelTasks.push(
+        api.images
+          .createStampCard(idToUpdate, compBg, compStamp, compLogo, stampBgColor)
+          .catch((err) => console.warn('[CreateClub edit] Error generating stamp card image:', err)),
+      )
     }
+
+    await Promise.all(parallelTasks)
     navigate(createPageUrl('MyPrograms'))
   }
 
@@ -505,6 +523,18 @@ export function useClubForm() {
       formData.selected_store_ids.length > 0
         ? formData.selected_store_ids
         : stores.map((s) => s.store_id || s.id).filter(Boolean)
+
+    const { logo: hasNewLogo, background: hasNewBackground, stamp: hasNewStamp } = newUpload
+
+    // Start image compression early (runs in parallel with the create API call)
+    const compressionPromise = Promise.all([
+      hasNewBackground && formData.background_image_url ? compressForStampCard(formData.background_image_url) : null,
+      hasNewStamp && formData.stamp_image_url
+        ? compressForStampCard(formData.stamp_image_url, 0.85, formData.stamp_icon_bg_color)
+        : null,
+      hasNewLogo && formData.logo_url ? compressForStampCard(formData.logo_url) : null,
+      hasNewLogo && formData.logo_url ? compressForBrandUpload(formData.logo_url) : null,
+    ])
 
     const dataToSend = {
       program_type_id: formData.program_type_id,
@@ -527,12 +557,10 @@ export function useClubForm() {
 
     let newProgram
     try {
-      console.log('[createProgram] payload:', JSON.stringify(dataToSend, null, 2))
       const response = await api.loyaltyPrograms.create(dataToSend)
       newProgram = response?.data || response
       toast.success('Programa creado exitosamente')
     } catch (error) {
-      console.error('[createProgram] error:', JSON.stringify(error?.response?.data || error?.message || error, null, 2))
       toast.error(error?.message || 'Error al crear el programa')
       return
     }
@@ -554,7 +582,10 @@ export function useClubForm() {
       }
 
       try {
-        const { logo: hasNewLogo, background: hasNewBackground, stamp: hasNewStamp } = newUpload
+        const [compBg, compStamp, compLogo, compBrandLogo] = await compressionPromise
+
+        // Run brand logo update and stamp card generation in parallel
+        const parallelTasks = []
 
         if (hasNewLogo && formData.logo_url) {
           const s3LogoUrl = api.images.getLogoUrl(brandId)
@@ -568,20 +599,18 @@ export function useClubForm() {
             }
           }
           updateOtherProgramsLogo(programsList, newProgramId, versionedUrl || formData.logo_url)
-          const compressedLogo = await compressForBrandUpload(formData.logo_url)
-          await api.brands
-            .update(brandId, { logo_image: compressedLogo })
-            .catch((err) => console.warn('[CreateClub] Error actualizando logo en brand:', err))
+          parallelTasks.push(
+            api.brands
+              .update(brandId, { logo_image: compBrandLogo })
+              .catch((err) => console.warn('[CreateClub] Error actualizando logo en brand:', err)),
+          )
         }
 
-        const imgRes = await api.images.createStampCard(
-          newProgramId,
-          hasNewBackground ? formData.background_image_url : null,
-          hasNewStamp ? formData.stamp_image_url : null,
-          hasNewLogo ? formData.logo_url : null,
-          formData.stamp_icon_bg_color,
+        parallelTasks.push(
+          api.images.createStampCard(newProgramId, compBg, compStamp, compLogo, formData.stamp_icon_bg_color),
         )
-        console.log('[CreateClub] stamp card image response:', imgRes)
+
+        await Promise.all(parallelTasks)
       } catch (err) {
         console.warn('[CreateClub] Error generando stamp card image:', err)
         toast.warning('El programa se creó, pero hubo un problema al procesar las imágenes.')
