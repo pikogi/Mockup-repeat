@@ -86,6 +86,13 @@ export function compressForStampCard(base64, quality = 0.85, bgColor = '#FFFFFF'
   })
 }
 
+// Estimate the byte size of a base64 DataURL string.
+export function estimateBase64Size(dataUrl) {
+  if (!dataUrl) return 0
+  const base64 = dataUrl.split(',')[1] || ''
+  return Math.ceil(base64.length * 0.75)
+}
+
 // Sample the color at the circle edge of the image (4 cardinal points, just inside the border).
 // Used to set the stamp slot background color, making it seamless.
 export function sampleCircleEdgeColor(base64, size = 300) {

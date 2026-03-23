@@ -11,6 +11,7 @@ import {
   resizeImageToMax,
   cropToCircle,
   sampleCircleEdgeColor,
+  estimateBase64Size,
 } from '@/utils/image'
 
 const DEFAULT_FORM_DATA = {
@@ -394,6 +395,41 @@ export function useClubForm() {
 
     console.log('[CreateClub] updateData (dirty fields only):', updateData)
 
+    const hasStampsRequiredChanged = hasChanged('stamps_required')
+    const { logo: hasNewLogo, background: hasNewBackground, stamp: hasNewStamp } = newUpload
+
+    const prevImages = getSavedImages(idToUpdate)
+
+    const shouldRegenerateImage = hasNewBackground || hasNewStamp || hasNewLogo || hasStampsRequiredChanged
+    const hasLocalImages =
+      (hasNewBackground ? formData.background_image_url : prevImages.background) ||
+      (hasNewStamp ? formData.stamp_image_url : prevImages.stamp) ||
+      (hasNewLogo ? formData.logo_url : prevImages.logo)
+
+    // Compress images before updating so we can validate payload size
+    const stampBgColor = hasNewStamp ? formData.stamp_icon_bg_color : prevImages.color || formData.stamp_icon_bg_color
+    const rawBg = hasNewBackground
+      ? formData.background_image_url
+      : prevImages.background || formData.background_image_url || null
+    const rawStamp = hasNewStamp ? formData.stamp_image_url : prevImages.stamp || null
+    const rawLogo = hasNewLogo ? formData.logo_url : prevImages.logo || null
+
+    const [compBg, compStamp, compLogo, compBrandLogo] = await Promise.all([
+      shouldRegenerateImage && hasLocalImages && rawBg ? compressForStampCard(rawBg) : null,
+      shouldRegenerateImage && hasLocalImages && rawStamp ? compressForStampCard(rawStamp, 0.85, stampBgColor) : null,
+      shouldRegenerateImage && hasLocalImages && rawLogo ? compressForStampCard(rawLogo) : null,
+      hasNewLogo && formData.logo_url ? compressForBrandUpload(formData.logo_url) : null,
+    ])
+
+    if (shouldRegenerateImage && hasLocalImages) {
+      const MAX_PAYLOAD_BYTES = 5 * 1024 * 1024 // 5MB safe limit (Lambda max 6MB)
+      const stampCardSize = estimateBase64Size(compBg) + estimateBase64Size(compStamp) + estimateBase64Size(compLogo)
+      if (stampCardSize > MAX_PAYLOAD_BYTES) {
+        toast.error('Las imágenes son demasiado grandes. Intenta usar imágenes más pequeñas o de menor resolución.')
+        return
+      }
+    }
+
     try {
       await api.loyaltyPrograms.update(idToUpdate, updateData)
 
@@ -424,11 +460,8 @@ export function useClubForm() {
       return
     }
 
-    const hasStampsRequiredChanged = hasChanged('stamps_required')
     initialFormData.current = { ...formData }
-    const { logo: hasNewLogo, background: hasNewBackground, stamp: hasNewStamp } = newUpload
 
-    const prevImages = getSavedImages(idToUpdate)
     try {
       localStorage.setItem(
         `program_images_${idToUpdate}`,
@@ -442,27 +475,6 @@ export function useClubForm() {
     } catch {
       /* localStorage full */
     }
-
-    const shouldRegenerateImage = hasNewBackground || hasNewStamp || hasNewLogo || hasStampsRequiredChanged
-    const hasLocalImages =
-      (hasNewBackground ? formData.background_image_url : prevImages.background) ||
-      (hasNewStamp ? formData.stamp_image_url : prevImages.stamp) ||
-      (hasNewLogo ? formData.logo_url : prevImages.logo)
-
-    // Compress all images in parallel (brand logo + stamp card images)
-    const stampBgColor = hasNewStamp ? formData.stamp_icon_bg_color : prevImages.color || formData.stamp_icon_bg_color
-    const rawBg = hasNewBackground
-      ? formData.background_image_url
-      : prevImages.background || formData.background_image_url || null
-    const rawStamp = hasNewStamp ? formData.stamp_image_url : prevImages.stamp || null
-    const rawLogo = hasNewLogo ? formData.logo_url : prevImages.logo || null
-
-    const [compBg, compStamp, compLogo, compBrandLogo] = await Promise.all([
-      shouldRegenerateImage && hasLocalImages && rawBg ? compressForStampCard(rawBg) : null,
-      shouldRegenerateImage && hasLocalImages && rawStamp ? compressForStampCard(rawStamp, 0.85, stampBgColor) : null,
-      shouldRegenerateImage && hasLocalImages && rawLogo ? compressForStampCard(rawLogo) : null,
-      hasNewLogo && formData.logo_url ? compressForBrandUpload(formData.logo_url) : null,
-    ])
 
     // Run brand logo update and stamp card generation in parallel
     const parallelTasks = []
@@ -526,8 +538,8 @@ export function useClubForm() {
 
     const { logo: hasNewLogo, background: hasNewBackground, stamp: hasNewStamp } = newUpload
 
-    // Start image compression early (runs in parallel with the create API call)
-    const compressionPromise = Promise.all([
+    // Compress images before creating the program so we can validate payload size
+    const [compBg, compStamp, compLogo, compBrandLogo] = await Promise.all([
       hasNewBackground && formData.background_image_url ? compressForStampCard(formData.background_image_url) : null,
       hasNewStamp && formData.stamp_image_url
         ? compressForStampCard(formData.stamp_image_url, 0.85, formData.stamp_icon_bg_color)
@@ -535,6 +547,13 @@ export function useClubForm() {
       hasNewLogo && formData.logo_url ? compressForStampCard(formData.logo_url) : null,
       hasNewLogo && formData.logo_url ? compressForBrandUpload(formData.logo_url) : null,
     ])
+
+    const MAX_PAYLOAD_BYTES = 5 * 1024 * 1024 // 5MB safe limit (Lambda max 6MB)
+    const stampCardSize = estimateBase64Size(compBg) + estimateBase64Size(compStamp) + estimateBase64Size(compLogo)
+    if (stampCardSize > MAX_PAYLOAD_BYTES) {
+      toast.error('Las imágenes son demasiado grandes. Intenta usar imágenes más pequeñas o de menor resolución.')
+      return
+    }
 
     const dataToSend = {
       program_type_id: formData.program_type_id,
@@ -583,8 +602,6 @@ export function useClubForm() {
       }
 
       try {
-        const [compBg, compStamp, compLogo, compBrandLogo] = await compressionPromise
-
         // Run brand logo update and stamp card generation in parallel
         const parallelTasks = []
 
