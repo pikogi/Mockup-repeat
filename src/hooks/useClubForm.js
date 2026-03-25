@@ -731,8 +731,8 @@ export function useClubForm() {
     const reader = new FileReader()
     reader.onloadend = async () => {
       const raw = reader.result
-      const base64String = await cropToCircle(raw, 300)
-      const bgColor = await sampleCircleEdgeColor(base64String, 300)
+      const base64String = await cropToCircle(raw, 150)
+      const bgColor = await sampleCircleEdgeColor(base64String, 150)
       setFormData((prev) => ({ ...prev, stamp_image_url: base64String, stamp_icon_bg_color: bgColor }))
       setNewUpload((prev) => ({ ...prev, stamp: true }))
       setUploadingStamp(false)
