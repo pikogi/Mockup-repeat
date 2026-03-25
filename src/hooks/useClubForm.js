@@ -416,7 +416,7 @@ export function useClubForm() {
 
     const [compBg, compStamp, compLogo, compBrandLogo] = await Promise.all([
       shouldRegenerateImage && hasLocalImages && rawBg ? compressForStampCard(rawBg) : null,
-      shouldRegenerateImage && hasLocalImages && rawStamp ? compressForStampCard(rawStamp, 0.85, stampBgColor) : null,
+      shouldRegenerateImage && hasLocalImages && rawStamp ? rawStamp : null,
       shouldRegenerateImage && hasLocalImages && rawLogo ? compressForStampCard(rawLogo) : null,
       hasNewLogo && formData.logo_url ? compressForBrandUpload(formData.logo_url) : null,
     ])
@@ -541,9 +541,7 @@ export function useClubForm() {
     // Compress images before creating the program so we can validate payload size
     const [compBg, compStamp, compLogo, compBrandLogo] = await Promise.all([
       hasNewBackground && formData.background_image_url ? compressForStampCard(formData.background_image_url) : null,
-      hasNewStamp && formData.stamp_image_url
-        ? compressForStampCard(formData.stamp_image_url, 0.85, formData.stamp_icon_bg_color)
-        : null,
+      hasNewStamp && formData.stamp_image_url ? formData.stamp_image_url : null,
       hasNewLogo && formData.logo_url ? compressForStampCard(formData.logo_url) : null,
       hasNewLogo && formData.logo_url ? compressForBrandUpload(formData.logo_url) : null,
     ])
@@ -732,8 +730,8 @@ export function useClubForm() {
     const reader = new FileReader()
     reader.onloadend = async () => {
       const raw = reader.result
-      const base64String = await cropToCircle(raw, 300)
-      const bgColor = await sampleCircleEdgeColor(base64String, 300)
+      const base64String = await cropToCircle(raw, 150)
+      const bgColor = await sampleCircleEdgeColor(base64String, 150)
       setFormData((prev) => ({ ...prev, stamp_image_url: base64String, stamp_icon_bg_color: bgColor }))
       setNewUpload((prev) => ({ ...prev, stamp: true }))
       setUploadingStamp(false)
