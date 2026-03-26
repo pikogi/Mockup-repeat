@@ -127,7 +127,7 @@ export default function Customers() {
             setDateFilter={setDateFilter}
             customDate={customDate}
             setCustomDate={setCustomDate}
-            defaultLabel={t('allTime')}
+            maxMonthsBack={6}
           />
         </motion.div>
 

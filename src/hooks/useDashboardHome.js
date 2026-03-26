@@ -4,7 +4,7 @@ import { api } from '@/api/client'
 import { format, subDays, addDays, startOfMonth } from 'date-fns'
 
 export function useDashboardHome(brandId) {
-  const [dateFilter, setDateFilter] = useState('default')
+  const [dateFilter, setDateFilter] = useState('7d')
   const [customDate, setCustomDate] = useState({
     from: new Date(),
     to: new Date(),

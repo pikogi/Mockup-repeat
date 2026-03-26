@@ -12,7 +12,7 @@ export default function DateFilterSelect({
   setDateFilter,
   customDate,
   setCustomDate,
-  defaultLabel,
+  maxMonthsBack = 3,
   className,
 }) {
   const { t } = useLanguage()
@@ -25,7 +25,6 @@ export default function DateFilterSelect({
           <SelectValue placeholder={t('filterPeriod')} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="default">{defaultLabel || t('periodDefault')}</SelectItem>
           <SelectItem value="7d">{t('period7d')}</SelectItem>
           <SelectItem value="month">{t('periodMonth')}</SelectItem>
           <SelectItem value="custom">{t('periodCustom')}</SelectItem>
@@ -48,7 +47,7 @@ export default function DateFilterSelect({
                   type="date"
                   className="bg-white dark:bg-gray-900 w-full md:w-[160px] h-10"
                   value={format(customDate.from, 'yyyy-MM-dd')}
-                  min={format(subMonths(new Date(), 3), 'yyyy-MM-dd')}
+                  min={format(subMonths(new Date(), maxMonthsBack), 'yyyy-MM-dd')}
                   max={format(customDate.to, 'yyyy-MM-dd')}
                   onChange={(e) => {
                     if (!e.target.value) return

@@ -11,7 +11,7 @@ export function useCustomers() {
   const [selectedCard, setSelectedCard] = useState('all')
   const [selectedCustomer, setSelectedCustomer] = useState(null)
   const [sortBy, setSortBy] = useState('date')
-  const [dateFilter, setDateFilter] = useState('default')
+  const [dateFilter, setDateFilter] = useState('7d')
   const [customDate, setCustomDate] = useState({ from: new Date(), to: new Date() })
 
   const user = getCurrentUser()
@@ -62,7 +62,7 @@ export function useCustomers() {
     if (dateFilter === 'custom' && customDate?.from) {
       return { start: customDate.from, end: customDate.to || customDate.from }
     }
-    return null // "default" = no date filter, show all members
+    return { start: subDays(now, 30), end: now } // "default" = last 30 days
   }, [dateFilter, customDate])
 
   // Server-side cursor pagination with useInfiniteQuery
