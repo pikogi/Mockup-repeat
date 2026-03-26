@@ -3,6 +3,7 @@
 export function resizeImageToMax(base64, maxWidth, maxHeight) {
   return new Promise((resolve) => {
     const img = new Image()
+    img.crossOrigin = 'anonymous'
     img.onload = () => {
       const { naturalWidth: w, naturalHeight: h } = img
       const ratio = Math.min(maxWidth / w, maxHeight / h, 1) // never upscale
@@ -44,6 +45,7 @@ export function compressForBrandUpload(base64) {
 export function cropToCircle(base64, size) {
   return new Promise((resolve) => {
     const img = new Image()
+    img.crossOrigin = 'anonymous'
     img.onload = () => {
       const { naturalWidth: w, naturalHeight: h } = img
       const canvas = document.createElement('canvas')
@@ -72,6 +74,7 @@ export function cropToCircle(base64, size) {
 export function compressForStampCard(base64, quality = 0.85, bgColor = '#FFFFFF') {
   return new Promise((resolve) => {
     const img = new Image()
+    img.crossOrigin = 'anonymous'
     img.onload = () => {
       const canvas = document.createElement('canvas')
       canvas.width = img.naturalWidth
@@ -98,6 +101,7 @@ export function estimateBase64Size(dataUrl) {
 export function sampleCircleEdgeColor(base64, size = 300) {
   return new Promise((resolve) => {
     const img = new Image()
+    img.crossOrigin = 'anonymous'
     img.onload = () => {
       const canvas = document.createElement('canvas')
       canvas.width = size
