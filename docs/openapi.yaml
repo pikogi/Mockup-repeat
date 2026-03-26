@@ -610,6 +610,10 @@ paths:
         - name: program_id
           in: query
           schema: { type: string, format: uuid }
+        - name: sort_by
+          in: query
+          schema: { type: string, enum: [created_at, total_transactions], default: created_at }
+          description: Sort users by registration date or total transaction count
         - $ref: '#/components/parameters/FromDate'
         - $ref: '#/components/parameters/ToDate'
         - $ref: '#/components/parameters/Cursor'
@@ -635,6 +639,7 @@ paths:
                             phone: { type: ['string', 'null'] }
                             birth_date: { type: ['string', 'null'], format: date }
                             created_at: { type: string, format: date-time }
+                            total_transactions: { type: integer }
                             loyalty_cards:
                               type: array
                               items:

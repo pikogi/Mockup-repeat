@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback } from 'react'
 import { api } from '@/api/client'
 import { getCurrentUser } from '@/utils/jwt'
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
+import { format, subDays, addDays, startOfMonth } from 'date-fns'
 
 const PAGE_LIMIT = 25
 
@@ -10,6 +11,8 @@ export function useCustomers() {
   const [selectedCard, setSelectedCard] = useState('all')
   const [selectedCustomer, setSelectedCustomer] = useState(null)
   const [sortBy, setSortBy] = useState('date')
+  const [dateFilter, setDateFilter] = useState('default')
+  const [customDate, setCustomDate] = useState({ from: new Date(), to: new Date() })
 
   const user = getCurrentUser()
 
@@ -49,8 +52,22 @@ export function useCustomers() {
     [programs],
   )
 
+  // Date filter
+  const customDateKey = dateFilter === 'custom' ? `${customDate.from?.getTime()}-${customDate.to?.getTime()}` : ''
+
+  const getDateRange = useCallback(() => {
+    const now = new Date()
+    if (dateFilter === '7d') return { start: subDays(now, 7), end: now }
+    if (dateFilter === 'month') return { start: startOfMonth(now), end: now }
+    if (dateFilter === 'custom' && customDate?.from) {
+      return { start: customDate.from, end: customDate.to || customDate.from }
+    }
+    return null // "default" = no date filter, show all members
+  }, [dateFilter, customDate])
+
   // Server-side cursor pagination with useInfiniteQuery
   const programFilter = selectedCard === 'all' ? null : selectedCard
+  const SORT_MAP = { date: 'created_at', visits: 'total_transactions' }
 
   const {
     data,
@@ -60,11 +77,17 @@ export function useCustomers() {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ['brandUsers', brandId, programFilter],
+    queryKey: ['brandUsers', brandId, programFilter, dateFilter, customDateKey, sortBy],
     queryFn: async ({ pageParam }) => {
       const params = { limit: PAGE_LIMIT }
       if (pageParam) params.cursor = pageParam
       if (programFilter) params.programId = programFilter
+      const range = getDateRange()
+      if (range) {
+        params.from = format(range.start, 'yyyy-MM-dd')
+        params.to = format(addDays(range.end, 1), 'yyyy-MM-dd')
+      }
+      if (SORT_MAP[sortBy]) params.sortBy = SORT_MAP[sortBy]
       const res = await api.brands.getUsers(brandId, params)
       return res
     },
@@ -131,23 +154,8 @@ export function useCustomers() {
     return map
   }, [members])
 
-  // Sort
-  const sortedMembers = useMemo(() => {
-    if (sortBy === 'date') {
-      return [...filteredMembers].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
-    }
-    return [...filteredMembers].sort((a, b) => {
-      const aData = userStatsMap[a.user_id]
-      const bData = userStatsMap[b.user_id]
-      if (sortBy === 'stamps') {
-        return (bData?.loyalty_cards?.[0]?.current_balance ?? 0) - (aData?.loyalty_cards?.[0]?.current_balance ?? 0)
-      }
-      if (sortBy === 'visits') {
-        return (bData?.loyalty_cards?.[0]?.total_visits ?? 0) - (aData?.loyalty_cards?.[0]?.total_visits ?? 0)
-      }
-      return 0
-    })
-  }, [filteredMembers, sortBy, userStatsMap])
+  // Sort is server-side (date → created_at, visits → total_transactions)
+  const sortedMembers = filteredMembers
 
   // Handlers
   const handleSearchChange = useCallback((e) => {
@@ -183,5 +191,9 @@ export function useCustomers() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    dateFilter,
+    setDateFilter,
+    customDate,
+    setCustomDate,
   }
 }

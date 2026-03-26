@@ -2,6 +2,7 @@ import { useRef, useEffect, useCallback } from 'react'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Search, Users, CreditCard, ArrowUpDown, Loader2 } from 'lucide-react'
+import DateFilterSelect from '@/components/shared/DateFilterSelect'
 import { motion } from 'framer-motion'
 import CustomerDetailModal from '../components/customers/CustomerDetailModal'
 import {
@@ -35,6 +36,10 @@ export default function Customers() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    dateFilter,
+    setDateFilter,
+    customDate,
+    setCustomDate,
   } = useCustomers()
 
   const handleCustomerClick = useCallback(
@@ -79,7 +84,7 @@ export default function Customers() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="flex flex-wrap gap-4 mb-8"
+          className="flex flex-wrap items-end gap-4 mb-8"
         >
           <div className="relative w-full md:w-64">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -113,10 +118,17 @@ export default function Customers() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="date">Fecha registro</SelectItem>
-              <SelectItem value="stamps">Sellos actuales</SelectItem>
               <SelectItem value="visits">Visitas totales</SelectItem>
             </SelectContent>
           </Select>
+
+          <DateFilterSelect
+            dateFilter={dateFilter}
+            setDateFilter={setDateFilter}
+            customDate={customDate}
+            setCustomDate={setCustomDate}
+            defaultLabel={t('allTime')}
+          />
         </motion.div>
 
         {/* Stats */}

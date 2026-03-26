@@ -10,8 +10,16 @@ export function createBrandsNamespace(client) {
 
     getPublic: (brandId) => client.publicRequest(`/brands/${brandId}`),
 
-    getUsers: (brandId, { programId, storeId, from, to, cursor, limit } = {}) => {
-      const qs = buildQueryString({ program_id: programId, store_id: storeId, from, to, cursor, limit })
+    getUsers: (brandId, { programId, storeId, from, to, cursor, limit, sortBy } = {}) => {
+      const qs = buildQueryString({
+        program_id: programId,
+        store_id: storeId,
+        from,
+        to,
+        cursor,
+        limit,
+        sort_by: sortBy,
+      })
       return client.get(`/brands/${brandId}/users${qs}`)
     },
 
