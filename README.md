@@ -29,15 +29,17 @@ The frontend will be available at `http://localhost:5173`. In development, Vite 
 ```
 repeat-app/
 ├── .github/workflows/   # CI/CD (GitHub Actions → S3 + CloudFront)
+├── docs/                # Reference docs (DEPLOY.md, openapi.yaml)
 ├── src/
-│   ├── api/             # API client (client.js)
+│   ├── api/             # API client (client.js + domain namespaces)
+│   │   └── namespaces/  # Domain-specific API modules (auth, brands, stores, …)
 │   ├── components/      # React components (shadcn/ui + Radix)
 │   ├── constants/       # Shared constants (programTypes.js)
-│   ├── hooks/           # Custom hooks (useClubForm, useMyPrograms, useCustomers)
+│   ├── hooks/           # Custom hooks (useClubForm, useMyPrograms, useCustomers, useDashboard, useStores)
 │   ├── pages/           # Pages (lazy-loaded via React.lazy)
-│   ├── stores/          # Global state (Zustand, legacy — being migrated to React Query)
+│   ├── stores/          # Global state (Zustand, legacy — only used by ScanQR)
 │   ├── lib/             # Utilities (cn, etc.)
-│   └── utils/           # Helpers (jwt, image processing)
+│   └── utils/           # Helpers (jwt, image processing, password validation)
 ├── public/              # Static assets
 ├── vite.config.js       # Vite config (proxy, build)
 └── .env.example         # Environment variables reference
@@ -47,10 +49,12 @@ repeat-app/
 
 ```env
 VITE_API_URL=https://your-api-gateway-url.execute-api.us-east-1.amazonaws.com/dev
+VITE_API_KEY=
 VITE_AWS_S3_BUCKET_PROGRAM_IMAGES=repeat-program-images-dev
 ```
 
 - `VITE_API_URL` — **Development**: Not required (Vite proxies `/api` to the dev backend; `.env.development` sets the dev URL). **Production**: Required, injected at build time via GitHub Actions. `.env` provides an empty default to suppress Vite HTML replacement warnings.
+- `VITE_API_KEY` — Optional API key sent as `x-api-key` header on all requests. Used when the backend requires API Gateway key authentication.
 - `VITE_AWS_S3_BUCKET_PROGRAM_IMAGES` — S3 bucket for program images (stamp cards and logos). Each environment has its own bucket. Falls back to `repeat-program-images-dev` if not set.
 
 ## Scripts

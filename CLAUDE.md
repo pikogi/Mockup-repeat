@@ -24,7 +24,7 @@ No test framework is configured.
 **State management**: React Query is the primary approach for server state. Zustand stores exist but are being phased out.
 
 - **React Query** (@tanstack/react-query) for server state — configured in `src/App.jsx` (retry: 1, staleTime: 5min). Pages use custom hooks that call the API directly via React Query instead of going through Zustand stores.
-- **Zustand** (with persist middleware) — `src/stores/useProgramsStore.js`, `src/stores/useStoresStore.js`. Legacy; most pages have been migrated to React Query + direct API calls. Only used by `ScanQR.jsx` and `Dashboard.jsx` at this point.
+- **Zustand** (with persist middleware) — `src/stores/useProgramsStore.js`, `src/stores/useStoresStore.js`. Legacy; most pages have been migrated to React Query + direct API calls. Only used by `ScanQR.jsx` at this point.
 
 **Custom hooks pattern**: Page-level logic (data fetching, mutations, filtering, sorting, form state) is extracted into custom hooks in `src/hooks/`. Pages are thin — they import a hook and sub-components, then render JSX.
 
@@ -33,8 +33,25 @@ No test framework is configured.
 | `useClubForm` | `CreateClub` | Form state, image uploads, create/update program via direct API. Uses `initialData` from the programs list cache to avoid refetching on edit. |
 | `useMyPrograms` | `MyPrograms` | Programs list (single query), member counts (inline from API), toggle active, delete |
 | `useCustomers` | `Customers` | Members list with inline stats (single paginated query), filtering, sorting, infinite scroll |
+| `useDashboard` | `Dashboard` | Brand selector, logo upload, create/delete brand, me query |
+| `useDashboardHome` | `DashboardHome` | Stats queries (brand stats, user/transaction/redemption history), date/store filters, chart data |
+| `useStores` | `Stores` | Stores CRUD with optimistic updates, QR URL generation, form/dialog state |
 
-**API layer**: Class-based fetch wrapper in `src/api/client.js`. In dev, Vite proxies `/api` to the AWS backend. In prod, uses `VITE_API_URL`. JWT is cached in a module-level variable (`_cachedToken`) and synced to localStorage via `setCachedToken()`; 401 responses auto-clear token and redirect to login. All token mutations (login, register, verifyEmail, updateBrandAdmin, logout) use `setCachedToken()` to keep the cache in sync.
+**API layer**: Domain-namespaced API client in `src/api/`. The core HTTP layer (`client.js`) exports an `ApiClient` class instance (`api`) with methods `get()`, `post()`, `patch()`, `delete()`, and `publicRequest()`. Domain logic lives in factory functions under `src/api/namespaces/` — each receives the client instance and returns an object of methods:
+
+| Namespace | File | Key methods |
+| --- | --- | --- |
+| `api.auth` | `namespaces/auth.js` | login, register, verifyEmail, resetPassword, logout, me, updateBrandAdmin |
+| `api.brands` | `namespaces/brands.js` | create, get, userList, stats (byUser, transactions, redemptions), update, delete |
+| `api.stores` | `namespaces/stores.js` | list, create, update, delete |
+| `api.loyaltyPrograms` | `namespaces/loyaltyPrograms.js` | list, get, create, update, delete, public endpoints |
+| `api.loyaltyCards` | `namespaces/loyaltyCards.js` | create (public), get, list (by card or program) |
+| `api.transactions` | `namespaces/transactions.js` | create (with unit_type and amount) |
+| `api.images` | `namespaces/images.js` | createStampCard, URL builders for stamp cards and logos |
+
+Tiny namespaces (`health`, `redemptions`, `shortUrls`, `notifications`) are defined inline in the `ApiClient` constructor. Helper modules: `authHelpers.js` (JWT processing + localStorage persistence) and `helpers.js` (`buildQueryString`).
+
+In dev, Vite proxies `/api` to the AWS backend. In prod, uses `VITE_API_URL`. JWT is cached in a module-level variable (`_cachedToken`) and synced to localStorage via `setCachedToken()`; 401 responses auto-clear token and redirect to login. All token mutations (login, register, verifyEmail, updateBrandAdmin, logout) use `setCachedToken()` to keep the cache in sync. An optional `VITE_API_KEY` is sent as `x-api-key` header on all requests when set.
 
 **UI**: shadcn/ui components (50+) built on Radix UI primitives, in `src/components/ui/`. Styled with Tailwind CSS using HSL CSS variables for theming (light/dark via class). Icons from lucide-react.
 
@@ -43,13 +60,23 @@ No test framework is configured.
 **Component extraction pattern**: Large pages are decomposed into sub-components in `src/components/<domain>/`:
 
 - `programs/ClubFormSections.jsx` — form section components for CreateClub (StoreSelector, BasicInfoFields, ImageUploadGroup, etc.)
-- `programs/ProgramPreviewSection.jsx` — live preview for CreateClub (iOS/Android toggle, flip)
-- `programs/MyProgramsSections.jsx` — ProgramListSkeleton, EmptyProgramsState for MyPrograms
+- `programs/ProgramPreviewSection.jsx`, `programs/ProgramPreviewComponent.jsx` — live preview for CreateClub (iOS/Android toggle, flip)
+- `programs/MyProgramsSections.jsx`, `programs/ProgramListItem.jsx` — ProgramListSkeleton, EmptyProgramsState, list item for MyPrograms
+- `programs/FlyerPDF.jsx`, `programs/FlyerPreview.jsx` — PDF flyer generation and preview for programs
 - `customers/CustomersSections.jsx` — CustomerCard, CustomerListSkeleton, CustomerEmptyState, PaginationControls
+- `customers/CustomerDetailModal.jsx` — customer detail dialog with stats, transaction history, stamp addition, reward redemption
+- `dashboard/DashboardSections.jsx` — BrandLogoButton, BrandSelectorDropdown, DeleteBrandDialog, DashboardFilters
+- `dashboard/MetricCard.jsx`, `dashboard/StatsChart.jsx`, `dashboard/Step3CTA.jsx` — dashboard metric cards, charts, empty state CTA
+- `dashboard/OnboardingView.jsx`, `dashboard/StampsDistribution.jsx` — onboarding flow, stamps distribution chart
+- `onboarding/ShareCardModal.jsx` — card sharing modal for onboarding
+- `subscription/PricingModal.jsx` — subscription pricing dialog
+- `stores/StoresSections.jsx` — StoreCard, StoresLoadingSkeleton, StoresEmptyState, StoreFormDialog, StoreQrDialog
 
 **Shared constants**: `src/constants/programTypes.js` — PROGRAM_TYPES array with id/key/name/description, plus helpers (`getProgramTypeDescription`, `getProgramTypeName`, `getProgramTypeFromId`).
 
-**Image utilities**: `src/utils/image.js` — canvas-based functions for image processing (resizeImageToMax, compressForBrandUpload, cropToCircle, sampleCircleEdgeColor).
+**Image utilities**: `src/utils/image.js` — canvas-based functions for image processing (resizeImageToMax, compressForBrandUpload, compressForStampCard, cropToCircle, sampleCircleEdgeColor, estimateBase64Size). All `Image` instances use `crossOrigin = 'anonymous'` to avoid tainted canvas errors with S3/CDN images. Stamp icons are cropped to a 150px circular PNG (preserving transparency) and sent as-is to the stamp card API; backgrounds and logos are compressed to JPEG via `compressForStampCard`. Before sending, `estimateBase64Size` validates the combined payload stays under 5MB (Lambda limit).
+
+**Password validation**: `src/utils/passwordValidation.js` — shared password validation rules used across auth forms.
 
 **Documentation**: The `docs/` directory contains reference material — `DEPLOY.md` (deployment architecture, pipeline, cache strategy) and `openapi.yaml` (backend API spec with all endpoints, schemas, and examples). Consult these when working on API integration or deployment changes.
 
@@ -82,6 +109,7 @@ Automated via [release-please](https://github.com/googleapis/release-please) (`.
 
 - Node 22+ (see `.nvmrc`)
 - `VITE_API_URL` — backend API endpoint (only needed in prod; dev uses Vite proxy). `.env` provides an empty default to suppress Vite HTML replacement warnings; `.env.development` sets the dev backend URL.
+- `VITE_API_KEY` — optional API key sent as `x-api-key` header on all requests. Used when the backend requires API Gateway key authentication.
 - Backend API (dev): `https://service-dev.repeat.la` (Vite proxy target)
 - `VITE_AWS_S3_BUCKET_PROGRAM_IMAGES` — S3 bucket for program images (stamp cards and logos). Each environment has its own bucket; dev fallback: `repeat-program-images-dev`. URL pattern: `https://<bucket>.s3.us-east-1.amazonaws.com`
 
