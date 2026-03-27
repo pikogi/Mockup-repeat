@@ -6,28 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Repeat - Loyalty program management platform" />
     <meta name="theme-color" content="#000000" />
+    <meta name="api-url" content="%VITE_API_URL%" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.s3.us-east-1.amazonaws.com https://api.qrserver.com; font-src 'self'; connect-src 'self' %VITE_API_URL%; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';" />
     <title>Repeat</title>
   </head>
   <body>
     <div id="root"></div>
-    <script>
-      // Fast short-URL redirect — resolves before React bundles load
-      ;(function () {
-        var m = window.location.pathname.match(/^\/s\/([A-Za-z0-9_-]{8})$/)
-        if (!m) return
-        var raw = '%VITE_API_URL%'
-        var base = raw && raw.indexOf('%') === -1 ? raw : '/api'
-        fetch(base + '/short-urls/' + m[1])
-          .then(function (r) {
-            return r.json()
-          })
-          .then(function (d) {
-            var url = d && d.data && d.data.original_url
-            if (url) window.location.replace(url)
-          })
-          .catch(function () {})
-      })()
-    </script>
+    <script src="/redirect.js"></script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
