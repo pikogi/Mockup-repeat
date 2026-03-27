@@ -414,12 +414,18 @@ export function useClubForm() {
     const rawStamp = hasNewStamp ? formData.stamp_image_url : prevImages.stamp || null
     const rawLogo = hasNewLogo ? formData.logo_url : prevImages.logo || null
 
-    const [compBg, compStamp, compLogo, compBrandLogo] = await Promise.all([
-      shouldRegenerateImage && hasLocalImages && rawBg ? compressForStampCard(rawBg) : null,
-      shouldRegenerateImage && hasLocalImages && rawStamp ? rawStamp : null,
-      shouldRegenerateImage && hasLocalImages && rawLogo ? compressForStampCard(rawLogo) : null,
-      hasNewLogo && formData.logo_url ? compressForBrandUpload(formData.logo_url) : null,
-    ])
+    let compBg, compStamp, compLogo, compBrandLogo
+    try {
+      ;[compBg, compStamp, compLogo, compBrandLogo] = await Promise.all([
+        shouldRegenerateImage && hasLocalImages && rawBg ? compressForStampCard(rawBg) : null,
+        shouldRegenerateImage && hasLocalImages && rawStamp ? rawStamp : null,
+        shouldRegenerateImage && hasLocalImages && rawLogo ? compressForStampCard(rawLogo) : null,
+        hasNewLogo && formData.logo_url ? compressForBrandUpload(formData.logo_url) : null,
+      ])
+    } catch {
+      toast.error('Error al procesar las imágenes. Intenta subirlas de nuevo.')
+      return
+    }
 
     if (shouldRegenerateImage && hasLocalImages) {
       const MAX_PAYLOAD_BYTES = 5 * 1024 * 1024 // 5MB safe limit (Lambda max 6MB)
@@ -540,12 +546,18 @@ export function useClubForm() {
     const { logo: hasNewLogo, background: hasNewBackground, stamp: hasNewStamp } = newUpload
 
     // Compress images before creating the program so we can validate payload size
-    const [compBg, compStamp, compLogo, compBrandLogo] = await Promise.all([
-      hasNewBackground && formData.background_image_url ? compressForStampCard(formData.background_image_url) : null,
-      hasNewStamp && formData.stamp_image_url ? formData.stamp_image_url : null,
-      hasNewLogo && formData.logo_url ? compressForStampCard(formData.logo_url) : null,
-      hasNewLogo && formData.logo_url ? compressForBrandUpload(formData.logo_url) : null,
-    ])
+    let compBg, compStamp, compLogo, compBrandLogo
+    try {
+      ;[compBg, compStamp, compLogo, compBrandLogo] = await Promise.all([
+        hasNewBackground && formData.background_image_url ? compressForStampCard(formData.background_image_url) : null,
+        hasNewStamp && formData.stamp_image_url ? formData.stamp_image_url : null,
+        hasNewLogo && formData.logo_url ? compressForStampCard(formData.logo_url) : null,
+        hasNewLogo && formData.logo_url ? compressForBrandUpload(formData.logo_url) : null,
+      ])
+    } catch {
+      toast.error('Error al procesar las imágenes. Intenta subirlas de nuevo.')
+      return
+    }
 
     const MAX_PAYLOAD_BYTES = 5 * 1024 * 1024 // 5MB safe limit (Lambda max 6MB)
     const stampCardSize = estimateBase64Size(compBg) + estimateBase64Size(compStamp) + estimateBase64Size(compLogo)
@@ -659,14 +671,19 @@ export function useClubForm() {
     try {
       const reader = new FileReader()
       reader.onloadend = async () => {
-        const raw = reader.result
-        const base64String = await resizeImageToMax(raw, 600, 600)
-        const ext = file.name.split('.').pop()?.toLowerCase() || 'png'
-        if (brandId) localStorage.setItem(`logo_ext_${brandId}`, ext)
-        setFormData((prev) => ({ ...prev, logo_url: base64String }))
-        setNewUpload((prev) => ({ ...prev, logo: true }))
-        setUploadingLogo(false)
-        toast.success('Logo cargado correctamente')
+        try {
+          const raw = reader.result
+          const base64String = await resizeImageToMax(raw, 600, 600)
+          const ext = file.name.split('.').pop()?.toLowerCase() || 'png'
+          if (brandId) localStorage.setItem(`logo_ext_${brandId}`, ext)
+          setFormData((prev) => ({ ...prev, logo_url: base64String }))
+          setNewUpload((prev) => ({ ...prev, logo: true }))
+          setUploadingLogo(false)
+          toast.success('Logo cargado correctamente')
+        } catch {
+          setUploadingLogo(false)
+          toast.error('Error al procesar la imagen del logo')
+        }
       }
       reader.onerror = () => {
         setUploadingLogo(false)
@@ -698,12 +715,17 @@ export function useClubForm() {
     setUploadingBackground(true)
     const reader = new FileReader()
     reader.onloadend = async () => {
-      const raw = reader.result
-      const base64String = await resizeImageToMax(raw, 1125, 432)
-      setFormData((prev) => ({ ...prev, background_image_url: base64String }))
-      setNewUpload((prev) => ({ ...prev, background: true }))
-      setUploadingBackground(false)
-      toast.success('Imagen de fondo cargada correctamente')
+      try {
+        const raw = reader.result
+        const base64String = await resizeImageToMax(raw, 1125, 432)
+        setFormData((prev) => ({ ...prev, background_image_url: base64String }))
+        setNewUpload((prev) => ({ ...prev, background: true }))
+        setUploadingBackground(false)
+        toast.success('Imagen de fondo cargada correctamente')
+      } catch {
+        setUploadingBackground(false)
+        toast.error('Error al procesar la imagen de fondo')
+      }
     }
     reader.onerror = () => {
       setUploadingBackground(false)
@@ -730,13 +752,18 @@ export function useClubForm() {
     setUploadingStamp(true)
     const reader = new FileReader()
     reader.onloadend = async () => {
-      const raw = reader.result
-      const base64String = await cropToCircle(raw, 150)
-      const bgColor = await sampleCircleEdgeColor(base64String, 150)
-      setFormData((prev) => ({ ...prev, stamp_image_url: base64String, stamp_icon_bg_color: bgColor }))
-      setNewUpload((prev) => ({ ...prev, stamp: true }))
-      setUploadingStamp(false)
-      toast.success('Imagen de sello cargada correctamente')
+      try {
+        const raw = reader.result
+        const base64String = await cropToCircle(raw, 150)
+        const bgColor = await sampleCircleEdgeColor(base64String, 150)
+        setFormData((prev) => ({ ...prev, stamp_image_url: base64String, stamp_icon_bg_color: bgColor }))
+        setNewUpload((prev) => ({ ...prev, stamp: true }))
+        setUploadingStamp(false)
+        toast.success('Imagen de sello cargada correctamente')
+      } catch {
+        setUploadingStamp(false)
+        toast.error('Error al procesar la imagen del sello')
+      }
     }
     reader.onerror = () => {
       setUploadingStamp(false)

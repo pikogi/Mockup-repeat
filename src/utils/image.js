@@ -1,7 +1,7 @@
 // Scale image proportionally if it exceeds max dimensions.
 // Uses PNG to preserve transparency.
 export function resizeImageToMax(base64, maxWidth, maxHeight) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.onload = () => {
@@ -15,14 +15,16 @@ export function resizeImageToMax(base64, maxWidth, maxHeight) {
       canvas.getContext('2d').drawImage(img, 0, 0, newW, newH)
       resolve(canvas.toDataURL('image/png'))
     }
+    img.onerror = () => reject(new Error('Failed to load image for resize'))
     img.src = base64
   })
 }
 
 // Compress image to reduced JPEG for the brands endpoint (payload limit).
 export function compressForBrandUpload(base64) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const img = new Image()
+    img.crossOrigin = 'anonymous'
     img.onload = () => {
       const MAX = 300
       const ratio = Math.min(MAX / img.naturalWidth, MAX / img.naturalHeight, 1)
@@ -34,6 +36,7 @@ export function compressForBrandUpload(base64) {
       canvas.getContext('2d').drawImage(img, 0, 0, w, h)
       resolve(canvas.toDataURL('image/jpeg', 0.8))
     }
+    img.onerror = () => reject(new Error('Failed to load image for brand upload'))
     img.src = base64
   })
 }
@@ -43,7 +46,7 @@ export function compressForBrandUpload(base64) {
 // This ensures the backend (which uses "contain") displays the icon
 // filling the circular slot without black bars or empty space.
 export function cropToCircle(base64, size) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.onload = () => {
@@ -65,6 +68,7 @@ export function cropToCircle(base64, size) {
       ctx.drawImage(img, offsetX, offsetY, drawW, drawH)
       resolve(canvas.toDataURL('image/png'))
     }
+    img.onerror = () => reject(new Error('Failed to load image for circle crop'))
     img.src = base64
   })
 }
@@ -72,7 +76,7 @@ export function cropToCircle(base64, size) {
 // Compress image to JPEG for stamp-card endpoint (payload limit).
 // Flattens transparency onto bgColor (default white).
 export function compressForStampCard(base64, quality = 0.85, bgColor = '#FFFFFF') {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.onload = () => {
@@ -85,6 +89,7 @@ export function compressForStampCard(base64, quality = 0.85, bgColor = '#FFFFFF'
       ctx.drawImage(img, 0, 0)
       resolve(canvas.toDataURL('image/jpeg', quality))
     }
+    img.onerror = () => reject(new Error('Failed to load image for stamp card'))
     img.src = base64
   })
 }
@@ -99,7 +104,7 @@ export function estimateBase64Size(dataUrl) {
 // Sample the color at the circle edge of the image (4 cardinal points, just inside the border).
 // Used to set the stamp slot background color, making it seamless.
 export function sampleCircleEdgeColor(base64, size = 300) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.onload = () => {
@@ -132,6 +137,7 @@ export function sampleCircleEdgeColor(base64, size = 300) {
           .padStart(2, '0')
       resolve(`#${toHex(rSum)}${toHex(gSum)}${toHex(bSum)}`)
     }
+    img.onerror = () => reject(new Error('Failed to load image for color sampling'))
     img.src = base64
   })
 }
