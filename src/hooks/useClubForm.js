@@ -53,6 +53,10 @@ function getSavedImages(programId) {
   }
 }
 
+function isBase64(url) {
+  return url?.startsWith('data:')
+}
+
 // Build form data from an existing program, merging API response + program list + localStorage fallbacks
 function buildFormDataFromProgram(existingProgram, programFromList, brandId, stores) {
   const images = existingProgram.images || programFromList?.images || {}
@@ -401,18 +405,23 @@ export function useClubForm() {
     const prevImages = getSavedImages(idToUpdate)
 
     const shouldRegenerateImage = hasNewBackground || hasNewStamp || hasNewLogo || hasStampsRequiredChanged
+    // Only use base64 data URLs for compression — remote S3 URLs can't be drawn
+    // to canvas without CORS headers. Null fields are omitted by the stamp card API,
+    // so the backend reuses existing images for any missing components.
+    const prevBg = isBase64(prevImages.background) ? prevImages.background : null
+    const prevStamp = isBase64(prevImages.stamp) ? prevImages.stamp : null
+    const prevLogo = isBase64(prevImages.logo) ? prevImages.logo : null
+
     const hasLocalImages =
-      (hasNewBackground ? formData.background_image_url : prevImages.background) ||
-      (hasNewStamp ? formData.stamp_image_url : prevImages.stamp) ||
-      (hasNewLogo ? formData.logo_url : prevImages.logo)
+      (hasNewBackground ? formData.background_image_url : prevBg) ||
+      (hasNewStamp ? formData.stamp_image_url : prevStamp) ||
+      (hasNewLogo ? formData.logo_url : prevLogo)
 
     // Compress images before updating so we can validate payload size
     const stampBgColor = hasNewStamp ? formData.stamp_icon_bg_color : prevImages.color || formData.stamp_icon_bg_color
-    const rawBg = hasNewBackground
-      ? formData.background_image_url
-      : prevImages.background || formData.background_image_url || null
-    const rawStamp = hasNewStamp ? formData.stamp_image_url : prevImages.stamp || null
-    const rawLogo = hasNewLogo ? formData.logo_url : prevImages.logo || null
+    const rawBg = hasNewBackground ? formData.background_image_url : prevBg
+    const rawStamp = hasNewStamp ? formData.stamp_image_url : prevStamp
+    const rawLogo = hasNewLogo ? formData.logo_url : prevLogo
 
     let compBg, compStamp, compLogo, compBrandLogo
     try {

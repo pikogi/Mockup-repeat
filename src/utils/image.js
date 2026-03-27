@@ -1,9 +1,15 @@
+// Only set crossOrigin for remote URLs; data: URIs don't need it and
+// setting it on S3 URLs without proper CORS headers causes load failures.
+function setCrossOriginIfRemote(img, src) {
+  if (src && !src.startsWith('data:')) img.crossOrigin = 'anonymous'
+}
+
 // Scale image proportionally if it exceeds max dimensions.
 // Uses PNG to preserve transparency.
 export function resizeImageToMax(base64, maxWidth, maxHeight) {
   return new Promise((resolve, reject) => {
     const img = new Image()
-    img.crossOrigin = 'anonymous'
+    setCrossOriginIfRemote(img, base64)
     img.onload = () => {
       const { naturalWidth: w, naturalHeight: h } = img
       const ratio = Math.min(maxWidth / w, maxHeight / h, 1) // never upscale
@@ -24,7 +30,7 @@ export function resizeImageToMax(base64, maxWidth, maxHeight) {
 export function compressForBrandUpload(base64) {
   return new Promise((resolve, reject) => {
     const img = new Image()
-    img.crossOrigin = 'anonymous'
+    setCrossOriginIfRemote(img, base64)
     img.onload = () => {
       const MAX = 300
       const ratio = Math.min(MAX / img.naturalWidth, MAX / img.naturalHeight, 1)
@@ -48,7 +54,7 @@ export function compressForBrandUpload(base64) {
 export function cropToCircle(base64, size) {
   return new Promise((resolve, reject) => {
     const img = new Image()
-    img.crossOrigin = 'anonymous'
+    setCrossOriginIfRemote(img, base64)
     img.onload = () => {
       const { naturalWidth: w, naturalHeight: h } = img
       const canvas = document.createElement('canvas')
@@ -78,7 +84,7 @@ export function cropToCircle(base64, size) {
 export function compressForStampCard(base64, quality = 0.85, bgColor = '#FFFFFF') {
   return new Promise((resolve, reject) => {
     const img = new Image()
-    img.crossOrigin = 'anonymous'
+    setCrossOriginIfRemote(img, base64)
     img.onload = () => {
       const canvas = document.createElement('canvas')
       canvas.width = img.naturalWidth
@@ -106,7 +112,7 @@ export function estimateBase64Size(dataUrl) {
 export function sampleCircleEdgeColor(base64, size = 300) {
   return new Promise((resolve, reject) => {
     const img = new Image()
-    img.crossOrigin = 'anonymous'
+    setCrossOriginIfRemote(img, base64)
     img.onload = () => {
       const canvas = document.createElement('canvas')
       canvas.width = size
