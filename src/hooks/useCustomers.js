@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from 'react'
 import { api } from '@/api/client'
 import { getCurrentUser } from '@/utils/jwt'
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
-import { format, subDays, addDays, startOfMonth } from 'date-fns'
+import { addDaysUTC, formatDateUTC, startOfMonthUTC, subDaysUTC } from '@/utils/date'
 
 const PAGE_LIMIT = 25
 
@@ -57,12 +57,12 @@ export function useCustomers() {
 
   const getDateRange = useCallback(() => {
     const now = new Date()
-    if (dateFilter === '7d') return { start: subDays(now, 7), end: now }
-    if (dateFilter === 'month') return { start: startOfMonth(now), end: now }
+    if (dateFilter === '7d') return { start: subDaysUTC(now, 7), end: now }
+    if (dateFilter === 'month') return { start: startOfMonthUTC(now), end: now }
     if (dateFilter === 'custom' && customDate?.from) {
       return { start: customDate.from, end: customDate.to || customDate.from }
     }
-    return { start: subDays(now, 30), end: now } // "default" = last 30 days
+    return { start: subDaysUTC(now, 30), end: now } // "default" = last 30 days
   }, [dateFilter, customDate])
 
   // Server-side cursor pagination with useInfiniteQuery
@@ -84,8 +84,8 @@ export function useCustomers() {
       if (programFilter) params.programId = programFilter
       const range = getDateRange()
       if (range) {
-        params.from = format(range.start, 'yyyy-MM-dd')
-        params.to = format(addDays(range.end, 1), 'yyyy-MM-dd')
+        params.from = formatDateUTC(range.start)
+        params.to = formatDateUTC(addDaysUTC(range.end, 1))
       }
       if (SORT_MAP[sortBy]) params.sortBy = SORT_MAP[sortBy]
       const res = await api.brands.getUsers(brandId, params)

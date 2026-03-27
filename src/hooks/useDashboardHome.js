@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/api/client'
-import { format, subDays, addDays, startOfMonth } from 'date-fns'
+import { addDaysUTC, formatDateUTC, startOfMonthUTC, subDaysUTC } from '@/utils/date'
 
 export function useDashboardHome(brandId) {
   const [dateFilter, setDateFilter] = useState('7d')
@@ -18,12 +18,12 @@ export function useDashboardHome(brandId) {
 
   const getDateRange = useCallback(() => {
     const now = new Date()
-    if (dateFilter === '7d') return { start: subDays(now, 7), end: now }
-    if (dateFilter === 'month') return { start: startOfMonth(now), end: now }
+    if (dateFilter === '7d') return { start: subDaysUTC(now, 7), end: now }
+    if (dateFilter === 'month') return { start: startOfMonthUTC(now), end: now }
     if (dateFilter === 'custom' && customDate?.from) {
       return { start: customDate.from, end: customDate.to || customDate.from }
     }
-    return { start: subDays(now, 30), end: now }
+    return { start: subDaysUTC(now, 30), end: now }
   }, [dateFilter, customDate])
 
   // Stores for filter dropdown
@@ -48,8 +48,8 @@ export function useDashboardHome(brandId) {
     queryFn: async () => {
       if (!brandId) return null
       const range = getDateRange()
-      const from = format(range.start, 'yyyy-MM-dd')
-      const to = format(addDays(range.end, 1), 'yyyy-MM-dd')
+      const from = formatDateUTC(range.start)
+      const to = formatDateUTC(addDaysUTC(range.end, 1))
       const res = await api.brands.getStats(brandId, { storeId, from, to })
       return res?.data || res || null
     },
@@ -64,8 +64,8 @@ export function useDashboardHome(brandId) {
     queryFn: async () => {
       if (!brandId) return []
       const range = getDateRange()
-      const from = format(range.start, 'yyyy-MM-dd')
-      const to = format(addDays(range.end, 1), 'yyyy-MM-dd')
+      const from = formatDateUTC(range.start)
+      const to = formatDateUTC(addDaysUTC(range.end, 1))
       const res = await api.brands.getStatsUsers(brandId, { from, to, storeId })
       return res?.data || res || []
     },
@@ -79,8 +79,8 @@ export function useDashboardHome(brandId) {
     queryFn: async () => {
       if (!brandId) return []
       const range = getDateRange()
-      const from = format(range.start, 'yyyy-MM-dd')
-      const to = format(addDays(range.end, 1), 'yyyy-MM-dd')
+      const from = formatDateUTC(range.start)
+      const to = formatDateUTC(addDaysUTC(range.end, 1))
       const res = await api.brands.getStatsTransactions(brandId, { from, to, storeId })
       return res?.data || res || []
     },
@@ -94,8 +94,8 @@ export function useDashboardHome(brandId) {
     queryFn: async () => {
       if (!brandId) return []
       const range = getDateRange()
-      const from = format(range.start, 'yyyy-MM-dd')
-      const to = format(addDays(range.end, 1), 'yyyy-MM-dd')
+      const from = formatDateUTC(range.start)
+      const to = formatDateUTC(addDaysUTC(range.end, 1))
       const res = await api.brands.getStatsRedemptions(brandId, { from, to, storeId })
       return res?.data || res || []
     },
@@ -132,22 +132,27 @@ export function useDashboardHome(brandId) {
     // Generate one entry per day in the range
     const days = []
     const cursor = new Date(range.start)
-    cursor.setHours(0, 0, 0, 0)
+    cursor.setUTCHours(0, 0, 0, 0)
     const end = new Date(range.end)
-    end.setHours(23, 59, 59, 999)
+    end.setUTCHours(23, 59, 59, 999)
 
     while (cursor <= end) {
       days.push(new Date(cursor))
-      cursor.setDate(cursor.getDate() + 1)
+      cursor.setUTCDate(cursor.getUTCDate() + 1)
     }
 
     if (days.length === 0) return []
 
     return days.map((day) => {
-      const key = format(day, 'yyyy-MM-dd')
+      const key = formatDateUTC(day)
       return {
-        date: day.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
-        fullDate: day.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }),
+        date: day.toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' }),
+        fullDate: day.toLocaleDateString(undefined, {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+          timeZone: 'UTC',
+        }),
         adds: usersByDate.get(key) ?? 0,
         scans: stampsByDate.get(key) ?? 0,
         redemptions: redemptionsByDate.get(key) ?? 0,

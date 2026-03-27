@@ -4,7 +4,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { motion, AnimatePresence } from 'framer-motion'
-import { format, subMonths } from 'date-fns'
+import { subMonths } from 'date-fns'
+import { formatDateUTC } from '@/utils/date'
 import { useLanguage } from '@/components/auth/LanguageContext'
 
 export default function DateFilterSelect({
@@ -46,12 +47,12 @@ export default function DateFilterSelect({
                 <Input
                   type="date"
                   className="bg-white dark:bg-gray-900 w-full md:w-[160px] h-10"
-                  value={format(customDate.from, 'yyyy-MM-dd')}
-                  min={format(subMonths(new Date(), maxMonthsBack), 'yyyy-MM-dd')}
-                  max={format(customDate.to, 'yyyy-MM-dd')}
+                  value={formatDateUTC(customDate.from)}
+                  min={formatDateUTC(subMonths(new Date(), maxMonthsBack))}
+                  max={formatDateUTC(customDate.to)}
                   onChange={(e) => {
                     if (!e.target.value) return
-                    setCustomDate((prev) => ({ ...prev, from: new Date(e.target.value + 'T00:00:00') }))
+                    setCustomDate((prev) => ({ ...prev, from: new Date(e.target.value + 'T00:00:00Z') }))
                   }}
                 />
               </div>
@@ -60,12 +61,12 @@ export default function DateFilterSelect({
                 <Input
                   type="date"
                   className="bg-white dark:bg-gray-900 w-full md:w-[160px] h-10"
-                  value={format(customDate.to, 'yyyy-MM-dd')}
-                  min={format(customDate.from, 'yyyy-MM-dd')}
-                  max={format(new Date(), 'yyyy-MM-dd')}
+                  value={formatDateUTC(customDate.to)}
+                  min={formatDateUTC(customDate.from)}
+                  max={formatDateUTC(new Date())}
                   onChange={(e) => {
                     if (!e.target.value) return
-                    setCustomDate((prev) => ({ ...prev, to: new Date(e.target.value + 'T00:00:00') }))
+                    setCustomDate((prev) => ({ ...prev, to: new Date(e.target.value + 'T00:00:00Z') }))
                   }}
                 />
               </div>
