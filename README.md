@@ -39,7 +39,7 @@ repeat-app/
 │   ├── pages/           # Pages (lazy-loaded via React.lazy)
 │   ├── stores/          # Global state (Zustand, legacy — only used by ScanQR)
 │   ├── lib/             # Utilities (cn, etc.)
-│   └── utils/           # Helpers (jwt, image processing, password validation)
+│   └── utils/           # Helpers (jwt, image processing, date, password validation)
 ├── public/              # Static assets
 ├── vite.config.js       # Vite config (proxy, build)
 └── .env.example         # Environment variables reference

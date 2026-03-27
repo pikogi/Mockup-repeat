@@ -32,7 +32,7 @@ No test framework is configured.
 | --- | --- | --- |
 | `useClubForm` | `CreateClub` | Form state, image uploads, create/update program via direct API. Uses `initialData` from the programs list cache to avoid refetching on edit. |
 | `useMyPrograms` | `MyPrograms` | Programs list (single query), member counts (inline from API), toggle active, delete |
-| `useCustomers` | `Customers` | Members list with inline stats (single paginated query), filtering, sorting, infinite scroll |
+| `useCustomers` | `Customers` | Members list with inline stats (single paginated query), filtering, date filter, server-side sorting, infinite scroll |
 | `useDashboard` | `Dashboard` | Brand selector, logo upload, create/delete brand, me query |
 | `useDashboardHome` | `DashboardHome` | Stats queries (brand stats, user/transaction/redemption history), date/store filters, chart data |
 | `useStores` | `Stores` | Stores CRUD with optimistic updates, QR URL generation, form/dialog state |
@@ -53,7 +53,7 @@ Tiny namespaces (`health`, `redemptions`, `shortUrls`, `notifications`) are defi
 
 In dev, Vite proxies `/api` to the AWS backend. In prod, uses `VITE_API_URL`. JWT is cached in a module-level variable (`_cachedToken`) and synced to localStorage via `setCachedToken()`; 401 responses auto-clear token and redirect to login. All token mutations (login, register, verifyEmail, updateBrandAdmin, logout) use `setCachedToken()` to keep the cache in sync. An optional `VITE_API_KEY` is sent as `x-api-key` header on all requests when set.
 
-**UI**: shadcn/ui components (50+) built on Radix UI primitives, in `src/components/ui/`. Styled with Tailwind CSS using HSL CSS variables for theming (light/dark via class). Icons from lucide-react.
+**UI**: shadcn/ui components (~30) built on Radix UI primitives, in `src/components/ui/`. Styled with Tailwind CSS using HSL CSS variables for theming (light/dark via class). Icons from lucide-react.
 
 **Path alias**: `@` maps to `./src` (configured in both vite.config.js and jsconfig.json).
 
@@ -70,11 +70,14 @@ In dev, Vite proxies `/api` to the AWS backend. In prod, uses `VITE_API_URL`. JW
 - `dashboard/OnboardingView.jsx`, `dashboard/StampsDistribution.jsx` — onboarding flow, stamps distribution chart
 - `onboarding/ShareCardModal.jsx` — card sharing modal for onboarding
 - `subscription/PricingModal.jsx` — subscription pricing dialog
+- `shared/DateFilterSelect.jsx` — reusable date filter (7d, month, custom range) used by dashboard and customers
 - `stores/StoresSections.jsx` — StoreCard, StoresLoadingSkeleton, StoresEmptyState, StoreFormDialog, StoreQrDialog
 
 **Shared constants**: `src/constants/programTypes.js` — PROGRAM_TYPES array with id/key/name/description, plus helpers (`getProgramTypeDescription`, `getProgramTypeName`, `getProgramTypeFromId`).
 
 **Image utilities**: `src/utils/image.js` — canvas-based functions for image processing (resizeImageToMax, compressForBrandUpload, compressForStampCard, cropToCircle, sampleCircleEdgeColor, estimateBase64Size). All `Image` instances use `crossOrigin = 'anonymous'` to avoid tainted canvas errors with S3/CDN images. Stamp icons are cropped to a 150px circular PNG (preserving transparency) and sent as-is to the stamp card API; backgrounds and logos are compressed to JPEG via `compressForStampCard`. Before sending, `estimateBase64Size` validates the combined payload stays under 5MB (Lambda limit).
+
+**Date utilities**: `src/utils/date.js` — UTC-safe date helpers (`formatDateUTC`, `addDaysUTC`, `subDaysUTC`, `startOfMonthUTC`) used for API date filters. Avoids timezone offset issues that occur with `date-fns` local-time functions.
 
 **Password validation**: `src/utils/passwordValidation.js` — shared password validation rules used across auth forms.
 
@@ -117,11 +120,22 @@ Automated via [release-please](https://github.com/googleapis/release-please) (`.
 
 - **Single-query pages**: Backend LIST endpoints return all fields needed by the UI (including nested objects like `wallet_design`, `brand`, `loyalty_cards`). Hooks like `useMyPrograms` and `useCustomers` make a single API call per page load — no N+1 detail fetches.
 - **`initialData` for instant navigation**: When navigating from a list to a detail/edit view, pass cached data via React Query's `initialData` to render instantly while refetching in the background (see `useClubForm` for edit mode, `CustomerDetailModal` for customer details).
-- **Short URL fast redirect**: `index.html` contains an inline `<script>` that resolves `/s/{code}` short URLs before React loads, avoiding full SPA boot for redirects.
+- **Short URL fast redirect**: `public/redirect.js` is loaded as a synchronous `<script>` in `index.html` that resolves `/s/{code}` short URLs before React loads, avoiding full SPA boot for redirects. It reads the API URL from a `<meta name="api-url">` tag. Must remain synchronous (no `defer`/`async`/`type="module"`).
 - Prefer computed values during render over `useEffect` that derives state from props/other state.
 - Use `Map` for O(1) lookups when iterating over arrays (instead of `.find()` inside loops).
 - `content-visibility: auto` is used on long lists for rendering performance.
 - Do not add debug `console.log` blocks to `client.js` — they were removed intentionally to reduce per-request overhead.
+
+## Security Headers
+
+A Content-Security-Policy is defined via `<meta>` tag in `index.html`. Key directives:
+
+- `script-src 'self'` — the short-URL redirect script was externalized to `public/redirect.js` to avoid `'unsafe-inline'`.
+- `style-src 'self' 'unsafe-inline'` — required by Tailwind, Framer Motion, and Radix UI inline styles.
+- `img-src 'self' data: blob: https://*.s3.us-east-1.amazonaws.com https://api.qrserver.com` — covers canvas base64, QR downloads, S3 program images, and QR generation.
+- `connect-src 'self' %VITE_API_URL%` — Vite replaces the env var at build time per environment.
+
+When adding new external resources (CDN fonts, analytics, etc.), update the CSP directives in `index.html`.
 
 ## Build Notes
 
