@@ -42,7 +42,7 @@ export default function Dashboard() {
   if (meError || !meData) {
     return (
       <div className="min-h-screen flex items-center justify-center text-muted-foreground">
-        Error cargando el dashboard
+        {t('dashboardLoadError')}
       </div>
     )
   }

@@ -64,10 +64,10 @@ export default function Sidebar() {
       // Redirigir a la página de login
       navigate('/login', { replace: true })
 
-      toast.success(t('logout') + ' exitoso')
+      toast.success(t('logoutSuccess'))
     } catch (error) {
       console.error('Error al cerrar sesión:', error)
-      toast.error('Error al cerrar sesión')
+      toast.error(t('logoutError'))
     }
   }
 
@@ -86,7 +86,7 @@ export default function Sidebar() {
     ...(user?.type_user === 'brand_admin' ? [{ name: t('stores'), icon: Store, page: 'Stores' }] : []),
   ]
 
-  const primaryAction = { name: t('Crear Club'), icon: Plus, page: 'CreateClub' }
+  const primaryAction = { name: t('createProgram'), icon: Plus, page: 'CreateClub' }
   const currentPath = location.pathname
 
   return (
@@ -113,7 +113,9 @@ export default function Sidebar() {
                 >
                   <item.icon className="w-5 h-5" />
                   <span className="font-medium">{item.name}</span>
-                  <span className="ml-auto text-xs font-medium text-gray-300 dark:text-gray-600">Próximamente</span>
+                  <span className="ml-auto text-xs font-medium text-gray-300 dark:text-gray-600">
+                    {t('comingSoon')}
+                  </span>
                 </div>
               )
             }
@@ -161,7 +163,7 @@ export default function Sidebar() {
             target="_blank"
             rel="noopener noreferrer"
             className="p-3 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 flex-shrink-0"
-            aria-label="Soporte"
+            aria-label={t('support')}
           >
             <HelpCircle className="w-5 h-5" />
           </a>
@@ -194,7 +196,7 @@ export default function Sidebar() {
                     <div className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg text-gray-300 cursor-not-allowed select-none">
                       <Bell className="w-5 h-5" />
                       {t('notifications')}
-                      <span className="ml-auto text-xs font-medium">Próximamente</span>
+                      <span className="ml-auto text-xs font-medium">{t('comingSoon')}</span>
                     </div>
                   )}
                   <Link
@@ -231,7 +233,7 @@ export default function Sidebar() {
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       <HelpCircle className="w-5 h-5" />
-                      Soporte
+                      {t('support')}
                     </a>
                     <button
                       onClick={handleLogout}
@@ -313,7 +315,7 @@ export default function Sidebar() {
               )}
             >
               <Store className="w-5 h-5" />
-              <span className="text-xs font-medium">Sucursal</span>
+              <span className="text-xs font-medium">{t('store')}</span>
             </Link>
           </div>
         </div>

@@ -10,8 +10,10 @@ import {
   StoreCard,
   StoreQrDialog,
 } from '@/components/stores/StoresSections'
+import { useLanguage } from '@/components/auth/LanguageContext'
 
 export default function Stores() {
+  const { t } = useLanguage()
   const user = useMemo(() => getCurrentUser(), [])
   const brandId = localStorage.getItem('brand_id')
 
@@ -39,7 +41,7 @@ export default function Stores() {
   if (!user || user.type_user !== 'brand_admin') {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500 dark:text-gray-400">Access Denied. Admins only.</p>
+        <p className="text-gray-500 dark:text-gray-400">{t('accessDenied')}</p>
       </div>
     )
   }
@@ -52,9 +54,9 @@ export default function Stores() {
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <Store className="w-8 h-8 text-gray-700 dark:text-gray-300" />
-                <h1 className="text-4xl font-bold leading-tight text-foreground">Sucursales</h1>
+                <h1 className="text-4xl font-bold leading-tight text-foreground">{t('storesTitle')}</h1>
               </div>
-              <p className="text-gray-600 dark:text-gray-400">Gestiona las ubicaciones de tu negocio</p>
+              <p className="text-gray-600 dark:text-gray-400">{t('storesSubtitle')}</p>
             </div>
           </div>
 

@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 import { Loader2, Eye, EyeOff, Check, X } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { validatePassword } from '@/utils/passwordValidation'
+import { useLanguage } from '@/components/auth/LanguageContext'
 
 // Componente de animación de máquina de escribir
 function Typewriter({ text, speed = 100, delay = 0 }) {
@@ -53,6 +54,7 @@ function Typewriter({ text, speed = 100, delay = 0 }) {
 
 export default function Login() {
   const navigate = useNavigate()
+  const { t } = useLanguage()
   const [isLogin, setIsLogin] = useState(true)
   const [showVerificationMessage, setShowVerificationMessage] = useState(false)
   const [verificationEmail, setVerificationEmail] = useState('')
@@ -86,7 +88,7 @@ export default function Login() {
       return response
     },
     onSuccess: async (response) => {
-      toast.success('¡Inicio de sesión exitoso!')
+      toast.success(t('loginSuccessToast'))
 
       const token = response?.data?.token
 
@@ -120,10 +122,10 @@ export default function Login() {
             navigate(onboarding_completed ? '/dashboard' : '/onboarding')
           }
         } else {
-          toast.error('Error al procesar la autenticación. Intenta nuevamente.')
+          toast.error(t('loginAuthError'))
         }
       } else {
-        toast.error('Error al procesar la autenticación. Intenta nuevamente.')
+        toast.error(t('loginAuthError'))
       }
     },
     onError: (error) => {
@@ -131,7 +133,7 @@ export default function Login() {
       if (error.response?.data?.requiresVerification) {
         setShowVerificationMessage(true)
         setVerificationEmail(formData.email)
-        toast.error('Por favor verifica tu correo electrónico antes de iniciar sesión')
+        toast.error(t('loginVerifyEmail'))
       } else if (error.response?.status === 401) {
         // Si es un 401 (Unauthorized), podría ser porque el email no está verificado
         const errorMessage = error.response?.data?.message || error.message || 'Credenciales inválidas'
@@ -140,17 +142,17 @@ export default function Login() {
           errorMessage.toLowerCase().includes('credenciales inválidas')
         ) {
           setShowLoginError(true)
-          toast.error('Credenciales inválidas. Intenta nuevamente.', { duration: 5000 })
+          toast.error(t('loginInvalidCredentials'), { duration: 5000 })
         } else {
           toast.error(errorMessage)
         }
       } else if (!error.response) {
         // Error de red (CORS, servidor no disponible, etc.)
         setShowLoginError(true)
-        toast.error('Error de conexión. Verifica tu conexión a internet e intenta nuevamente.', { duration: 5000 })
+        toast.error(t('loginNetworkError'), { duration: 5000 })
       } else {
         setShowLoginError(true)
-        toast.error(error.message || 'Error al iniciar sesión')
+        toast.error(error.message || t('loginError'))
       }
     },
   })
@@ -168,10 +170,10 @@ export default function Login() {
     onSuccess: async () => {
       setVerificationEmail(formData.email)
       setShowVerificationMessage(true)
-      toast.success('¡Registro exitoso! Por favor verifica tu correo electrónico.')
+      toast.success(t('loginRegisterSuccess'))
     },
     onError: (error) => {
-      const errorMessage = error.message || error.response?.data?.message || 'Error al registrarse'
+      const errorMessage = error.message || error.response?.data?.message || t('loginRegisterError')
       toast.error(errorMessage)
     },
   })
@@ -318,10 +320,10 @@ export default function Login() {
                 style={{ marginTop: '-1rem' }}
               >
                 <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                  {isLogin ? 'Iniciar sesión' : 'Crear cuenta'}
+                  {isLogin ? t('loginTitle') : t('loginCreateAccount')}
                 </CardTitle>
                 <CardDescription className="text-base">
-                  {isLogin ? 'Bienvenido de vuelta' : 'Comienza tu viaje con nosotros'}
+                  {isLogin ? t('loginWelcomeBack') : t('loginStartJourney')}
                 </CardDescription>
               </motion.div>
             </CardHeader>
@@ -373,7 +375,7 @@ export default function Login() {
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
                   <span className="bg-white dark:bg-gray-900 px-2 text-gray-500 dark:text-gray-400">
-                    Continúa con tu email
+                    {t('loginContinueWithEmail')}
                   </span>
                 </div>
               </motion.div>
@@ -386,26 +388,21 @@ export default function Login() {
                   className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4 mb-4"
                 >
                   <p className="text-sm text-yellow-800 mb-3">
-                    Se ha enviado un correo de verificación a <strong>{verificationEmail}</strong>. Por favor revisa tu
-                    bandeja de entrada (y la carpeta de spam) y haz clic en el enlace para activar tu cuenta.
+                    {t('loginVerificationSent')} <strong>{verificationEmail}</strong>. {t('loginVerificationCheck')}
                   </p>
-                  <p className="text-xs text-yellow-700 mb-3">
-                    Si no recibes el correo en unos minutos, verifica tu carpeta de spam o contacta al administrador.
-                  </p>
+                  <p className="text-xs text-yellow-700 mb-3">{t('loginVerificationSpam')}</p>
                   {/* Botón deshabilitado temporalmente - endpoint /auth/resend-verification no existe en el backend */}
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      toast.info(
-                        'El reenvío de correo no está disponible actualmente. Por favor verifica tu bandeja de entrada y spam.',
-                      )
+                      toast.info(t('loginResendUnavailable'))
                     }}
                     disabled={true}
                     className="w-full text-yellow-800 border-yellow-300 hover:bg-yellow-100 opacity-50 cursor-not-allowed"
                   >
-                    Reenviar correo de verificación (No disponible)
+                    {t('loginResendBtn')}
                   </Button>
                 </motion.div>
               )}
@@ -418,13 +415,9 @@ export default function Login() {
                   className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mb-4"
                 >
                   <p className="text-sm text-red-800 mb-2">
-                    <strong>Error de autenticación:</strong> Las credenciales proporcionadas no son válidas.
+                    <strong>{t('loginErrorTitle')}</strong> {t('loginErrorDesc')}
                   </p>
-                  <p className="text-xs text-red-700">
-                    Si acabas de registrarte, es posible que necesites verificar tu correo electrónico antes de poder
-                    iniciar sesión. Por favor revisa tu bandeja de entrada (incluyendo la carpeta de spam) y haz clic en
-                    el enlace de verificación.
-                  </p>
+                  <p className="text-xs text-red-700">{t('loginErrorHint')}</p>
                 </motion.div>
               )}
 
@@ -444,13 +437,13 @@ export default function Login() {
                     className="space-y-2"
                   >
                     <Label htmlFor="name" className="text-gray-700 dark:text-gray-300 font-medium">
-                      Nombre
+                      {t('loginName')}
                     </Label>
                     <motion.div whileFocus={{ scale: 1.01 }} transition={{ duration: 0.2 }}>
                       <Input
                         id="name"
                         type="text"
-                        placeholder="Tu nombre completo"
+                        placeholder={t('loginNamePlaceholder')}
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         required={!isLogin}
@@ -490,7 +483,7 @@ export default function Login() {
                 >
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password" className="text-gray-700 dark:text-gray-300 font-medium">
-                      Contraseña
+                      {t('password')}
                     </Label>
                     {isLogin && (
                       <motion.button
@@ -500,7 +493,7 @@ export default function Login() {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >
-                        ¿Olvidaste tu contraseña?
+                        {t('loginForgotPassword')}
                       </motion.button>
                     )}
                   </div>
@@ -525,7 +518,7 @@ export default function Login() {
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none"
-                      aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                      aria-label={showPassword ? t('loginHidePassword') : t('loginShowPassword')}
                     >
                       {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
@@ -547,7 +540,7 @@ export default function Login() {
                         ) : (
                           <X className="w-4 h-4" />
                         )}
-                        <span>Mínimo 8 caracteres</span>
+                        <span>{t('loginMinChars')}</span>
                       </div>
                       <div
                         className={`flex items-center gap-2 ${passwordValidation.requirements.hasUppercase ? 'text-green-600' : 'text-red-600'}`}
@@ -557,7 +550,7 @@ export default function Login() {
                         ) : (
                           <X className="w-4 h-4" />
                         )}
-                        <span>Al menos una letra mayúscula</span>
+                        <span>{t('loginUppercase')}</span>
                       </div>
                       <div
                         className={`flex items-center gap-2 ${passwordValidation.requirements.hasNumber ? 'text-green-600' : 'text-red-600'}`}
@@ -567,7 +560,7 @@ export default function Login() {
                         ) : (
                           <X className="w-4 h-4" />
                         )}
-                        <span>Al menos un número</span>
+                        <span>{t('loginNumber')}</span>
                       </div>
                     </motion.div>
                   )}
@@ -587,12 +580,12 @@ export default function Login() {
                       {loginMutation.isPending || registerMutation.isPending ? (
                         <>
                           <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                          {isLogin ? 'Iniciando sesión...' : 'Creando cuenta...'}
+                          {isLogin ? t('loginSigningIn') : t('loginCreatingAccount')}
                         </>
                       ) : isLogin ? (
-                        'Iniciar sesión'
+                        t('loginTitle')
                       ) : (
-                        'Crear cuenta'
+                        t('loginCreateAccount')
                       )}
                     </Button>
                   </motion.div>
@@ -625,9 +618,9 @@ export default function Login() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  {isLogin ? '¿No tienes cuenta? ' : '¿Ya tienes cuenta? '}
+                  {isLogin ? t('loginNoAccount') : t('loginHaveAccount')}
                   <span className="text-yellow-600 hover:underline font-semibold">
-                    {isLogin ? 'Regístrate' : 'Inicia sesión'}
+                    {isLogin ? t('loginRegister') : t('loginTitle')}
                   </span>
                 </motion.button>
               </motion.div>

@@ -120,11 +120,11 @@ export default function Customers() {
           <Select value={sortBy} onValueChange={handleSortChange}>
             <SelectTrigger className="h-10 rounded-xl w-full sm:w-44">
               <ArrowUpDown className="w-4 h-4 mr-2 text-gray-400" />
-              <span className="text-sm">Ordenar por</span>
+              <span className="text-sm">{t('sortBy')}</span>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="date">Fecha registro</SelectItem>
-              <SelectItem value="visits">Visitas totales</SelectItem>
+              <SelectItem value="date">{t('sortByDate')}</SelectItem>
+              <SelectItem value="visits">{t('sortByVisits')}</SelectItem>
             </SelectContent>
           </Select>
 
@@ -140,7 +140,8 @@ export default function Customers() {
         {/* Stats */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="mb-6">
           <p className="text-gray-600 dark:text-gray-400">
-            Mostrando <span className="font-semibold text-gray-900 dark:text-gray-100">{sortedMembers.length}</span> de{' '}
+            {t('showing')}{' '}
+            <span className="font-semibold text-gray-900 dark:text-gray-100">{sortedMembers.length}</span> {t('of')}{' '}
             <span className="font-semibold text-gray-900 dark:text-gray-100">{totalCount}</span> {t('customersCount')}
           </p>
         </motion.div>

@@ -40,7 +40,7 @@ function extractCardId(rawValue) {
 }
 
 export default function ScanQR() {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const navigate = useNavigate()
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
@@ -214,7 +214,7 @@ export default function ScanQR() {
       const card = cardResponse?.data || cardResponse
       console.log('[ScanQR] Tarjeta obtenida:', card)
 
-      if (!card) throw new Error('Tarjeta no encontrada')
+      if (!card) throw new Error(t('scanCardNotFound'))
 
       let stampsRequired = 10
       if (card.program_id) {
@@ -223,7 +223,7 @@ export default function ScanQR() {
           const program = progRes?.data || progRes
 
           if (program?.brand_id && brandId && program.brand_id !== brandId) {
-            throw new Error('Esta tarjeta no está registrada en tu negocio')
+            throw new Error(t('scanCardNotYours'))
           }
 
           const rules =
@@ -232,7 +232,7 @@ export default function ScanQR() {
               : program?.program_rules || {}
           stampsRequired = rules.stamps_required || 20
         } catch (err) {
-          if (err.message === 'Esta tarjeta no está registrada en tu negocio') throw err
+          if (err.message === t('scanCardNotYours')) throw err
           // usar fallback 20
         }
       }
@@ -249,11 +249,7 @@ export default function ScanQR() {
         err?.message?.toLowerCase().includes('token') ||
         err?.message?.toLowerCase().includes('unauthorized')
       setIsAuthError(authFailed)
-      setErrorMsg(
-        authFailed
-          ? 'Tu sesión expiró. Por favor inicia sesión nuevamente.'
-          : err.message || 'No se pudo leer la tarjeta',
-      )
+      setErrorMsg(authFailed ? t('scanSessionExpired') : err.message || t('scanCouldNotReadCard'))
     } finally {
       setProcessing(false)
       processingRef.current = false
@@ -297,7 +293,7 @@ export default function ScanQR() {
       setResult({
         success: true,
         customerName: card.customer?.full_name,
-        rewardText: card.reward_description || 'Recompensa',
+        rewardText: card.reward_description || t('rewards'),
       })
       setStep('success')
     } catch (err) {
@@ -310,11 +306,7 @@ export default function ScanQR() {
         err?.message?.toLowerCase().includes('token') ||
         err?.message?.toLowerCase().includes('unauthorized')
       setIsAuthError(authFailed)
-      setErrorMsg(
-        authFailed
-          ? 'Tu sesión expiró. Por favor inicia sesión nuevamente.'
-          : getTransactionErrorMessage(err, 'Error al agregar el sello'),
-      )
+      setErrorMsg(authFailed ? t('scanSessionExpired') : getTransactionErrorMessage(err, t('scanErrorAddStamp')))
     } finally {
       setProcessing(false)
     }
@@ -328,7 +320,7 @@ export default function ScanQR() {
       setStep('success')
     } catch (err) {
       setStep('error')
-      setErrorMsg(err.message || 'Error al canjear el premio')
+      setErrorMsg(err.message || t('scanErrorRedeemReward'))
     } finally {
       setRedeemProcessing(false)
     }
@@ -384,7 +376,7 @@ export default function ScanQR() {
       <div className="fixed inset-0 bg-black z-50 flex items-center justify-center p-4">
         <Card className="p-8 w-full max-w-md bg-white dark:bg-gray-900 text-center">
           <Loader2 className="w-12 h-12 text-indigo-600 mx-auto mb-4 animate-spin" />
-          <p className="text-gray-600 dark:text-gray-400">Cargando tiendas...</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('scanLoadingStores')}</p>
         </Card>
       </div>
     )
@@ -396,12 +388,10 @@ export default function ScanQR() {
       <div className="fixed inset-0 bg-black z-50 flex items-center justify-center p-4">
         <Card className="p-8 w-full max-w-md bg-white dark:bg-gray-900 text-center">
           <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Sin tiendas configuradas</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Necesitas tener al menos una tienda configurada para escanear códigos QR.
-          </p>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">{t('scanNoStoresTitle')}</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">{t('scanNoStoresDesc')}</p>
           <Button onClick={handleClose} className="w-full">
-            Volver al Dashboard
+            {t('scanBackToDashboard')}
           </Button>
         </Card>
       </div>
@@ -488,7 +478,7 @@ export default function ScanQR() {
                     transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                     className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
                   />
-                  <span className="text-sm font-medium">Procesando...</span>
+                  <span className="text-sm font-medium">{t('scanProcessing')}</span>
                 </div>
               )}
 
@@ -509,7 +499,7 @@ export default function ScanQR() {
               {step === 'scan' && processing && (
                 <div className="flex flex-col items-center justify-center py-4">
                   <Loader2 className="w-12 h-12 text-indigo-600 animate-spin mb-4" />
-                  <p className="text-gray-600 dark:text-gray-400">Leyendo tarjeta...</p>
+                  <p className="text-gray-600 dark:text-gray-400">{t('scanReadingCard')}</p>
                 </div>
               )}
 
@@ -542,8 +532,8 @@ export default function ScanQR() {
                       )}
                       {card.created_at && (
                         <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
-                          Miembro desde{' '}
-                          {new Date(card.created_at).toLocaleDateString('es', {
+                          {t('scanMemberSince')}{' '}
+                          {new Date(card.created_at).toLocaleDateString(language === 'en' ? 'en' : 'es', {
                             month: 'long',
                             year: 'numeric',
                           })}
@@ -559,7 +549,7 @@ export default function ScanQR() {
                             <div className="flex items-center gap-2 mb-1">
                               <Gift className="w-4 h-4 text-green-600 dark:text-green-400" />
                               <span className="text-sm font-semibold text-green-800 dark:text-green-200">
-                                Premio listo para canjear
+                                {t('scanRewardReady')}
                               </span>
                             </div>
                             <p className="text-xs text-green-700 dark:text-green-300 mb-2">
@@ -572,7 +562,7 @@ export default function ScanQR() {
                               disabled={redeemProcessing}
                             >
                               {redeemProcessing ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
-                              Canjear Premio
+                              {t('scanRedeemReward')}
                             </Button>
                           </div>
                         )
@@ -581,7 +571,7 @@ export default function ScanQR() {
                       {/* Progress bar */}
                       <div className="mb-4 text-left">
                         <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
-                          <span>Sellos</span>
+                          <span>{t('scanStampsLabel')}</span>
                           <span>
                             {current} / {required}
                           </span>
@@ -603,15 +593,15 @@ export default function ScanQR() {
                         {processing ? (
                           <span className="flex items-center gap-2">
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            Agregando...
+                            {t('scanAddingStamp')}
                           </span>
                         ) : (
-                          '+ Agregar Sello'
+                          t('scanAddStamp')
                         )}
                       </Button>
 
                       <Button variant="outline" className="w-full" onClick={resetScanner} disabled={processing}>
-                        Cancelar
+                        {t('cancel')}
                       </Button>
                     </>
                   )
@@ -624,17 +614,17 @@ export default function ScanQR() {
                     <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                    {result?.isRedemption ? '¡Premio Canjeado!' : '¡Sello Agregado!'}
+                    {result?.isRedemption ? t('scanRewardRedeemed') : t('scanStampAdded')}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400 mb-6">
-                    {result?.isRedemption ? '¡Premio canjeado exitosamente!' : result?.customerName}
+                    {result?.isRedemption ? t('scanRewardRedeemedSuccess') : result?.customerName}
                   </p>
                   <div className="flex gap-3">
                     <Button variant="outline" className="flex-1" onClick={handleClose}>
-                      Cerrar
+                      {t('scanClose')}
                     </Button>
                     <Button className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black" onClick={resetScanner}>
-                      Escanear Nuevo
+                      {t('scanNewScan')}
                     </Button>
                   </div>
                 </>
@@ -647,27 +637,27 @@ export default function ScanQR() {
                     <AlertCircle className="w-10 h-10 text-red-600 dark:text-red-400" />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Error</h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-6">{errorMsg || 'No se pudo procesar'}</p>
+                  <p className="text-gray-600 dark:text-gray-400 mb-6">{errorMsg || t('scanCouldNotProcess')}</p>
                   <div className="flex gap-3">
                     {isAuthError ? (
                       <>
                         <Button variant="outline" className="flex-1" onClick={handleClose}>
-                          Cerrar
+                          {t('scanClose')}
                         </Button>
                         <Button
                           className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white"
                           onClick={() => navigate('/login')}
                         >
-                          Iniciar sesión
+                          {t('loginTitle')}
                         </Button>
                       </>
                     ) : (
                       <>
                         <Button variant="outline" className="flex-1" onClick={handleClose}>
-                          Cerrar
+                          {t('scanClose')}
                         </Button>
                         <Button className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black" onClick={resetScanner}>
-                          Reintentar
+                          {t('scanRetry')}
                         </Button>
                       </>
                     )}

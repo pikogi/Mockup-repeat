@@ -91,14 +91,14 @@ export default function MyPrograms() {
                   className="w-full md:w-fit bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black gap-2 shadow-md border-0"
                 >
                   <Plus className="w-5 h-5" />
-                  {t('Crear Club')}
+                  {t('createProgram')}
                 </Button>
               </Link>
               <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4">
                 <div className="relative w-full md:w-64">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <Input
-                    placeholder={t('Buscar Clubes')}
+                    placeholder={t('searchPrograms')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10 h-10 rounded-xl border-gray-200 dark:border-gray-700 focus:border-yellow-500"
