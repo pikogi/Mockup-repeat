@@ -52,23 +52,12 @@ export default function Team() {
 
     setIsSending(true)
     try {
-      // Use backend function to send email
-      // NOTA: api.functions.invoke('sendInvitation') no existe en el YAML - comentado
-      // const response = await api.functions.invoke('sendInvitation', {
-      //     email: cleanEmail,
-      //     brandName: brand?.brand_name || 'una marca',
-      //     inviteLink: getInviteLink()
-      // });
-      //
-      // if (response.data?.error) {
-      //     throw new Error(response.data.error + (response.data.details ? ` (${response.data.details})` : ''));
-      // }
       throw new Error(
         'Funcionalidad no disponible. El endpoint /functions/sendInvitation no está documentado en el YAML de Insomnia.',
       )
     } catch (error) {
       console.error('Invitation error:', error)
-      toast.error(`Error al enviar correo: ${error.message}`)
+      toast.error(`${t('teamInviteEmailError')}: ${error.message}`)
       // If email fails, show manual copy step instead of generic error
       setLastSentEmail(cleanEmail)
       setInviteStep('manual')
@@ -93,27 +82,12 @@ export default function Team() {
   const currentUser = getCurrentUser()
 
   // NOTA: api.brands.get() no existe en el YAML de Insomnia
-  // const { data: brand } = useQuery({
-  //   queryKey: ['brand', currentUser?.brand_id],
-  //   queryFn: () => api.brands.get(currentUser.brand_id),
-  //   enabled: !!currentUser?.brand_id
-  // });
   const brand = null // No disponible - endpoint no existe en YAML
 
   // Fetch all users (only allowed for admins)
-  // NOTA: api.entities.User.filter() no existe en el YAML - comentado
-  // const { data: users = [], isLoading } = useQuery({
-  //   queryKey: ['users', currentUser?.brand_id],
-  //   queryFn: () => api.entities.User.filter({ brand_id: currentUser?.brand_id }),
-  //   enabled: currentUser?.type_user === 'brand_admin' && !!currentUser?.brand_id,
-  // });
   const users = []
   const isLoading = false
 
-  // const { data: stores = [] } = useQuery({
-  //   queryKey: ['stores'],
-  //   queryFn: () => api.stores.list(),
-  // });
   const stores = []
 
   // Filtrar sucursales de la marca del usuario
@@ -138,20 +112,20 @@ export default function Team() {
 
   const copyInviteLink = () => {
     navigator.clipboard.writeText(getInviteLink())
-    toast.success('Enlace copiado al portapapeles')
+    toast.success(t('teamLinkCopied'))
   }
 
   const handleMailto = () => {
-    const subject = encodeURIComponent(`Invitación a unirte a ${brand?.brand_name || 'una marca'} en Repeat`)
+    const subject = encodeURIComponent(
+      `${t('teamEmailSubject')} ${brand?.brand_name || 'una marca'} ${t('teamEmailInRepeat')}`,
+    )
     const body = encodeURIComponent(
-      `Hola,\n\nHas sido invitado a unirte al equipo de ${brand?.brand_name || 'una marca'} en Repeat.\n\nHaz clic en el siguiente enlace para unirte:\n${getInviteLink()}\n\nSaludos.`,
+      `${t('teamEmailBody')} ${brand?.brand_name || 'una marca'} ${t('teamEmailBodySuffix')}\n${getInviteLink()}\n\n${t('teamEmailRegards')}`,
     )
     window.open(`mailto:${lastSentEmail}?subject=${subject}&body=${body}`, '_blank')
   }
 
   const updateUserMutation = useMutation({
-    // NOTA: api.entities.User.update() no existe en el YAML - comentado
-    // mutationFn: ({ id, data }) => api.entities.User.update(id, data),
     mutationFn: () => {
       throw new Error(
         'Funcionalidad no disponible. El endpoint /entities/User no está documentado en el YAML de Insomnia.',
@@ -163,13 +137,11 @@ export default function Team() {
       toast.success(t('saveChanges'))
     },
     onError: () => {
-      toast.error('Error updating user')
+      toast.error(t('teamUserUpdateError'))
     },
   })
 
   const deleteUserMutation = useMutation({
-    // NOTA: api.entities.User.delete() no existe en el YAML - comentado
-    // mutationFn: (id) => api.entities.User.delete(id),
     mutationFn: () => {
       throw new Error(
         'Funcionalidad no disponible. El endpoint /entities/User no está documentado en el YAML de Insomnia.',
@@ -177,10 +149,10 @@ export default function Team() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
-      toast.success('Usuario eliminado correctamente')
+      toast.success(t('teamUserDeleted'))
     },
     onError: () => {
-      toast.error('Error al eliminar usuario')
+      toast.error(t('teamUserDeleteError'))
     },
   })
 
@@ -243,7 +215,7 @@ export default function Team() {
               onClick={handleAddMember}
             >
               <UserPlus className="w-5 h-5" />
-              Agregar Miembro
+              {t('teamAddMember')}
             </Button>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -280,7 +252,7 @@ export default function Team() {
                     </div>
                     <div className="min-w-0">
                       <h3 className="font-bold text-gray-900 dark:text-gray-100 truncate">
-                        {user.full_name || 'No Name'}
+                        {user.full_name || t('teamNoName')}
                       </h3>
                       <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
                     </div>
@@ -312,7 +284,7 @@ export default function Team() {
 
                     <Button variant="outline" size="sm" className="h-10 md:h-9" onClick={() => handleEdit(user)}>
                       <Pencil className="w-4 h-4 mr-2" />
-                      Edit
+                      {t('edit')}
                     </Button>
 
                     {currentUser?.id !== user.id && (
@@ -324,24 +296,24 @@ export default function Team() {
                             className="h-10 md:h-9 text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 border-red-200 dark:border-red-800"
                           >
                             <Trash2 className="w-4 h-4 mr-2" />
-                            Eliminar
+                            {t('delete')}
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                            <AlertDialogTitle>{t('confirmAreYouSure')}</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Esta acción eliminará permanentemente al usuario &quot;{user.full_name || user.email}
-                              &quot; del equipo.
+                              {t('teamDeleteDesc')} &quot;{user.full_name || user.email}
+                              &quot; {t('teamDeleteDescSuffix')}
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => handleDelete(user.id)}
                               className="bg-red-600 hover:bg-red-700 text-white"
                             >
-                              Eliminar
+                              {t('delete')}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
@@ -394,8 +366,8 @@ export default function Team() {
                 </Select>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   {formData.role === 'brand_admin' || formData.role === 'admin'
-                    ? 'Admins usually have access to all stores.'
-                    : 'Employees will only see data for this store.'}
+                    ? t('teamAdminStoreHint')
+                    : t('teamStaffStoreHint')}
                 </p>
               </div>
             </div>
@@ -418,14 +390,14 @@ export default function Team() {
             {inviteStep === 'form' ? (
               <>
                 <DialogHeader>
-                  <DialogTitle>Invitar Miembro</DialogTitle>
+                  <DialogTitle>{t('teamInviteTitle')}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-6 py-4">
                   <div className="space-y-2">
-                    <Label>Sucursal</Label>
+                    <Label>{t('store')}</Label>
                     <Select value={selectedBranchId} onValueChange={setSelectedBranchId}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecciona una sucursal" />
+                        <SelectValue placeholder={t('teamInviteStorePlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
                         {brandStores.map((store) => (
@@ -435,16 +407,14 @@ export default function Team() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Selecciona a qué sucursal se asignará el nuevo miembro.
-                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('teamInviteStoreHint')}</p>
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Enviar por correo</Label>
+                    <Label>{t('teamInviteEmailLabel')}</Label>
                     <div className="flex gap-2">
                       <Input
-                        placeholder="correo@ejemplo.com"
+                        placeholder={t('teamInviteEmailPlaceholder')}
                         type="email"
                         value={inviteEmail}
                         onChange={(e) => setInviteEmail(e.target.value)}
@@ -457,9 +427,7 @@ export default function Team() {
                         {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                       </Button>
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Se enviará una invitación con el enlace de registro.
-                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('teamInviteEmailHint')}</p>
                   </div>
 
                   <div className="relative">
@@ -467,7 +435,9 @@ export default function Team() {
                       <span className="w-full border-t" />
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-white dark:bg-gray-900 px-2 text-muted-foreground">O copiar enlace</span>
+                      <span className="bg-white dark:bg-gray-900 px-2 text-muted-foreground">
+                        {t('teamInviteOrCopy')}
+                      </span>
                     </div>
                   </div>
 
@@ -482,14 +452,12 @@ export default function Team() {
                         <Copy className="w-4 h-4" />
                       </Button>
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Cualquier persona con este enlace podrá unirse como empleado.
-                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('teamInviteLinkHint')}</p>
                   </div>
                 </div>
                 <DialogFooter>
                   <Button variant="ghost" onClick={() => setShowInvite(false)}>
-                    Cerrar
+                    {t('close')}
                   </Button>
                 </DialogFooter>
               </>
@@ -499,19 +467,19 @@ export default function Team() {
                   <div className="mx-auto w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mb-4">
                     <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
                   </div>
-                  <DialogTitle className="text-center text-xl">¡Invitación Enviada!</DialogTitle>
+                  <DialogTitle className="text-center text-xl">{t('teamInviteSuccessTitle')}</DialogTitle>
                   <DialogDescription className="text-center">
-                    Hemos enviado un correo a{' '}
-                    <span className="font-medium text-gray-900 dark:text-gray-100">{lastSentEmail}</span> con las
-                    instrucciones para unirse al equipo.
+                    {t('teamInviteSuccessDesc')}{' '}
+                    <span className="font-medium text-gray-900 dark:text-gray-100">{lastSentEmail}</span>{' '}
+                    {t('teamInviteSuccessDescSuffix')}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="py-6 flex flex-col gap-3">
                   <Button onClick={() => setInviteStep('form')} variant="outline" className="w-full">
-                    Invitar a otro
+                    {t('teamInviteAnother')}
                   </Button>
                   <Button onClick={() => setShowInvite(false)} className="w-full bg-green-600 hover:bg-green-700">
-                    Entendido
+                    {t('teamUnderstood')}
                   </Button>
                 </div>
               </>
@@ -521,14 +489,14 @@ export default function Team() {
                   <div className="mx-auto w-12 h-12 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center mb-4">
                     <Mail className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
                   </div>
-                  <DialogTitle className="text-center text-xl">Envío manual necesario</DialogTitle>
+                  <DialogTitle className="text-center text-xl">{t('teamManualSendTitle')}</DialogTitle>
                   <DialogDescription className="text-center pt-2">
-                    El sistema no pudo enviar el correo automático a{' '}
-                    <span className="font-medium text-gray-900 dark:text-gray-100">{lastSentEmail}</span> (posible
-                    restricción de seguridad).
+                    {t('teamManualSendDesc')}{' '}
+                    <span className="font-medium text-gray-900 dark:text-gray-100">{lastSentEmail}</span>{' '}
+                    {t('teamManualSendDescSuffix')}
                     <br />
                     <br />
-                    Puedes enviarlo tú mismo usando tu aplicación de correo o copiando el enlace:
+                    {t('teamManualSendHint')}
                   </DialogDescription>
                 </DialogHeader>
 
@@ -547,13 +515,13 @@ export default function Team() {
                     className="w-full bg-yellow-500 hover:bg-yellow-600 text-black flex items-center justify-center gap-2"
                   >
                     <Mail className="w-4 h-4" />
-                    Enviar desde mi correo
+                    {t('teamSendFromEmail')}
                   </Button>
                   <Button onClick={() => setShowInvite(false)} variant="outline" className="w-full">
-                    Entendido, ya copié el enlace
+                    {t('teamLinkCopiedDone')}
                   </Button>
                   <Button onClick={() => setInviteStep('form')} variant="ghost" className="w-full text-sm">
-                    Intentar con otro correo
+                    {t('teamTryOtherEmail')}
                   </Button>
                 </div>
               </>

@@ -1,97 +1,96 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Check, X, Loader2 } from 'lucide-react';
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { api } from "@/api/client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Check, X, Loader2 } from 'lucide-react'
+import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { api } from '@/api/client'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import { useLanguage } from '@/components/auth/LanguageContext'
 
 export default function PricingModal({ open, onOpenChange, brand }) {
-  const queryClient = useQueryClient();
+  const { t } = useLanguage()
+  const queryClient = useQueryClient()
 
   const updatePlanMutation = useMutation({
     mutationFn: async (newPlan) => {
-      if (!brand?.id) return;
-      return api.brands.update(brand.id, { subscription_plan: newPlan });
+      if (!brand?.id) return
+      return api.brands.update(brand.id, { subscription_plan: newPlan })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['brand'] });
-      toast.success("Plan actualizado correctamente");
-      onOpenChange(false);
+      queryClient.invalidateQueries({ queryKey: ['brand'] })
+      toast.success(t('pricingUpdateSuccess'))
+      onOpenChange(false)
     },
     onError: () => {
-      toast.error("Error al actualizar el plan");
-    }
-  });
+      toast.error(t('pricingUpdateError'))
+    },
+  })
 
-  const currentPlan = brand?.subscription_plan || 'free';
+  const currentPlan = brand?.subscription_plan || 'free'
 
   const handleSubscribe = (planType) => {
-    updatePlanMutation.mutate(planType);
-  };
+    updatePlanMutation.mutate(planType)
+  }
 
   const plans = [
     {
-      id: "free",
-      name: "Starter",
-      price: "Gratis",
-      description: "Ideal para probar la plataforma",
+      id: 'free',
+      name: 'Starter',
+      price: t('pricingFree'),
+      description: t('pricingFreeDesc'),
       features: [
-        "1 Tarjeta de Lealtad",
-        "1 Sucursal",
-        "1 Usuario",
-        "100 clientes máximo",
-        "Analíticas básicas"
+        t('pricingFeature1Card'),
+        t('pricingFeature1Store'),
+        t('pricingFeature1User'),
+        t('pricingFeature100Customers'),
+        t('pricingFeatureBasicAnalytics'),
       ],
-      notIncluded: [
-        "Compartir tarjetas",
-        "Sin marca de agua",
-        "Soporte prioritario"
-      ],
-      current: currentPlan === 'free'
+      notIncluded: [t('pricingNotIncludedShare'), t('pricingNotIncludedWatermark'), t('pricingFeaturePrioritySupport')],
+      current: currentPlan === 'free',
     },
     {
-      id: "pro",
-      name: "Pro",
-      price: "$29/mes",
-      description: "Para negocios en crecimiento",
+      id: 'pro',
+      name: 'Pro',
+      price: t('pricingProPrice'),
+      description: t('pricingProDesc'),
       features: [
-        "Tarjetas ilimitadas",
-        "Sucursales ilimitadas",
-        "Usuarios ilimitados",
-        "Clientes ilimitados",
-        "Compartir tarjetas públicamente",
-        "Analíticas avanzadas",
-        "Soporte prioritario"
+        t('pricingFeatureUnlimitedCards'),
+        t('pricingFeatureUnlimitedStores'),
+        t('pricingFeatureUnlimitedUsers'),
+        t('pricingFeatureUnlimitedCustomers'),
+        t('pricingFeatureShareCards'),
+        t('pricingFeatureAdvancedAnalytics'),
+        t('pricingFeaturePrioritySupport'),
       ],
       popular: true,
       trial: true,
-      current: currentPlan === 'pro'
-    }
-  ];
+      current: currentPlan === 'pro',
+    },
+  ]
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto bg-slate-50">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-center mb-2">Mejora tu Plan</DialogTitle>
-          <DialogDescription className="text-center mb-6">
-            Desbloquea todo el potencial de tu programa de lealtad
-          </DialogDescription>
+          <DialogTitle className="text-2xl font-bold text-center mb-2">{t('pricingTitle')}</DialogTitle>
+          <DialogDescription className="text-center mb-6">{t('pricingDesc')}</DialogDescription>
         </DialogHeader>
 
         <div className="grid md:grid-cols-2 gap-6 py-4">
           {plans.map((plan) => (
-            <Card key={plan.name} className={`p-6 relative border-2 ${plan.popular ? 'border-yellow-400 shadow-xl' : 'border-transparent'}`}>
+            <Card
+              key={plan.name}
+              className={`p-6 relative border-2 ${plan.popular ? 'border-yellow-400 shadow-xl' : 'border-transparent'}`}
+            >
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                   <Badge className="bg-yellow-400 text-black hover:bg-yellow-500 px-3 py-1">
-                    Más Popular
+                    {t('pricingMostPopular')}
                   </Badge>
                 </div>
               )}
-              
+
               <div className="text-center mb-6">
                 <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
                 <div className="text-3xl font-bold mb-2">{plan.price}</div>
@@ -117,20 +116,20 @@ export default function PricingModal({ open, onOpenChange, brand }) {
                 ))}
               </div>
 
-              <Button 
+              <Button
                 className={`w-full ${plan.popular ? 'bg-black text-white hover:bg-gray-800' : 'bg-white text-black border hover:bg-gray-50'}`}
                 disabled={plan.current || updatePlanMutation.isPending}
                 onClick={() => handleSubscribe(plan.id)}
               >
                 {updatePlanMutation.isPending && !plan.current ? (
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
                 ) : null}
-                {plan.current ? 'Plan Actual' : (plan.trial ? 'Prueba Gratis 7 días' : 'Suscribirse')}
+                {plan.current ? t('pricingCurrentPlan') : plan.trial ? t('pricingFreeTrial') : t('pricingSubscribe')}
               </Button>
             </Card>
           ))}
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

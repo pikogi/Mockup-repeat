@@ -59,20 +59,17 @@ export default function Profile() {
       return await api.auth.resetPassword(email)
     },
     onSuccess: () => {
-      toast.success(
-        'Se ha enviado un correo con las instrucciones para restablecer tu contraseña. Por favor revisa tu bandeja de entrada.',
-      )
+      toast.success(t('forgotSuccessToast'))
     },
     onError: (error) => {
-      const errorMessage =
-        error.response?.data?.message || error.message || 'Error al enviar el correo de restablecimiento'
+      const errorMessage = error.response?.data?.message || error.message || t('forgotErrorToast')
       toast.error(errorMessage)
     },
   })
 
   const handleChangePassword = () => {
     if (!user?.email) {
-      toast.error('No se pudo obtener tu correo electrónico. Por favor, intenta más tarde.')
+      toast.error(t('profileEmailError'))
       return
     }
     resetPasswordMutation.mutate(user.email)
@@ -93,10 +90,10 @@ export default function Profile() {
       // Redirigir a la página de login
       navigate('/login', { replace: true })
 
-      toast.success(t('logout') + ' exitoso')
+      toast.success(t('logoutSuccess'))
     } catch (error) {
       console.error('Error al cerrar sesión:', error)
-      toast.error('Error al cerrar sesión')
+      toast.error(t('profileLogoutError'))
     }
   }
 
@@ -237,12 +234,14 @@ export default function Profile() {
 
               {/* Appearance */}
               <div className="bg-purple-50/50 dark:bg-purple-950/30 p-4 rounded-xl">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block">Apariencia</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block">
+                  {t('profileAppearance')}
+                </label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { value: 'light', icon: Sun, label: 'Claro' },
-                    { value: 'dark', icon: Moon, label: 'Oscuro' },
-                    { value: 'system', icon: Monitor, label: 'Sistema' },
+                    { value: 'light', icon: Sun, label: t('profileThemeLight') },
+                    { value: 'dark', icon: Moon, label: t('profileThemeDark') },
+                    { value: 'system', icon: Monitor, label: t('profileThemeSystem') },
                   ].map(({ value, icon: Icon, label }) => (
                     <button
                       key={value}
@@ -274,7 +273,7 @@ export default function Profile() {
                   {resetPasswordMutation.isPending ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 text-gray-500 animate-spin" />
-                      Enviando...
+                      {t('profileSending')}
                     </>
                   ) : (
                     <>

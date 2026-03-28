@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Gift, CreditCard, Percent, DollarSign, Crown, Ticket, ChevronUp, Pencil, Check, Mail } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import { getProgramTypeFromId } from '@/constants/programTypes'
+import { useLanguage } from '@/components/auth/LanguageContext'
 
 // Función helper para ajustar el brillo de un color hex
 function adjustColor(hex, amount) {
@@ -19,14 +20,14 @@ function adjustColor(hex, amount) {
 }
 
 // Función helper para obtener info del tipo de programa
-function getCardTypeInfo(cardType) {
+function getCardTypeInfo(cardType, t) {
   const types = {
-    stamps: { name: 'Sellos', color: '#EAB308', icon: Gift },
-    cashback: { name: 'Cashback', color: '#10B981', icon: DollarSign },
-    giftCard: { name: 'Gift Card', color: '#EC4899', icon: CreditCard },
-    membership: { name: 'Membresía', color: '#8B5CF6', icon: Crown },
-    discount: { name: 'Descuento', color: '#3B82F6', icon: Percent },
-    coupon: { name: 'Cupones', color: '#F97316', icon: Ticket },
+    stamps: { name: t('cardTypeStamps'), color: '#EAB308', icon: Gift },
+    cashback: { name: t('cardTypeCashback'), color: '#10B981', icon: DollarSign },
+    giftCard: { name: t('cardTypeGiftCard'), color: '#EC4899', icon: CreditCard },
+    membership: { name: t('cardTypeMembership'), color: '#8B5CF6', icon: Crown },
+    discount: { name: t('cardTypeDiscount'), color: '#3B82F6', icon: Percent },
+    coupon: { name: t('cardTypeCoupon'), color: '#F97316', icon: Ticket },
   }
   return types[cardType] || types['stamps']
 }
@@ -851,9 +852,10 @@ export default function ProgramPreviewComponent({
   isFlipped = false,
   customerCardId = null, // ID de la tarjeta del cliente (para QR de clientes registrados)
 }) {
+  const { t } = useLanguage()
   // Determinar tipo de programa
   const programType = card.card_type || getProgramTypeFromId(card.program_type_id)
-  const typeInfo = getCardTypeInfo(programType)
+  const typeInfo = getCardTypeInfo(programType, t)
 
   const currentStamps = demoStamps !== undefined ? demoStamps : card.stamps || 0
   const stampsRequired = demoStampsRequired !== null ? demoStampsRequired : card.stamps_required || 10
