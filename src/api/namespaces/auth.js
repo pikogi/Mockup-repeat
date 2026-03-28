@@ -1,6 +1,7 @@
 import posthog from 'posthog-js'
 import { processAuthToken } from '../authHelpers'
 import { setCachedToken, clearAuthStorage } from '../client'
+import { getDeviceInfo } from '@/utils/device'
 
 export function createAuthNamespace(client) {
   return {
@@ -27,6 +28,7 @@ export function createAuthNamespace(client) {
             name: decoded.full_name,
             brand_id: decoded.brand_id,
             user_type: decoded.user_type,
+            ...getDeviceInfo(),
           })
         }
       }
@@ -49,6 +51,7 @@ export function createAuthNamespace(client) {
             email: decoded.email,
             name: decoded.full_name,
             user_type: decoded.user_type || 'brand_admin',
+            ...getDeviceInfo(),
           })
         }
 
