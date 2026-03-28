@@ -435,6 +435,7 @@ paths:
                           transactions_by_type: { type: object, additionalProperties: { type: integer } }
                           total_completed_redemptions: { type: integer }
                           total_pending_redemptions: { type: integer }
+                          redemption_rate: { type: number, description: 'Percentage of completed redemptions (0-100)' }
         '400':
           $ref: '#/components/responses/BadRequestError'
 
@@ -803,6 +804,11 @@ paths:
           in: query
           required: true
           schema: { type: string, format: uuid }
+        - name: store_id
+          in: query
+          required: false
+          schema: { type: string, format: uuid }
+          description: Filter programs linked to a specific store
         - $ref: '#/components/parameters/Cursor'
         - $ref: '#/components/parameters/Limit'
       responses:
@@ -897,6 +903,13 @@ paths:
                 wallet_design: { $ref: '#/components/schemas/WalletDesign' }
                 metadata: { $ref: '#/components/schemas/Metadata' }
                 is_active: { type: boolean }
+                store_ids:
+                  type: array
+                  items: { type: string, format: uuid }
+                  minItems: 1
+                  description: >-
+                    Full replacement of the stores linked to this program. All existing associations are removed and only the provided store IDs remain active. Omit this field to leave current store associations unchanged.
+
       responses:
         '200':
           description: Program updated
@@ -1542,6 +1555,10 @@ components:
           type: object
           properties:
             logo_url: { type: ['string', 'null'], format: uri }
+        store_ids:
+          type: array
+          items: { type: string, format: uuid }
+          description: Active store IDs associated with this program
         short_url: { type: ['string', 'null'], format: uri }
         member_count: { type: integer, description: Total number of loyalty cards for this program }
         created_at: { type: string, format: date-time }

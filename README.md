@@ -40,7 +40,7 @@ repeat-app/
 │   ├── stores/          # Global state (Zustand, legacy — only used by ScanQR)
 │   ├── lib/             # Utilities (cn, etc.)
 │   └── utils/           # Helpers (jwt, image processing, date, password validation)
-├── public/              # Static assets
+├── public/              # Static assets (favicon, redirect.js)
 ├── vite.config.js       # Vite config (proxy, build)
 └── .env.example         # Environment variables reference
 ```
@@ -122,6 +122,10 @@ Deployment is automated via GitHub Actions to AWS S3 + CloudFront.
 - S3 bucket with block public access ON
 - CloudFront with OAC, custom error responses (403/404 → `/index.html` with HTTP 200)
 - IAM with permissions: `s3:PutObject`, `s3:DeleteObject`, `s3:ListBucket`, `cloudfront:CreateInvalidation`
+
+## Security
+
+A Content-Security-Policy is enforced via `<meta>` tag in `index.html`. Key directives: `script-src 'self'` (no inline scripts), `connect-src 'self' + API URL`, `img-src` restricted to `self`, `data:`, `blob:`, S3, and QR provider. The short-URL redirect logic lives in `public/redirect.js` (externalized to avoid `'unsafe-inline'`). When adding new external resources, update the CSP directives in `index.html`.
 
 ## Authentication
 
