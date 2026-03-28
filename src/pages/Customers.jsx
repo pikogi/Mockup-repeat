@@ -43,7 +43,7 @@ export default function Customers() {
     setCustomDate,
     stores,
     selectedStore,
-    setSelectedStore,
+    handleStoreChange,
   } = useCustomers()
 
   const handleCustomerClick = useCallback(
@@ -100,7 +100,7 @@ export default function Customers() {
             />
           </div>
 
-          <StoreFilterSelect stores={stores} selectedStore={selectedStore} setSelectedStore={setSelectedStore} />
+          <StoreFilterSelect stores={stores} selectedStore={selectedStore} setSelectedStore={handleStoreChange} />
 
           <Select value={selectedCard} onValueChange={handleCardChange}>
             <SelectTrigger className="h-10 rounded-xl w-full sm:w-40">

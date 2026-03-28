@@ -49,12 +49,12 @@ export function useCustomers() {
     staleTime: 5 * 60 * 1000,
   })
 
-  // Loyalty programs (shares cache with useMyPrograms via same queryKey)
+  // Loyalty programs filtered by selected store (matches useMyPrograms pattern)
   const { data: programs = [], isFetched: programsFetched } = useQuery({
-    queryKey: ['loyaltyPrograms', brandId],
+    queryKey: ['loyaltyPrograms', brandId, storeId],
     queryFn: async () => {
       if (!brandId) return []
-      const res = await api.loyaltyPrograms.list(brandId)
+      const res = await api.loyaltyPrograms.list(brandId, { storeId })
       return res?.data || res || []
     },
     enabled: !!brandId,
@@ -187,6 +187,11 @@ export function useCustomers() {
     setSearchQuery('')
   }, [])
 
+  const handleStoreChange = useCallback((v) => {
+    setSelectedStore(v)
+    setSelectedCard('all')
+  }, [])
+
   const handleSortChange = useCallback((v) => {
     setSortBy(v)
   }, [])
@@ -217,6 +222,6 @@ export function useCustomers() {
     setCustomDate,
     stores,
     selectedStore,
-    setSelectedStore,
+    handleStoreChange,
   }
 }
