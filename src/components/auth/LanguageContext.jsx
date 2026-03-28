@@ -138,6 +138,18 @@ export const translations = {
     goBack: 'Volver',
     survey: 'Encuesta',
     menu: 'Menú',
+    notificationsDescription: 'Envía notificaciones push a los usuarios que agregaron tus tarjetas a su wallet',
+    notificationProgram: 'Club',
+    notificationAllPrograms: 'Todos los clubes',
+    notificationHeader: 'Título',
+    notificationHeaderPlaceholder: 'Ej. ¡Oferta especial!',
+    notificationBody: 'Mensaje',
+    notificationBodyPlaceholder: 'Ej. Visítanos hoy y obtén el doble de sellos',
+    notificationSend: 'Enviar notificación',
+    notificationSent: 'Notificación enviada exitosamente',
+    notificationError: 'Error al enviar la notificación',
+    notificationInfo:
+      'La notificación se enviará a todos los usuarios con tarjetas en Google Wallet. Los usuarios con Apple Wallet recibirán una actualización silenciosa.',
   },
   en: {
     dashboard: 'Dashboard',
@@ -273,6 +285,18 @@ export const translations = {
     goBack: 'Go Back',
     survey: 'Survey',
     menu: 'Menu',
+    notificationsDescription: 'Send push notifications to users who added your cards to their wallet',
+    notificationProgram: 'Program',
+    notificationAllPrograms: 'All programs',
+    notificationHeader: 'Header',
+    notificationHeaderPlaceholder: 'e.g., Special offer!',
+    notificationBody: 'Message',
+    notificationBodyPlaceholder: 'e.g., Visit us today and get double stamps',
+    notificationSend: 'Send notification',
+    notificationSent: 'Notification sent successfully',
+    notificationError: 'Error sending notification',
+    notificationInfo:
+      'The notification will be sent to all users with cards in Google Wallet. Apple Wallet users will receive a silent update.',
   },
 }
 
