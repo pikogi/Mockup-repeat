@@ -1,10 +1,19 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { sentryVitePlugin } from '@sentry/vite-plugin'
 import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    process.env.SENTRY_AUTH_TOKEN &&
+      sentryVitePlugin({
+        org: process.env.SENTRY_ORG,
+        project: process.env.SENTRY_PROJECT,
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+      }),
+  ].filter(Boolean),
   server: {
     allowedHosts: true,
     // Configuración para manejar rutas del SPA correctamente
@@ -15,21 +24,21 @@ export default defineConfig({
         target: 'https://service-dev.repeat.la',
         changeOrigin: true,
         secure: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
-      }
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
     },
     // Asegurar que el servidor maneje correctamente las rutas del SPA
     // Vite por defecto ya hace esto, pero esta configuración lo hace explícito
     hmr: {
       protocol: 'ws',
-      host: 'localhost'
-    }
+      host: 'localhost',
+    },
   },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
-    extensions: ['.mjs', '.js', '.jsx', '.ts', '.tsx', '.json']
+    extensions: ['.mjs', '.js', '.jsx', '.ts', '.tsx', '.json'],
   },
   build: {
     target: 'es2020',
@@ -50,4 +59,4 @@ export default defineConfig({
       },
     },
   },
-}) 
+})

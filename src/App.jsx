@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { Toaster as SonnerToaster } from 'sonner'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ThemeProvider } from 'next-themes'
+import { SentryErrorBoundary } from './sentry'
 
 // Crear una instancia de QueryClient
 const queryClient = new QueryClient({
@@ -20,7 +21,9 @@ function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="light" storageKey="repeat-theme">
       <QueryClientProvider client={queryClient}>
-        <Pages />
+        <SentryErrorBoundary>
+          <Pages />
+        </SentryErrorBoundary>
         <Toaster />
         <SonnerToaster position="top-center" richColors />
       </QueryClientProvider>

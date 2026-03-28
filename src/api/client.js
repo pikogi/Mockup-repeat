@@ -1,5 +1,6 @@
 // src/api/client.js — Core HTTP layer + token management + namespace assembly
 
+import * as Sentry from '@sentry/react'
 import { createAuthNamespace } from './namespaces/auth'
 import { createBrandsNamespace } from './namespaces/brands'
 import { createImagesNamespace } from './namespaces/images'
@@ -146,6 +147,16 @@ class ApiClient {
 
       const error = new Error(errorData.message || `HTTP error! status: ${response.status}`)
       error.response = { status: response.status, data: errorData }
+
+      Sentry.addBreadcrumb({
+        category: 'api',
+        message: `${options.method || 'GET'} ${endpoint} → ${response.status}`,
+        level: response.status >= 500 ? 'error' : 'warning',
+      })
+      if (response.status >= 500) {
+        Sentry.captureException(error)
+      }
+
       throw error
     }
 
