@@ -84,7 +84,7 @@ export default function MyPrograms() {
           </div>
 
           {(cards.length > 0 || isLoading || selectedStore !== 'all') && (
-            <div className="flex flex-col gap-4 max-w-md">
+            <div className="flex flex-col gap-4">
               <Link to={createPageUrl('CreateClub')} className="w-full md:w-fit md:hidden">
                 <Button
                   size="lg"
@@ -94,14 +94,14 @@ export default function MyPrograms() {
                   {t('Crear Club')}
                 </Button>
               </Link>
-              <div className="flex flex-wrap items-center gap-4">
+              <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4">
                 <div className="relative w-full md:w-64">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <Input
                     placeholder={t('Buscar Clubes')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 h-12 rounded-xl border-gray-200 dark:border-gray-700 focus:border-yellow-500"
+                    className="pl-10 h-10 rounded-xl border-gray-200 dark:border-gray-700 focus:border-yellow-500"
                   />
                 </div>
                 <StoreFilterSelect stores={stores} selectedStore={selectedStore} setSelectedStore={setSelectedStore} />
