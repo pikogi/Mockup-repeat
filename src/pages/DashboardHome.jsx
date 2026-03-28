@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import { CreditCard, Users, QrCode, Gift } from 'lucide-react'
+import { CreditCard, Users, QrCode, Gift, Percent } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useLanguage } from '@/components/auth/LanguageContext'
 import { createPageUrl } from '@/utils'
@@ -23,6 +23,7 @@ export default function DashboardHome({ brandId }) {
     activePrograms,
     stampsCount,
     rewardsCount,
+    redemptionRate,
     chartData,
     statsLoading,
   } = useDashboardHome(brandId)
@@ -47,7 +48,7 @@ export default function DashboardHome({ brandId }) {
           />
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
           <MetricCard
             title={t('Miembros')}
             value={membersCount}
@@ -77,6 +78,14 @@ export default function DashboardHome({ brandId }) {
             icon={Gift}
             gradient="bg-gradient-to-br from-purple-500 to-purple-600"
             loading={statsLoading}
+          />
+          <MetricCard
+            title={t('redemptionRate')}
+            value={Math.round(redemptionRate)}
+            icon={Percent}
+            gradient="bg-gradient-to-br from-pink-500 to-rose-500"
+            loading={statsLoading}
+            suffix="%"
           />
         </div>
 

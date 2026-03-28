@@ -3,7 +3,16 @@ import { Card } from '@/components/ui/card'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 
-const MetricCard = React.memo(function MetricCard({ title, value, icon: Icon, trend, gradient, href, loading }) {
+const MetricCard = React.memo(function MetricCard({
+  title,
+  value,
+  icon: Icon,
+  trend,
+  gradient,
+  href,
+  loading,
+  suffix,
+}) {
   const Wrapper = href ? Link : 'div'
   const wrapperProps = href ? { to: href } : {}
 
@@ -31,6 +40,7 @@ const MetricCard = React.memo(function MetricCard({ title, value, icon: Icon, tr
               ) : (
                 <p className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100 flex-shrink-0">
                   {(value ?? 0).toLocaleString()}
+                  {suffix}
                 </p>
               )}
             </div>
@@ -54,6 +64,7 @@ const MetricCard = React.memo(function MetricCard({ title, value, icon: Icon, tr
                 ) : (
                   <p className="text-3xl font-bold tabular-nums text-gray-900 dark:text-gray-100">
                     {(value ?? 0).toLocaleString()}
+                    {suffix}
                   </p>
                 )}
               </div>

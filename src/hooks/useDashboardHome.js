@@ -108,6 +108,7 @@ export function useDashboardHome(brandId) {
   const activePrograms = brandStats?.total_active_programs ?? 0
   const stampsCount = brandStats?.transactions_by_type?.stamp_added ?? 0
   const rewardsCount = brandStats?.total_completed_redemptions ?? 0
+  const redemptionRate = brandStats?.redemption_rate ?? 0
 
   // Chart data combining user history + transaction history + redemption history
   const chartData = useMemo(() => {
@@ -175,6 +176,7 @@ export function useDashboardHome(brandId) {
     activePrograms,
     stampsCount,
     rewardsCount,
+    redemptionRate,
 
     // Chart
     chartData,
