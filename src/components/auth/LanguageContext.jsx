@@ -383,6 +383,52 @@ export const translations = {
     // Date Filter
     dateFrom: 'Desde',
     dateTo: 'Hasta',
+
+    // Hook toasts — useClubForm
+    clubFormImageError: 'Error al procesar las imágenes. Intenta subirlas de nuevo.',
+    clubFormImagesTooLarge:
+      'Las imágenes son demasiado grandes. Intenta usar imágenes más pequeñas o de menor resolución.',
+    clubFormUpdated: 'Programa actualizado exitosamente',
+    clubFormUpdateError: 'Error al actualizar el programa',
+    clubFormBackgroundRequired: 'Debes subir una imagen de fondo para la tarjeta',
+    clubFormStampRequired: 'Debes subir una imagen para el sello',
+    clubFormCreated: 'Programa creado exitosamente',
+    clubFormCreateError: 'Error al crear el programa',
+    clubFormImageProcessWarning: 'El programa se creó, pero hubo un problema al procesar las imágenes.',
+    clubFormInvalidImageType: 'Por favor selecciona un archivo de imagen válido',
+    clubFormFileTooLarge1MB: 'El archivo es demasiado grande. Máximo 1MB',
+    clubFormFileTooLarge5MB: 'El archivo es demasiado grande. Máximo 5MB',
+    clubFormLogoUploaded: 'Logo cargado correctamente',
+    clubFormLogoProcessError: 'Error al procesar la imagen del logo',
+    clubFormFileReadError: 'Error al leer el archivo',
+    clubFormLogoUploadError: 'Error al cargar el logo',
+    clubFormBackgroundUploaded: 'Imagen de fondo cargada correctamente',
+    clubFormBackgroundProcessError: 'Error al procesar la imagen de fondo',
+    clubFormStampUploaded: 'Imagen de sello cargada correctamente',
+    clubFormStampProcessError: 'Error al procesar la imagen del sello',
+
+    // Hook toasts — useDashboard
+    dashboardLogoUpdated: 'Logo actualizado',
+    dashboardLogoReadError: 'Error al leer la imagen',
+    dashboardLogoUpdateError: 'Error al actualizar el logo',
+    dashboardBrandDeleted: 'Marca eliminada exitosamente',
+    dashboardBrandDeleteError: 'Error al eliminar la marca',
+
+    // Hook toasts — useStores
+    storeCreated: 'Sucursal creada exitosamente',
+    storeCreateError: 'Error al crear la sucursal',
+    storeUpdated: 'Sucursal actualizada exitosamente',
+    storeUpdateError: 'Error al actualizar la sucursal',
+    storeDeleted: 'Sucursal eliminada exitosamente',
+    storeDeleteError: 'Error al eliminar la sucursal',
+    storeAuthError: 'Error de autenticación. Por favor, recarga la página.',
+
+    // Hook toasts — useMyPrograms
+    programActivated: 'Programa activado',
+    programDeactivated: 'Programa desactivado',
+    programToggleError: 'Error al cambiar estado del programa',
+    programDeleted: 'Programa eliminado exitosamente',
+    programDeleteError: 'Error al eliminar el programa',
   },
   en: {
     // Navigation & Layout
@@ -761,6 +807,51 @@ export const translations = {
     // Date Filter
     dateFrom: 'From',
     dateTo: 'To',
+
+    // Hook toasts — useClubForm
+    clubFormImageError: 'Error processing images. Please try uploading them again.',
+    clubFormImagesTooLarge: 'Images are too large. Try using smaller or lower resolution images.',
+    clubFormUpdated: 'Program updated successfully',
+    clubFormUpdateError: 'Error updating program',
+    clubFormBackgroundRequired: 'You must upload a background image for the card',
+    clubFormStampRequired: 'You must upload a stamp image',
+    clubFormCreated: 'Program created successfully',
+    clubFormCreateError: 'Error creating program',
+    clubFormImageProcessWarning: 'The program was created, but there was an issue processing the images.',
+    clubFormInvalidImageType: 'Please select a valid image file',
+    clubFormFileTooLarge1MB: 'File is too large. Maximum 1MB',
+    clubFormFileTooLarge5MB: 'File is too large. Maximum 5MB',
+    clubFormLogoUploaded: 'Logo uploaded successfully',
+    clubFormLogoProcessError: 'Error processing logo image',
+    clubFormFileReadError: 'Error reading file',
+    clubFormLogoUploadError: 'Error uploading logo',
+    clubFormBackgroundUploaded: 'Background image uploaded successfully',
+    clubFormBackgroundProcessError: 'Error processing background image',
+    clubFormStampUploaded: 'Stamp image uploaded successfully',
+    clubFormStampProcessError: 'Error processing stamp image',
+
+    // Hook toasts — useDashboard
+    dashboardLogoUpdated: 'Logo updated',
+    dashboardLogoReadError: 'Error reading image',
+    dashboardLogoUpdateError: 'Error updating logo',
+    dashboardBrandDeleted: 'Brand deleted successfully',
+    dashboardBrandDeleteError: 'Error deleting brand',
+
+    // Hook toasts — useStores
+    storeCreated: 'Store created successfully',
+    storeCreateError: 'Error creating store',
+    storeUpdated: 'Store updated successfully',
+    storeUpdateError: 'Error updating store',
+    storeDeleted: 'Store deleted successfully',
+    storeDeleteError: 'Error deleting store',
+    storeAuthError: 'Authentication error. Please reload the page.',
+
+    // Hook toasts — useMyPrograms
+    programActivated: 'Program activated',
+    programDeactivated: 'Program deactivated',
+    programToggleError: 'Error changing program status',
+    programDeleted: 'Program deleted successfully',
+    programDeleteError: 'Error deleting program',
   },
 }
 

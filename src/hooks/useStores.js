@@ -2,8 +2,10 @@ import { useState, useMemo, useCallback } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import { toast } from 'sonner'
+import { useLanguage } from '@/components/auth/LanguageContext'
 
 export function useStores(brandId) {
+  const { t } = useLanguage()
   const queryClient = useQueryClient()
 
   // UI state
@@ -95,15 +97,15 @@ export function useStores(brandId) {
         queryClient.setQueryData(queryKey, (old) =>
           old.map((s) => (s.id === tempId ? { ...newStore, id: storeId, store_id: storeId } : s)),
         )
-        toast.success('Sucursal creada exitosamente')
+        toast.success(t('storeCreated'))
       } catch (error) {
         queryClient.setQueryData(queryKey, previous)
-        toast.error(error?.response?.data?.message || error?.message || 'Error al crear la sucursal')
+        toast.error(error?.response?.data?.message || error?.message || t('storeCreateError'))
       } finally {
         setIsMutating(false)
       }
     },
-    [brandId, queryClient, queryKey, resetForm],
+    [brandId, queryClient, queryKey, resetForm, t],
   )
 
   // Update store — optimistic update
@@ -151,15 +153,15 @@ export function useStores(brandId) {
             ),
           )
         }
-        toast.success('Sucursal actualizada exitosamente')
+        toast.success(t('storeUpdated'))
       } catch (error) {
         queryClient.setQueryData(queryKey, previous)
-        toast.error(error?.response?.data?.message || error?.message || 'Error al actualizar la sucursal')
+        toast.error(error?.response?.data?.message || error?.message || t('storeUpdateError'))
       } finally {
         setIsMutating(false)
       }
     },
-    [queryClient, queryKey, resetForm],
+    [queryClient, queryKey, resetForm, t],
   )
 
   // Delete store — optimistic removal
@@ -173,10 +175,10 @@ export function useStores(brandId) {
       try {
         await api.stores.delete(storeId)
         queryClient.invalidateQueries({ queryKey: ['stores'] })
-        toast.success('Sucursal eliminada exitosamente')
+        toast.success(t('storeDeleted'))
       } catch (error) {
         queryClient.setQueryData(queryKey, previous)
-        toast.error(error?.response?.data?.message || error?.message || 'Error al eliminar la sucursal')
+        toast.error(error?.response?.data?.message || error?.message || t('storeDeleteError'))
       } finally {
         setDeletingIds((prev) => {
           // eslint-disable-next-line no-unused-vars
@@ -185,7 +187,7 @@ export function useStores(brandId) {
         })
       }
     },
-    [queryClient, queryKey],
+    [queryClient, queryKey, t],
   )
 
   // Submit handler for create/edit form
@@ -193,7 +195,7 @@ export function useStores(brandId) {
     (e) => {
       e.preventDefault()
       if (!brandId && !editingStore) {
-        toast.error('Error de autenticación. Por favor, recarga la página.')
+        toast.error(t('storeAuthError'))
         return
       }
       if (editingStore) {
@@ -202,7 +204,7 @@ export function useStores(brandId) {
         createStore(formData)
       }
     },
-    [brandId, editingStore, formData, createStore, updateStore],
+    [brandId, editingStore, formData, createStore, updateStore, t],
   )
 
   // QR URL generator

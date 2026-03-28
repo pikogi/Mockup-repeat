@@ -13,6 +13,7 @@ import {
   sampleCircleEdgeColor,
   estimateBase64Size,
 } from '@/utils/image'
+import { useLanguage } from '@/components/auth/LanguageContext'
 
 const DEFAULT_FORM_DATA = {
   club_name: '',
@@ -150,6 +151,7 @@ function updateOtherProgramsLogo(programsList, excludeId, logoUrl) {
 }
 
 export function useClubForm() {
+  const { t } = useLanguage()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
@@ -432,7 +434,7 @@ export function useClubForm() {
         hasNewLogo && formData.logo_url ? compressForBrandUpload(formData.logo_url) : null,
       ])
     } catch {
-      toast.error('Error al procesar las imágenes. Intenta subirlas de nuevo.')
+      toast.error(t('clubFormImageError'))
       return
     }
 
@@ -440,7 +442,7 @@ export function useClubForm() {
       const MAX_PAYLOAD_BYTES = 5 * 1024 * 1024 // 5MB safe limit (Lambda max 6MB)
       const stampCardSize = estimateBase64Size(compBg) + estimateBase64Size(compStamp) + estimateBase64Size(compLogo)
       if (stampCardSize > MAX_PAYLOAD_BYTES) {
-        toast.error('Las imágenes son demasiado grandes. Intenta usar imágenes más pequeñas o de menor resolución.')
+        toast.error(t('clubFormImagesTooLarge'))
         return
       }
     }
@@ -470,9 +472,9 @@ export function useClubForm() {
       queryClient.invalidateQueries({ queryKey: ['loyaltyProgram', editId] })
       queryClient.invalidateQueries({ queryKey: ['loyaltyPrograms', brandId] })
       queryClient.invalidateQueries({ queryKey: ['brandUsers'] })
-      toast.success('Programa actualizado exitosamente')
+      toast.success(t('clubFormUpdated'))
     } catch (error) {
-      toast.error(error?.message || 'Error al actualizar el programa')
+      toast.error(error?.message || t('clubFormUpdateError'))
       return
     }
 
@@ -539,11 +541,11 @@ export function useClubForm() {
   const handleCreate = async ({ program_rules, required_customer_fields, metadata, reward_rules }) => {
     // Validate required images in create mode
     if (!formData.background_image_url) {
-      toast.error('Debes subir una imagen de fondo para la tarjeta')
+      toast.error(t('clubFormBackgroundRequired'))
       return
     }
     if (!formData.stamp_image_url) {
-      toast.error('Debes subir una imagen para el sello')
+      toast.error(t('clubFormStampRequired'))
       return
     }
 
@@ -564,14 +566,14 @@ export function useClubForm() {
         hasNewLogo && formData.logo_url ? compressForBrandUpload(formData.logo_url) : null,
       ])
     } catch {
-      toast.error('Error al procesar las imágenes. Intenta subirlas de nuevo.')
+      toast.error(t('clubFormImageError'))
       return
     }
 
     const MAX_PAYLOAD_BYTES = 5 * 1024 * 1024 // 5MB safe limit (Lambda max 6MB)
     const stampCardSize = estimateBase64Size(compBg) + estimateBase64Size(compStamp) + estimateBase64Size(compLogo)
     if (stampCardSize > MAX_PAYLOAD_BYTES) {
-      toast.error('Las imágenes son demasiado grandes. Intenta usar imágenes más pequeñas o de menor resolución.')
+      toast.error(t('clubFormImagesTooLarge'))
       return
     }
 
@@ -598,10 +600,10 @@ export function useClubForm() {
     try {
       const response = await api.loyaltyPrograms.create(dataToSend)
       newProgram = response?.data || response
-      toast.success('Programa creado exitosamente')
+      toast.success(t('clubFormCreated'))
       queryClient.invalidateQueries({ queryKey: ['loyaltyPrograms', brandId] })
     } catch (error) {
-      toast.error(error?.message || 'Error al crear el programa')
+      toast.error(error?.message || t('clubFormCreateError'))
       return
     }
 
@@ -651,7 +653,7 @@ export function useClubForm() {
         await Promise.all(parallelTasks)
       } catch (err) {
         console.warn('[CreateClub] Error generando stamp card image:', err)
-        toast.warning('El programa se creó, pero hubo un problema al procesar las imágenes.')
+        toast.warning(t('clubFormImageProcessWarning'))
       }
     }
     navigate(createPageUrl('MyPrograms'))
@@ -665,13 +667,13 @@ export function useClubForm() {
     if (!file) return
 
     if (!file.type.startsWith('image/')) {
-      toast.error('Por favor selecciona un archivo de imagen válido')
+      toast.error(t('clubFormInvalidImageType'))
       return
     }
 
     const maxSize = 1 * 1024 * 1024
     if (file.size > maxSize) {
-      toast.error('El archivo es demasiado grande. Máximo 1MB')
+      toast.error(t('clubFormFileTooLarge1MB'))
       return
     }
 
@@ -688,21 +690,21 @@ export function useClubForm() {
           setFormData((prev) => ({ ...prev, logo_url: base64String }))
           setNewUpload((prev) => ({ ...prev, logo: true }))
           setUploadingLogo(false)
-          toast.success('Logo cargado correctamente')
+          toast.success(t('clubFormLogoUploaded'))
         } catch {
           setUploadingLogo(false)
-          toast.error('Error al procesar la imagen del logo')
+          toast.error(t('clubFormLogoProcessError'))
         }
       }
       reader.onerror = () => {
         setUploadingLogo(false)
-        toast.error('Error al leer el archivo')
+        toast.error(t('clubFormFileReadError'))
       }
       reader.readAsDataURL(file)
     } catch (error) {
       console.error('Error uploading logo:', error)
       setUploadingLogo(false)
-      toast.error('Error al cargar el logo')
+      toast.error(t('clubFormLogoUploadError'))
     }
   }
 
@@ -711,13 +713,13 @@ export function useClubForm() {
     if (!file) return
 
     if (!file.type.startsWith('image/')) {
-      toast.error('Por favor selecciona un archivo de imagen válido')
+      toast.error(t('clubFormInvalidImageType'))
       return
     }
 
     const maxSize = 5 * 1024 * 1024
     if (file.size > maxSize) {
-      toast.error('El archivo es demasiado grande. Máximo 5MB')
+      toast.error(t('clubFormFileTooLarge5MB'))
       return
     }
 
@@ -730,15 +732,15 @@ export function useClubForm() {
         setFormData((prev) => ({ ...prev, background_image_url: base64String }))
         setNewUpload((prev) => ({ ...prev, background: true }))
         setUploadingBackground(false)
-        toast.success('Imagen de fondo cargada correctamente')
+        toast.success(t('clubFormBackgroundUploaded'))
       } catch {
         setUploadingBackground(false)
-        toast.error('Error al procesar la imagen de fondo')
+        toast.error(t('clubFormBackgroundProcessError'))
       }
     }
     reader.onerror = () => {
       setUploadingBackground(false)
-      toast.error('Error al leer el archivo')
+      toast.error(t('clubFormFileReadError'))
     }
     reader.readAsDataURL(file)
   }
@@ -748,13 +750,13 @@ export function useClubForm() {
     if (!file) return
 
     if (!file.type.startsWith('image/')) {
-      toast.error('Por favor selecciona un archivo de imagen válido')
+      toast.error(t('clubFormInvalidImageType'))
       return
     }
 
     const maxSize = 5 * 1024 * 1024
     if (file.size > maxSize) {
-      toast.error('El archivo es demasiado grande. Máximo 5MB')
+      toast.error(t('clubFormFileTooLarge5MB'))
       return
     }
 
@@ -768,15 +770,15 @@ export function useClubForm() {
         setFormData((prev) => ({ ...prev, stamp_image_url: base64String, stamp_icon_bg_color: bgColor }))
         setNewUpload((prev) => ({ ...prev, stamp: true }))
         setUploadingStamp(false)
-        toast.success('Imagen de sello cargada correctamente')
+        toast.success(t('clubFormStampUploaded'))
       } catch {
         setUploadingStamp(false)
-        toast.error('Error al procesar la imagen del sello')
+        toast.error(t('clubFormStampProcessError'))
       }
     }
     reader.onerror = () => {
       setUploadingStamp(false)
-      toast.error('Error al leer el archivo')
+      toast.error(t('clubFormFileReadError'))
     }
     reader.readAsDataURL(file)
   }

@@ -4,8 +4,10 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '@/api/client'
 import { getCurrentUser } from '@/utils/jwt'
 import { toast } from 'sonner'
+import { useLanguage } from '@/components/auth/LanguageContext'
 
 export function useDashboard() {
+  const { t } = useLanguage()
   const user = useMemo(() => getCurrentUser(), [])
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -121,21 +123,21 @@ export function useDashboard() {
           queryClient.invalidateQueries({ queryKey: ['brand', brandId] })
           queryClient.invalidateQueries({ queryKey: ['loyaltyProgram'] })
 
-          toast.success('Logo actualizado')
+          toast.success(t('dashboardLogoUpdated'))
           setIsUploadingLogo(false)
         }
         reader.onerror = () => {
-          toast.error('Error al leer la imagen')
+          toast.error(t('dashboardLogoReadError'))
           setIsUploadingLogo(false)
         }
         reader.readAsDataURL(file)
       } catch {
-        toast.error('Error al actualizar el logo')
+        toast.error(t('dashboardLogoUpdateError'))
         setIsUploadingLogo(false)
       }
       e.target.value = ''
     },
-    [brandId, queryClient],
+    [brandId, queryClient, t],
   )
 
   // Brand selection
@@ -180,13 +182,13 @@ export function useDashboard() {
         queryClient.invalidateQueries({ queryKey: ['loyaltyPrograms'] })
         queryClient.invalidateQueries({ queryKey: ['stores'] })
         queryClient.invalidateQueries({ queryKey: ['customers'] })
-        toast.success('Marca eliminada exitosamente')
+        toast.success(t('dashboardBrandDeleted'))
       } catch (error) {
-        console.error('Error al eliminar marca:', error)
-        toast.error(error?.response?.data?.message || 'Error al eliminar la marca')
+        console.error('Error deleting brand:', error)
+        toast.error(error?.response?.data?.message || t('dashboardBrandDeleteError'))
       }
     },
-    [brandId, brands, navigate, queryClient],
+    [brandId, brands, navigate, queryClient, t],
   )
 
   return {

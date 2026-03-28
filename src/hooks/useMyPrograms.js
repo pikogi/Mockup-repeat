@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import { toast } from 'sonner'
+import { useLanguage } from '@/components/auth/LanguageContext'
 
 function normalizeStores(raw) {
   return raw.map((store) => {
@@ -44,6 +45,7 @@ function mapProgramToCard(program) {
 }
 
 export function useMyPrograms(brandId) {
+  const { t } = useLanguage()
   const queryClient = useQueryClient()
   const [deletingIds, setDeletingIds] = useState({})
   const [selectedStore, setSelectedStore] = useState('all')
@@ -98,10 +100,10 @@ export function useMyPrograms(brandId) {
 
     try {
       await api.loyaltyPrograms.update(programId, { is_active: newActiveState })
-      toast.success(newActiveState ? 'Programa activado' : 'Programa desactivado')
+      toast.success(newActiveState ? t('programActivated') : t('programDeactivated'))
     } catch (error) {
       queryClient.setQueryData(queryKey, previous)
-      toast.error(error?.message || 'Error al cambiar estado del programa')
+      toast.error(error?.message || t('programToggleError'))
     }
   }
 
@@ -116,14 +118,14 @@ export function useMyPrograms(brandId) {
     try {
       await api.loyaltyPrograms.delete(programId)
       queryClient.invalidateQueries({ queryKey: ['brandUsers'] })
-      toast.success('Programa eliminado exitosamente')
+      toast.success(t('programDeleted'))
     } catch (error) {
       const isNotFound = error?.response?.status === 404
       if (!isNotFound) {
         queryClient.setQueryData(queryKey, previous)
-        toast.error(error?.message || 'Error al eliminar el programa')
+        toast.error(error?.message || t('programDeleteError'))
       } else {
-        toast.success('Programa eliminado exitosamente')
+        toast.success(t('programDeleted'))
       }
     } finally {
       setDeletingIds((prev) => {
