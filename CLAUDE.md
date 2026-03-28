@@ -36,6 +36,7 @@ No test framework is configured.
 | `useDashboard` | `Dashboard` | Brand selector, logo upload, create/delete brand, me query |
 | `useDashboardHome` | `DashboardHome` | Stats queries (brand stats, user/transaction/redemption history), date/store filters, chart data |
 | `useStores` | `Stores` | Stores CRUD with optimistic updates, QR URL generation, form/dialog state |
+| `useNotifications` | `Notifications` | Notification form state, program selector, send wallet push notification |
 
 **API layer**: Domain-namespaced API client in `src/api/`. The core HTTP layer (`client.js`) exports an `ApiClient` class instance (`api`) with methods `get()`, `post()`, `patch()`, `delete()`, and `publicRequest()`. Domain logic lives in factory functions under `src/api/namespaces/` — each receives the client instance and returns an object of methods:
 
@@ -55,7 +56,7 @@ In dev, Vite proxies `/api` to the AWS backend. In prod, uses `VITE_API_URL`. JW
 
 **Error monitoring**: Sentry (`src/sentry.jsx`) — initialized before React in `main.jsx`, wraps `<Pages />` with `SentryErrorBoundary` in `App.jsx`. Auto-derives environment from `VITE_API_URL` (dev/stg/prod). Disabled entirely without `VITE_SENTRY_DSN`. API errors get breadcrumbs and 5xx responses are auto-captured via `Sentry.captureException()` in `client.js`. Source maps uploaded during CI builds via `@sentry/vite-plugin` (conditional on `SENTRY_AUTH_TOKEN`). Sample rates: 10% traces, 10% session replays, 100% error replays.
 
-**Product analytics**: PostHog (`src/posthog.js`) — initialized before React in `main.jsx`. Captures pageviews automatically via the `ScrollToTop` component in `src/pages/index.jsx`. Users are identified on login/register and reset on logout in `src/api/namespaces/auth.js`. Disabled entirely without `VITE_POSTHOG_KEY`. Uses `person_profiles: 'identified_only'` to only create profiles for identified users.
+**Product analytics**: PostHog (`src/posthog.js`) — initialized before React in `main.jsx`. Captures pageviews automatically via the `ScrollToTop` component in `src/pages/index.jsx`. Users are identified on login/register (with device info via `src/utils/device.js`) and reset on logout in `src/api/namespaces/auth.js`. Disabled entirely without `VITE_POSTHOG_KEY`. Uses `person_profiles: 'identified_only'` to only create profiles for identified users. Feature flags are used to gate features (e.g., `notifications` flag controls Notifications page visibility in the Sidebar via `posthog.isFeatureEnabled()` and `posthog.onFeatureFlags()`).
 
 **UI**: shadcn/ui components (~30) built on Radix UI primitives, in `src/components/ui/`. Styled with Tailwind CSS using HSL CSS variables for theming (light/dark via class). Icons from lucide-react.
 
@@ -84,6 +85,8 @@ In dev, Vite proxies `/api` to the AWS backend. In prod, uses `VITE_API_URL`. JW
 **Date utilities**: `src/utils/date.js` — UTC-safe date helpers (`formatDateUTC`, `addDaysUTC`, `subDaysUTC`, `startOfMonthUTC`) used for API date filters. Avoids timezone offset issues that occur with `date-fns` local-time functions.
 
 **Password validation**: `src/utils/passwordValidation.js` — shared password validation rules used across auth forms.
+
+**Device utilities**: `src/utils/device.js` — uses `ua-parser-js` to extract device type, vendor, model, OS, and browser info. Sent as PostHog user properties on login/register for device analytics.
 
 **Documentation**: The `docs/` directory contains reference material — `DEPLOY.md` (deployment architecture, pipeline, cache strategy) and `openapi.yaml` (backend API spec with all endpoints, schemas, and examples). Consult these when working on API integration or deployment changes.
 
@@ -138,10 +141,10 @@ Automated via [release-please](https://github.com/googleapis/release-please) (`.
 
 A Content-Security-Policy is defined via `<meta>` tag in `index.html`. Key directives:
 
-- `script-src 'self'` — the short-URL redirect script was externalized to `public/redirect.js` to avoid `'unsafe-inline'`.
+- `script-src 'self' https://us-assets.i.posthog.com` — the short-URL redirect script was externalized to `public/redirect.js` to avoid `'unsafe-inline'`. PostHog assets CDN is allowed for feature flags.
 - `style-src 'self' 'unsafe-inline'` — required by Tailwind, Framer Motion, and Radix UI inline styles.
 - `img-src 'self' data: blob: https://*.s3.us-east-1.amazonaws.com https://api.qrserver.com` — covers canvas base64, QR downloads, S3 program images, and QR generation.
-- `connect-src 'self' %VITE_API_URL% https://*.ingest.sentry.io https://us.i.posthog.com` — Vite replaces the env var at build time per environment. Sentry ingest and PostHog endpoints are always allowed.
+- `connect-src 'self' %VITE_API_URL% https://*.ingest.sentry.io https://us.i.posthog.com https://*.i.posthog.com` — Vite replaces the env var at build time per environment. Sentry ingest and PostHog endpoints are always allowed.
 
 When adding new external resources (CDN fonts, analytics, etc.), update the CSP directives in `index.html`.
 

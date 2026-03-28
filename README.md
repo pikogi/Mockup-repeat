@@ -144,11 +144,11 @@ Sentry is integrated for error tracking, performance monitoring, and session rep
 
 ## Product Analytics
 
-PostHog is integrated for product analytics (`src/posthog.js`). It initializes before React in `src/main.jsx` and captures pageviews automatically via the router's `ScrollToTop` component. Users are identified on login/register with their `user_id`, `email`, `name`, `brand_id`, and `user_type`. Identity is reset on logout. Disabled entirely without `VITE_POSTHOG_KEY`.
+PostHog is integrated for product analytics (`src/posthog.js`). It initializes before React in `src/main.jsx` and captures pageviews automatically via the router's `ScrollToTop` component. Users are identified on login/register with their `user_id`, `email`, `name`, `brand_id`, `user_type`, and device info (type, OS, browser via `ua-parser-js`). Identity is reset on logout. Disabled entirely without `VITE_POSTHOG_KEY`. Feature flags are used to gate features (e.g., `notifications` flag controls the Notifications page visibility in the sidebar).
 
 ## Security
 
-A Content-Security-Policy is enforced via `<meta>` tag in `index.html`. Key directives: `script-src 'self'` (no inline scripts), `connect-src 'self' + API URL + Sentry ingest + PostHog`, `img-src` restricted to `self`, `data:`, `blob:`, S3, and QR provider. The short-URL redirect logic lives in `public/redirect.js` (externalized to avoid `'unsafe-inline'`). When adding new external resources, update the CSP directives in `index.html`.
+A Content-Security-Policy is enforced via `<meta>` tag in `index.html`. Key directives: `script-src 'self' + PostHog assets CDN`, `connect-src 'self' + API URL + Sentry ingest + PostHog`, `img-src` restricted to `self`, `data:`, `blob:`, S3, and QR provider. The short-URL redirect logic lives in `public/redirect.js` (externalized to avoid `'unsafe-inline'`). When adding new external resources, update the CSP directives in `index.html`.
 
 ## Authentication
 
