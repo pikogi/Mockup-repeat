@@ -78,6 +78,8 @@ export function useStores(brandId) {
       }
       const previous = queryClient.getQueryData(queryKey)
       queryClient.setQueryData(queryKey, (old) => [...(old || []), optimisticStore])
+      resetForm()
+      setDialogOpen(false)
 
       try {
         const response = await api.stores.create(
@@ -93,8 +95,6 @@ export function useStores(brandId) {
         queryClient.setQueryData(queryKey, (old) =>
           old.map((s) => (s.id === tempId ? { ...newStore, id: storeId, store_id: storeId } : s)),
         )
-        resetForm()
-        setDialogOpen(false)
         toast.success('Sucursal creada exitosamente')
       } catch (error) {
         queryClient.setQueryData(queryKey, previous)
@@ -125,6 +125,8 @@ export function useStores(brandId) {
             : s,
         ),
       )
+      resetForm()
+      setDialogOpen(false)
 
       try {
         const updateData = {}
@@ -149,8 +151,6 @@ export function useStores(brandId) {
             ),
           )
         }
-        resetForm()
-        setDialogOpen(false)
         toast.success('Sucursal actualizada exitosamente')
       } catch (error) {
         queryClient.setQueryData(queryKey, previous)
