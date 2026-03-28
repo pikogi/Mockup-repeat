@@ -808,6 +808,7 @@ export function useClubForm() {
     // Derived
     stampCardImageUrl,
     editId,
+    isLoadingProgram: !!editId && !dataLoaded,
     // Validity helper (needed by form section)
     getValidityTermsText,
   }
