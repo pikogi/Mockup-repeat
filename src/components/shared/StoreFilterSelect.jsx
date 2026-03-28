@@ -15,11 +15,16 @@ export default function StoreFilterSelect({ stores, selectedStore, setSelectedSt
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="all">{t('allStores')}</SelectItem>
-        {stores.map((store) => (
-          <SelectItem key={store.id} value={store.id}>
-            {store.store_name || store.name}
-          </SelectItem>
-        ))}
+        {stores
+          .filter((store) => store.store_id || store.id)
+          .map((store) => {
+            const storeId = store.store_id || store.id
+            return (
+              <SelectItem key={storeId} value={storeId}>
+                {store.store_name || store.name}
+              </SelectItem>
+            )
+          })}
       </SelectContent>
     </Select>
   )
