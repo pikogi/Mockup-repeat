@@ -24,12 +24,17 @@ export function useStores(brandId) {
     queryKey,
     queryFn: async () => {
       if (!brandId) return []
-      const res = await api.stores.list(brandId)
-      const raw = res?.data || res || []
-      return raw.map((store) => {
-        const id = store.store_id || store.id
-        return { ...store, id, store_id: id }
-      })
+      try {
+        const res = await api.stores.list(brandId)
+        const raw = res?.data || res || []
+        return raw.map((store) => {
+          const id = store.store_id || store.id
+          return { ...store, id, store_id: id }
+        })
+      } catch (error) {
+        if (error?.response?.status === 404) return []
+        throw error
+      }
     },
     enabled: !!brandId,
     staleTime: 5 * 60 * 1000,

@@ -2,7 +2,6 @@ import { useState, useMemo, useCallback } from 'react'
 import { api } from '@/api/client'
 import { getCurrentUser } from '@/utils/jwt'
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
-import { addDaysUTC, formatDateUTC, startOfMonthUTC, subDaysUTC } from '@/utils/date'
 
 const PAGE_LIMIT = 25
 
@@ -11,8 +10,6 @@ export function useCustomers() {
   const [selectedCard, setSelectedCard] = useState('all')
   const [selectedCustomer, setSelectedCustomer] = useState(null)
   const [sortBy, setSortBy] = useState('date')
-  const [dateFilter, setDateFilter] = useState('7d')
-  const [customDate, setCustomDate] = useState({ from: new Date(), to: new Date() })
   const [selectedStore, setSelectedStore] = useState('all')
 
   const user = getCurrentUser()
@@ -54,8 +51,13 @@ export function useCustomers() {
     queryKey: ['loyaltyPrograms', brandId, storeId],
     queryFn: async () => {
       if (!brandId) return []
-      const res = await api.loyaltyPrograms.list(brandId, { storeId })
-      return res?.data || res || []
+      try {
+        const res = await api.loyaltyPrograms.list(brandId, { storeId })
+        return res?.data || res || []
+      } catch (error) {
+        if (error?.response?.status === 404) return []
+        throw error
+      }
     },
     enabled: !!brandId,
     staleTime: 5 * 60 * 1000,
@@ -71,19 +73,6 @@ export function useCustomers() {
     [programs],
   )
 
-  // Date filter
-  const customDateKey = dateFilter === 'custom' ? `${customDate.from?.getTime()}-${customDate.to?.getTime()}` : ''
-
-  const getDateRange = useCallback(() => {
-    const now = new Date()
-    if (dateFilter === '7d') return { start: subDaysUTC(now, 7), end: now }
-    if (dateFilter === 'month') return { start: startOfMonthUTC(now), end: now }
-    if (dateFilter === 'custom' && customDate?.from) {
-      return { start: customDate.from, end: customDate.to || customDate.from }
-    }
-    return { start: subDaysUTC(now, 30), end: now } // "default" = last 30 days
-  }, [dateFilter, customDate])
-
   // Server-side cursor pagination with useInfiniteQuery
   const programFilter = selectedCard === 'all' ? null : selectedCard
   const SORT_MAP = { date: 'created_at', visits: 'total_transactions' }
@@ -96,20 +85,22 @@ export function useCustomers() {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ['brandUsers', brandId, programFilter, storeId, dateFilter, customDateKey, sortBy],
+    queryKey: ['brandUsers', brandId, programFilter, storeId, sortBy],
     queryFn: async ({ pageParam }) => {
       const params = { limit: PAGE_LIMIT }
       if (pageParam) params.cursor = pageParam
       if (programFilter) params.programId = programFilter
-      const range = getDateRange()
-      if (range) {
-        params.from = formatDateUTC(range.start)
-        params.to = formatDateUTC(addDaysUTC(range.end, 1))
-      }
       if (SORT_MAP[sortBy]) params.sortBy = SORT_MAP[sortBy]
       if (storeId) params.storeId = storeId
-      const res = await api.brands.getUsers(brandId, params)
-      return res
+      try {
+        const res = await api.brands.getUsers(brandId, params)
+        return res
+      } catch (error) {
+        if (error?.response?.status === 404) {
+          return { data: [], pagination: { next_cursor: null, total: 0 } }
+        }
+        throw error
+      }
     },
     initialPageParam: undefined,
     getNextPageParam: (lastPage) => lastPage?.pagination?.next_cursor ?? undefined,
@@ -216,10 +207,6 @@ export function useCustomers() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    dateFilter,
-    setDateFilter,
-    customDate,
-    setCustomDate,
     stores,
     selectedStore,
     handleStoreChange,

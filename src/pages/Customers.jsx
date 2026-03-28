@@ -2,7 +2,6 @@ import { useRef, useEffect, useCallback } from 'react'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Search, Users, CreditCard, ArrowUpDown, Loader2 } from 'lucide-react'
-import DateFilterSelect from '@/components/shared/DateFilterSelect'
 import StoreFilterSelect from '@/components/shared/StoreFilterSelect'
 import { motion } from 'framer-motion'
 import CustomerDetailModal from '../components/customers/CustomerDetailModal'
@@ -37,10 +36,6 @@ export default function Customers() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    dateFilter,
-    setDateFilter,
-    customDate,
-    setCustomDate,
     stores,
     selectedStore,
     handleStoreChange,
@@ -127,14 +122,6 @@ export default function Customers() {
               <SelectItem value="visits">{t('sortByVisits')}</SelectItem>
             </SelectContent>
           </Select>
-
-          <DateFilterSelect
-            dateFilter={dateFilter}
-            setDateFilter={setDateFilter}
-            customDate={customDate}
-            setCustomDate={setCustomDate}
-            maxMonthsBack={6}
-          />
         </motion.div>
 
         {/* Stats */}

@@ -31,12 +31,17 @@ export function useDashboardHome(brandId) {
     queryKey: ['stores', brandId],
     queryFn: async () => {
       if (!brandId) return []
-      const res = await api.stores.list(brandId)
-      const raw = res?.data || res || []
-      return raw.map((store) => {
-        const id = store.store_id || store.id
-        return { ...store, id, store_id: id }
-      })
+      try {
+        const res = await api.stores.list(brandId)
+        const raw = res?.data || res || []
+        return raw.map((store) => {
+          const id = store.store_id || store.id
+          return { ...store, id, store_id: id }
+        })
+      } catch (error) {
+        if (error?.response?.status === 404) return []
+        throw error
+      }
     },
     enabled: !!brandId,
     staleTime: 5 * 60 * 1000,
@@ -47,11 +52,16 @@ export function useDashboardHome(brandId) {
     queryKey: ['brandStats', brandId, storeId, dateFilter, customDateKey],
     queryFn: async () => {
       if (!brandId) return null
-      const range = getDateRange()
-      const from = formatDateUTC(range.start)
-      const to = formatDateUTC(addDaysUTC(range.end, 1))
-      const res = await api.brands.getStats(brandId, { storeId, from, to })
-      return res?.data || res || null
+      try {
+        const range = getDateRange()
+        const from = formatDateUTC(range.start)
+        const to = formatDateUTC(addDaysUTC(range.end, 1))
+        const res = await api.brands.getStats(brandId, { storeId, from, to })
+        return res?.data || res || null
+      } catch (error) {
+        if (error?.response?.status === 404) return null
+        throw error
+      }
     },
     enabled: !!brandId,
     staleTime: 5 * 60 * 1000,
@@ -63,11 +73,16 @@ export function useDashboardHome(brandId) {
     queryKey: ['brandUserHistory', brandId, storeId, dateFilter, customDateKey],
     queryFn: async () => {
       if (!brandId) return []
-      const range = getDateRange()
-      const from = formatDateUTC(range.start)
-      const to = formatDateUTC(addDaysUTC(range.end, 1))
-      const res = await api.brands.getStatsUsers(brandId, { from, to, storeId })
-      return res?.data || res || []
+      try {
+        const range = getDateRange()
+        const from = formatDateUTC(range.start)
+        const to = formatDateUTC(addDaysUTC(range.end, 1))
+        const res = await api.brands.getStatsUsers(brandId, { from, to, storeId })
+        return res?.data || res || []
+      } catch (error) {
+        if (error?.response?.status === 404) return []
+        throw error
+      }
     },
     enabled: !!brandId,
     staleTime: 5 * 60 * 1000,
@@ -78,11 +93,16 @@ export function useDashboardHome(brandId) {
     queryKey: ['brandTransactionHistory', brandId, storeId, dateFilter, customDateKey],
     queryFn: async () => {
       if (!brandId) return []
-      const range = getDateRange()
-      const from = formatDateUTC(range.start)
-      const to = formatDateUTC(addDaysUTC(range.end, 1))
-      const res = await api.brands.getStatsTransactions(brandId, { from, to, storeId })
-      return res?.data || res || []
+      try {
+        const range = getDateRange()
+        const from = formatDateUTC(range.start)
+        const to = formatDateUTC(addDaysUTC(range.end, 1))
+        const res = await api.brands.getStatsTransactions(brandId, { from, to, storeId })
+        return res?.data || res || []
+      } catch (error) {
+        if (error?.response?.status === 404) return []
+        throw error
+      }
     },
     enabled: !!brandId,
     staleTime: 5 * 60 * 1000,
@@ -93,11 +113,16 @@ export function useDashboardHome(brandId) {
     queryKey: ['brandRedemptionHistory', brandId, storeId, dateFilter, customDateKey],
     queryFn: async () => {
       if (!brandId) return []
-      const range = getDateRange()
-      const from = formatDateUTC(range.start)
-      const to = formatDateUTC(addDaysUTC(range.end, 1))
-      const res = await api.brands.getStatsRedemptions(brandId, { from, to, storeId })
-      return res?.data || res || []
+      try {
+        const range = getDateRange()
+        const from = formatDateUTC(range.start)
+        const to = formatDateUTC(addDaysUTC(range.end, 1))
+        const res = await api.brands.getStatsRedemptions(brandId, { from, to, storeId })
+        return res?.data || res || []
+      } catch (error) {
+        if (error?.response?.status === 404) return []
+        throw error
+      }
     },
     enabled: !!brandId,
     staleTime: 5 * 60 * 1000,

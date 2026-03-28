@@ -57,9 +57,14 @@ export function useMyPrograms(brandId) {
     queryKey: ['stores', brandId],
     queryFn: async () => {
       if (!brandId) return []
-      const res = await api.stores.list(brandId)
-      const raw = res?.data || res || []
-      return normalizeStores(raw)
+      try {
+        const res = await api.stores.list(brandId)
+        const raw = res?.data || res || []
+        return normalizeStores(raw)
+      } catch (error) {
+        if (error?.response?.status === 404) return []
+        throw error
+      }
     },
     enabled: !!brandId,
     staleTime: 5 * 60 * 1000,
@@ -71,8 +76,13 @@ export function useMyPrograms(brandId) {
     queryKey,
     queryFn: async () => {
       if (!brandId) return []
-      const res = await api.loyaltyPrograms.list(brandId, { storeId })
-      return res?.data || res || []
+      try {
+        const res = await api.loyaltyPrograms.list(brandId, { storeId })
+        return res?.data || res || []
+      } catch (error) {
+        if (error?.response?.status === 404) return []
+        throw error
+      }
     },
     enabled: !!brandId,
     staleTime: 5 * 60 * 1000,
