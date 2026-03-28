@@ -222,7 +222,7 @@ export const StoreCard = memo(function StoreCard({ store, onEdit, onDelete, onSh
 
         <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
           <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
-            ID: {String(store.id || '').slice(0, 8) || 'N/A'}...
+            ID: {String(store.store_id || store.id || '').slice(0, 8) || 'N/A'}...
           </span>
           <Button
             variant="outline"

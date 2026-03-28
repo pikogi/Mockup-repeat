@@ -71,8 +71,9 @@ export default function Sidebar() {
     { name: t('survey'), icon: ClipboardList, page: 'Survey' },
     { name: t('menu'), icon: BookOpen, page: 'Menu' },
     ...(user?.type_user === 'brand_admin' ? [{ name: t('stores'), icon: Store, page: 'Stores' }] : []),
-    { name: t('Crear Club'), icon: Plus, page: 'CreateClub', primary: true },
   ]
+
+  const primaryAction = { name: t('Crear Club'), icon: Plus, page: 'CreateClub' }
   const currentPath = location.pathname
 
   return (
@@ -88,7 +89,7 @@ export default function Sidebar() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-1">
           {navItems.map((item) => {
             const isActive = currentPath.includes(item.page)
             if (item.comingSoon) {
@@ -109,11 +110,9 @@ export default function Sidebar() {
                 to={createPageUrl(item.page)}
                 className={cn(
                   'flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200',
-                  item.primary
-                    ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg hover:shadow-xl hover:from-yellow-500 hover:to-yellow-600'
-                    : isActive
-                      ? 'bg-gray-100 dark:bg-gray-800 text-black dark:text-white shadow-sm font-semibold'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800',
+                  isActive
+                    ? 'bg-gray-100 dark:bg-gray-800 text-black dark:text-white shadow-sm font-semibold'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800',
                 )}
               >
                 <item.icon className="w-5 h-5" />
@@ -121,6 +120,13 @@ export default function Sidebar() {
               </Link>
             )
           })}
+          <Link
+            to={createPageUrl(primaryAction.page)}
+            className="flex items-center gap-3 px-4 py-3 mt-4 rounded-xl transition-all duration-200 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg hover:shadow-xl hover:from-yellow-500 hover:to-yellow-600"
+          >
+            <primaryAction.icon className="w-5 h-5" />
+            <span className="font-medium">{primaryAction.name}</span>
+          </Link>
         </nav>
 
         {/* Profile + Soporte */}
