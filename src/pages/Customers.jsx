@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Search, Users, CreditCard, ArrowUpDown, Loader2 } from 'lucide-react'
 import DateFilterSelect from '@/components/shared/DateFilterSelect'
+import StoreFilterSelect from '@/components/shared/StoreFilterSelect'
 import { motion } from 'framer-motion'
 import CustomerDetailModal from '../components/customers/CustomerDetailModal'
 import {
@@ -40,6 +41,9 @@ export default function Customers() {
     setDateFilter,
     customDate,
     setCustomDate,
+    stores,
+    selectedStore,
+    setSelectedStore,
   } = useCustomers()
 
   const handleCustomerClick = useCallback(
@@ -95,6 +99,8 @@ export default function Customers() {
               className="pl-10 h-10 rounded-xl border-gray-200 dark:border-gray-700"
             />
           </div>
+
+          <StoreFilterSelect stores={stores} selectedStore={selectedStore} setSelectedStore={setSelectedStore} />
 
           <Select value={selectedCard} onValueChange={handleCardChange}>
             <SelectTrigger className="h-10 rounded-xl w-full sm:w-40">

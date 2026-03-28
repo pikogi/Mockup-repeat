@@ -1,6 +1,5 @@
-import { LayoutDashboard, Loader2, Plus, Check, Building2, Trash2, Pencil, Store } from 'lucide-react'
+import { LayoutDashboard, Loader2, Plus, Check, Building2, Trash2, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,8 +19,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 
-import { useLanguage } from '@/components/auth/LanguageContext'
 import DateFilterSelect from '@/components/shared/DateFilterSelect'
+import StoreFilterSelect from '@/components/shared/StoreFilterSelect'
 
 export function BrandLogoButton({
   brandLogoUrl,
@@ -160,27 +159,10 @@ export function DashboardFilters({
   selectedStore,
   setSelectedStore,
 }) {
-  const { t } = useLanguage()
-
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col md:flex-row md:items-end gap-2">
-        {stores.length > 1 && (
-          <Select value={selectedStore} onValueChange={setSelectedStore}>
-            <SelectTrigger className="w-full md:w-[200px] bg-white dark:bg-gray-900">
-              <Store className="w-4 h-4 mr-2 text-gray-500" />
-              <SelectValue placeholder={t('filterStore')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t('allStores')}</SelectItem>
-              {stores.map((store) => (
-                <SelectItem key={store.id} value={store.id}>
-                  {store.store_name || store.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
+      <div className="flex flex-col md:flex-row md:items-end gap-4">
+        <StoreFilterSelect stores={stores} selectedStore={selectedStore} setSelectedStore={setSelectedStore} />
 
         <DateFilterSelect
           dateFilter={dateFilter}

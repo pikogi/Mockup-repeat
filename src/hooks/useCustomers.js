@@ -13,6 +13,7 @@ export function useCustomers() {
   const [sortBy, setSortBy] = useState('date')
   const [dateFilter, setDateFilter] = useState('7d')
   const [customDate, setCustomDate] = useState({ from: new Date(), to: new Date() })
+  const [selectedStore, setSelectedStore] = useState('all')
 
   const user = getCurrentUser()
 
@@ -29,6 +30,24 @@ export function useCustomers() {
   const brandIdFromStorage = localStorage.getItem('brand_id')
   const brandId = brandIdFromStorage || meData?.brands?.[0]?.brand_id
   const brand = meData?.brands?.find((b) => b.brand_id === brandId) || meData?.brands?.[0] || null
+
+  const storeId = selectedStore !== 'all' ? selectedStore : null
+
+  // Stores for filter dropdown
+  const { data: stores = [] } = useQuery({
+    queryKey: ['stores', brandId],
+    queryFn: async () => {
+      if (!brandId) return []
+      const res = await api.stores.list(brandId)
+      const raw = res?.data || res || []
+      return raw.map((store) => {
+        const id = store.store_id || store.id
+        return { ...store, id, store_id: id }
+      })
+    },
+    enabled: !!brandId,
+    staleTime: 5 * 60 * 1000,
+  })
 
   // Loyalty programs (shares cache with useMyPrograms via same queryKey)
   const { data: programs = [], isFetched: programsFetched } = useQuery({
@@ -77,7 +96,7 @@ export function useCustomers() {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ['brandUsers', brandId, programFilter, dateFilter, customDateKey, sortBy],
+    queryKey: ['brandUsers', brandId, programFilter, storeId, dateFilter, customDateKey, sortBy],
     queryFn: async ({ pageParam }) => {
       const params = { limit: PAGE_LIMIT }
       if (pageParam) params.cursor = pageParam
@@ -88,6 +107,7 @@ export function useCustomers() {
         params.to = formatDateUTC(addDaysUTC(range.end, 1))
       }
       if (SORT_MAP[sortBy]) params.sortBy = SORT_MAP[sortBy]
+      if (storeId) params.storeId = storeId
       const res = await api.brands.getUsers(brandId, params)
       return res
     },
@@ -195,5 +215,8 @@ export function useCustomers() {
     setDateFilter,
     customDate,
     setCustomDate,
+    stores,
+    selectedStore,
+    setSelectedStore,
   }
 }

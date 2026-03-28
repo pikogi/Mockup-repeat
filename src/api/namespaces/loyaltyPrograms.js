@@ -2,8 +2,8 @@ import { buildQueryString } from '../helpers'
 
 export function createLoyaltyProgramsNamespace(client) {
   return {
-    list: (brandId, { cursor, limit } = {}) => {
-      const qs = buildQueryString({ brand_id: brandId, cursor, limit })
+    list: (brandId, { cursor, limit, storeId } = {}) => {
+      const qs = buildQueryString({ brand_id: brandId, cursor, limit, store_id: storeId })
       return client.get(`/loyalty-programs${qs}`)
     },
 

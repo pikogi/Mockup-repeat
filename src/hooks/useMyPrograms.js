@@ -3,6 +3,13 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import { toast } from 'sonner'
 
+function normalizeStores(raw) {
+  return raw.map((store) => {
+    const id = store.store_id || store.id
+    return { ...store, id, store_id: id }
+  })
+}
+
 function mapProgramToCard(program) {
   return {
     id: program.program_id || program.id,
@@ -39,14 +46,30 @@ function mapProgramToCard(program) {
 export function useMyPrograms(brandId) {
   const queryClient = useQueryClient()
   const [deletingIds, setDeletingIds] = useState({})
+  const [selectedStore, setSelectedStore] = useState('all')
 
-  const queryKey = useMemo(() => ['loyaltyPrograms', brandId], [brandId])
+  const storeId = selectedStore !== 'all' ? selectedStore : null
+
+  // Stores for filter dropdown
+  const { data: stores = [] } = useQuery({
+    queryKey: ['stores', brandId],
+    queryFn: async () => {
+      if (!brandId) return []
+      const res = await api.stores.list(brandId)
+      const raw = res?.data || res || []
+      return normalizeStores(raw)
+    },
+    enabled: !!brandId,
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const queryKey = useMemo(() => ['loyaltyPrograms', brandId, storeId], [brandId, storeId])
 
   const { data: programs = [], isLoading } = useQuery({
     queryKey,
     queryFn: async () => {
       if (!brandId) return []
-      const res = await api.loyaltyPrograms.list(brandId)
+      const res = await api.loyaltyPrograms.list(brandId, { storeId })
       return res?.data || res || []
     },
     enabled: !!brandId,
@@ -113,5 +136,15 @@ export function useMyPrograms(brandId) {
 
   const isDeletingProgram = (programId) => !!deletingIds[programId]
 
-  return { cards, isLoading, memberCounts, toggleProgramActive, deleteProgram, isDeletingProgram }
+  return {
+    cards,
+    isLoading,
+    memberCounts,
+    toggleProgramActive,
+    deleteProgram,
+    isDeletingProgram,
+    stores,
+    selectedStore,
+    setSelectedStore,
+  }
 }
