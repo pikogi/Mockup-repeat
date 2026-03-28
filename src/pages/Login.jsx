@@ -488,6 +488,7 @@ export default function Login() {
                     {isLogin && (
                       <motion.button
                         type="button"
+                        tabIndex={-1}
                         onClick={handleForgotPassword}
                         className="text-sm text-yellow-600 hover:text-yellow-700 hover:underline font-medium transition-colors"
                         whileHover={{ scale: 1.05 }}

@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import Sidebar from '@/components/layout/Sidebar'
-import { LanguageProvider } from '@/components/auth/LanguageContext'
 import { api } from '@/api/client'
 import { useQuery } from '@tanstack/react-query'
 import { getCurrentUser } from '@/utils/jwt'
@@ -140,11 +139,9 @@ export default function Layout({ children, currentPageName }) {
   }
 
   return (
-    <LanguageProvider>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
-        <Sidebar />
-        <main className="lg:ml-64 pb-24 lg:pb-0 pt-14 lg:pt-0">{children}</main>
-      </div>
-    </LanguageProvider>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+      <Sidebar />
+      <main className="lg:ml-64 pb-24 lg:pb-0 pt-14 lg:pt-0">{children}</main>
+    </div>
   )
 }
