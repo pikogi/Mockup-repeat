@@ -7,12 +7,14 @@ import { useLanguage } from '@/components/auth/LanguageContext'
 import { getProgramTypeDescription } from '@/constants/programTypes'
 
 export function StoreSelector({ stores, formData, setFormData }) {
+  const { t } = useLanguage()
+
   if (stores.length <= 1) return null
 
   return (
     <div className="space-y-2">
-      <Label>Sucursales *</Label>
-      <p className="text-xs text-gray-500 dark:text-gray-400">Seleccioná las sucursales donde aplica este programa</p>
+      <Label>{t('formStores')} *</Label>
+      <p className="text-xs text-gray-500 dark:text-gray-400">{t('formStoresDesc')}</p>
       <div className="space-y-2 pt-1">
         {stores.map((store) => {
           const storeId = store.store_id || store.id
@@ -47,18 +49,20 @@ export function StoreSelector({ stores, formData, setFormData }) {
 }
 
 export function ProgramTypeSelector({ formData, setFormData, className }) {
+  const { t } = useLanguage()
+
   return (
     <div className={`space-y-2 ${className || ''}`}>
-      <Label htmlFor="program_type_id">Tipo de Club *</Label>
+      <Label htmlFor="program_type_id">{t('formProgramType')} *</Label>
       <Select
         value={formData.program_type_id}
         onValueChange={(value) => setFormData((prev) => ({ ...prev, program_type_id: value }))}
       >
         <SelectTrigger className="h-12">
-          <SelectValue placeholder="Selecciona el tipo de Club" />
+          <SelectValue placeholder={t('formProgramTypePlaceholder')} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc151">Sellos</SelectItem>
+          <SelectItem value="7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc151">{t('formStampsType')}</SelectItem>
         </SelectContent>
       </Select>
       <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-950 border border-yellow-300 rounded-lg">
@@ -89,7 +93,7 @@ export function BasicInfoFields({ formData, setFormData, setIsFlipped }) {
       <div className="space-y-2 ">
         <div className="flex items-center gap-2">
           <Label htmlFor="description">{t('description')}</Label>
-          <span className="text-xs text-gray-400 dark:text-gray-500">Solo para control interno</span>
+          <span className="text-xs text-gray-400 dark:text-gray-500">{t('formInternalOnly')}</span>
         </div>
         <Textarea
           id="description"
@@ -113,7 +117,9 @@ export function BasicInfoFields({ formData, setFormData, setIsFlipped }) {
           maxLength={35}
           className="h-12"
         />
-        <p className="text-xs text-gray-500 dark:text-gray-400">{formData.reward_text?.length || 0}/35 caracteres</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          {formData.reward_text?.length || 0}/35 {t('formCharacters')}
+        </p>
       </div>
 
       <div className="space-y-2">
@@ -146,7 +152,7 @@ export function BasicInfoFields({ formData, setFormData, setIsFlipped }) {
           }}
           className="h-12"
         />
-        <p className="text-xs text-gray-500 dark:text-gray-400">Máximo 20 sellos</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">{t('formMaxStamps')}</p>
       </div>
     </>
   )
@@ -197,12 +203,12 @@ export function ImageUploadGroup({
       </div>
 
       <div className="space-y-2">
-        <Label>Imagen de Fondo</Label>
+        <Label>{t('formBackgroundImage')}</Label>
         <div className="flex gap-3 items-center">
           {formData.background_image_url && (
             <img
               src={formData.background_image_url}
-              alt="Imagen de fondo"
+              alt={t('formBackgroundImage')}
               className="w-16 h-16 rounded-xl object-cover border"
               onError={(e) => {
                 e.target.style.display = 'none'
@@ -211,7 +217,7 @@ export function ImageUploadGroup({
           )}
           <ImageUploadButton
             uploading={uploadingBackground}
-            label="Subir Imagen de Fondo"
+            label={t('formUploadBackground')}
             onChange={handleBackgroundImageUpload}
             onClick={() => setIsFlipped(false)}
           />
@@ -219,18 +225,18 @@ export function ImageUploadGroup({
       </div>
 
       <div className="space-y-2">
-        <Label>Imagen de Sello</Label>
+        <Label>{t('formStampImage')}</Label>
         <div className="flex gap-3 items-center">
           {formData.stamp_image_url && (
             <img
               src={formData.stamp_image_url}
-              alt="Imagen de sello"
+              alt={t('formStampImage')}
               className="w-16 h-16 rounded-xl object-cover border"
             />
           )}
           <ImageUploadButton
             uploading={uploadingStamp}
-            label="Subir Imagen de Sello"
+            label={t('formUploadStamp')}
             onChange={handleStampImageUpload}
             onClick={() => setIsFlipped(false)}
           />
@@ -256,7 +262,7 @@ export function ColorPickerGroup({ formData, setFormData }) {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="foreground_color">Color de texto</Label>
+        <Label htmlFor="foreground_color">{t('formTextColor')}</Label>
         <Input
           id="foreground_color"
           type="color"
@@ -266,7 +272,7 @@ export function ColorPickerGroup({ formData, setFormData }) {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="label_color">Color de etiqueta</Label>
+        <Label htmlFor="label_color">{t('formLabelColor')}</Label>
         <Input
           id="label_color"
           type="color"
@@ -322,32 +328,35 @@ export function ValiditySection({ formData, setFormData, getValidityTermsText })
 }
 
 export function CustomerDataFields({ formData, setFormData }) {
+  const { t } = useLanguage()
+
   return (
     <div className="border-t pt-6 pb-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Datos a Solicitar al Cliente</h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('formCustomerData')}</h3>
       <div className="grid gap-4">
         <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl opacity-75">
           <div className="space-y-0.5">
             <Label className="text-base">
-              Nombre <span className="text-xs text-gray-400 dark:text-gray-500">(requerido)</span>
+              {t('formNameLabel')}{' '}
+              <span className="text-xs text-gray-400 dark:text-gray-500">({t('formRequired')})</span>
             </Label>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Solicitar nombre al cliente</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t('formRequestName')}</p>
           </div>
           <Input type="checkbox" checked={true} disabled className="w-6 h-6 accent-yellow-500 cursor-not-allowed" />
         </div>
         <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl opacity-75">
           <div className="space-y-0.5">
             <Label className="text-base">
-              Email <span className="text-xs text-gray-400 dark:text-gray-500">(requerido)</span>
+              Email <span className="text-xs text-gray-400 dark:text-gray-500">({t('formRequired')})</span>
             </Label>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Solicitar email al cliente</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t('formRequestEmail')}</p>
           </div>
           <Input type="checkbox" checked={true} disabled className="w-6 h-6 accent-yellow-500 cursor-not-allowed" />
         </div>
         <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
           <div className="space-y-0.5">
-            <Label className="text-base">Teléfono</Label>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Solicitar número de celular</p>
+            <Label className="text-base">{t('formPhoneLabel')}</Label>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t('formRequestPhone')}</p>
           </div>
           <Input
             type="checkbox"
@@ -358,8 +367,8 @@ export function CustomerDataFields({ formData, setFormData }) {
         </div>
         <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
           <div className="space-y-0.5">
-            <Label className="text-base">Cumpleaños</Label>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Solicitar fecha de nacimiento</p>
+            <Label className="text-base">{t('formBirthdayLabel')}</Label>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t('formRequestBirthday')}</p>
           </div>
           <Input
             type="checkbox"
@@ -404,7 +413,7 @@ export function BusinessInfoSection({ formData, setFormData, setIsFlipped }) {
   return (
     <>
       <div className="border-t pt-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Datos de tu Negocio</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('formBusinessInfo')}</h3>
 
         <Label htmlFor="contact_email">{t('contactEmail')}</Label>
         <Input
@@ -453,7 +462,9 @@ export function BusinessInfoSection({ formData, setFormData, setIsFlipped }) {
           rows={3}
           maxLength={300}
         />
-        <p className="text-xs text-gray-500 dark:text-gray-400">{formData.terms?.length || 0}/300 caracteres</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          {formData.terms?.length || 0}/300 {t('formCharacters')}
+        </p>
       </div>
     </>
   )

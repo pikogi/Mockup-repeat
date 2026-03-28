@@ -25,8 +25,10 @@ import FlyerPreview from '@/components/programs/FlyerPreview'
 import FlyerPDF from '@/components/programs/FlyerPDF'
 import { pdf } from '@react-pdf/renderer'
 import { toast } from 'sonner'
+import { useLanguage } from '@/components/auth/LanguageContext'
 
 export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete, brand, currentUser, memberCount }) {
+  const { t } = useLanguage()
   const [showPricing, setShowPricing] = useState(false)
   const [showQr, setShowQr] = useState(false)
 
@@ -63,9 +65,9 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
   const copyShareLink = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl)
-      toast.success('Enlace copiado al portapapeles')
+      toast.success(t('linkCopied'))
     } catch {
-      toast.error('Error al copiar el enlace')
+      toast.error(t('linkCopyError'))
     }
   }
 
@@ -97,7 +99,7 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
       try {
         await navigator.share({
           title: card.club_name,
-          text: `Únete a mi programa ${card.club_name}!`,
+          text: `${t('programJoinShare')} ${card.club_name}!`,
           url: shareUrl,
         })
       } catch (e) {
@@ -112,9 +114,9 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
     setIsDownloading(true)
 
     try {
-      const title = customTitle || card.club_name || 'Programa de Fidelidad'
-      const subtitle = customSubtitle || 'Escanea y únete gratis'
-      const reward = customReward || card.reward_text || 'Recompensa especial'
+      const title = customTitle || card.club_name || t('programLoyaltyProgram')
+      const subtitle = customSubtitle || t('flyerSubtitlePlaceholder')
+      const reward = customReward || card.reward_text || t('flyerRewardPlaceholder')
       const accentColor = card.card_color || '#8B5CF6'
 
       // QR URL
@@ -143,10 +145,10 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
 
-      toast.success('Flyer descargado exitosamente')
+      toast.success(t('flyerDownloadSuccess'))
     } catch (error) {
       console.error('Error downloading flyer:', error)
-      toast.error('Error al descargar el flyer')
+      toast.error(t('flyerDownloadError'))
     } finally {
       setIsDownloading(false)
     }
@@ -165,10 +167,10 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
       link.click()
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
-      toast.success('QR descargado exitosamente')
+      toast.success(t('qrDownloadSuccess'))
     } catch (error) {
       console.error('Error downloading QR:', error)
-      toast.error('Error al descargar el QR')
+      toast.error(t('qrDownloadError'))
     }
   }
 
@@ -212,12 +214,12 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
                     <span
                       className={`text-sm font-medium ${card.is_active ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'}`}
                     >
-                      {card.is_active ? 'Activa' : 'Inactiva'}
+                      {card.is_active ? t('programActive') : t('programInactive')}
                     </span>
                   </div>
                   <Badge variant="outline" className="flex items-center gap-1">
                     <TrendingUp className="w-3 h-3" />
-                    {memberCount !== undefined ? memberCount : card.total_scans || 0} miembros
+                    {memberCount !== undefined ? memberCount : card.total_scans || 0} {t('members')}
                   </Badge>
                 </div>
               </div>
@@ -231,19 +233,19 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
             <div className="flex flex-wrap gap-2">
               <Button variant="outline" size="sm" className="gap-2 h-10 md:h-8" onClick={handlePreview}>
                 <Eye className="w-4 h-4" />
-                Preview
+                {t('programPreview')}
               </Button>
               <Button variant="outline" size="sm" className="gap-2 h-10 md:h-8" onClick={() => onEdit(card)}>
                 <Edit className="w-4 h-4" />
-                Editar
+                {t('programEdit')}
               </Button>
               <Button variant="outline" size="sm" className="gap-2 h-10 md:h-8" onClick={handleShowQr}>
                 <QrCode className="w-4 h-4" />
-                Ver QR
+                {t('programViewQr')}
               </Button>
               <Button variant="outline" size="sm" className="gap-2 h-10 md:h-8" onClick={handleShare}>
                 <Share2 className="w-4 h-4" />
-                Compartir Link
+                {t('programShareLink')}
               </Button>
 
               {currentUser?.type_user === 'brand_admin' && onDelete && (
@@ -255,24 +257,23 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
                       className="gap-2 h-10 md:h-8 text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 border-red-200 dark:border-red-800"
                     >
                       <Trash2 className="w-4 h-4" />
-                      Eliminar
+                      {t('programDelete')}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                      <AlertDialogTitle>{t('confirmAreYouSure')}</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Esta acción no se puede deshacer. Esto eliminará permanentemente el programa de lealtad &quot;
-                        {card.club_name}&quot; y todos sus datos asociados.
+                        {t('programDeleteDesc')} &quot;{card.club_name}&quot; {t('programDeleteDescSuffix')}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() => onDelete(card.id)}
                         className="bg-red-600 hover:bg-red-700 text-white"
                       >
-                        Eliminar
+                        {t('delete')}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -294,18 +295,18 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
       >
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-center">QR del Programa</DialogTitle>
+            <DialogTitle className="text-center">{t('programQrTitle')}</DialogTitle>
           </DialogHeader>
 
           <Tabs defaultValue="qr" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="qr" className="gap-2">
                 <QrCode className="w-4 h-4" />
-                Solo QR
+                {t('programQrOnly')}
               </TabsTrigger>
               <TabsTrigger value="flyer" className="gap-2">
                 <FileImage className="w-4 h-4" />
-                Flyer para Imprimir
+                {t('programFlyerPrint')}
               </TabsTrigger>
             </TabsList>
 
@@ -315,7 +316,7 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
                 <div className="bg-white dark:bg-gray-900 p-4 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800">
                   <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`}
-                    alt={`Código QR de ${card.club_name}`}
+                    alt={`QR ${card.club_name}`}
                     className="w-48 h-48"
                     loading="lazy"
                   />
@@ -323,9 +324,7 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
                 <div className="text-center text-sm text-gray-500 dark:text-gray-400">
                   <p className="font-medium text-gray-900 dark:text-gray-100">{card.club_name}</p>
                   <p className="text-xs mt-1 break-all max-w-xs">{shareUrl}</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                    Escanea para unirte al programa de fidelidad
-                  </p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">{t('programQrScanDesc')}</p>
                 </div>
               </div>
               <div className="flex justify-center gap-2 mt-4">
@@ -333,16 +332,16 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
                   variant="outline"
                   onClick={() => {
                     navigator.clipboard.writeText(shareUrl)
-                    toast.success('Enlace copiado al portapapeles')
+                    toast.success(t('linkCopied'))
                   }}
                   className="gap-2"
                 >
                   <Share2 className="w-4 h-4" />
-                  Copiar Link
+                  {t('programCopyLink')}
                 </Button>
                 <Button variant="secondary" onClick={downloadQrOnly} className="gap-2">
                   <Download className="w-4 h-4" />
-                  Descargar QR
+                  {t('programDownloadQr')}
                 </Button>
               </div>
             </TabsContent>
@@ -354,23 +353,23 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
                 <div className="space-y-4">
                   {/* Template Selection */}
                   <div>
-                    <Label className="text-sm font-medium mb-2 block">Plantilla</Label>
+                    <Label className="text-sm font-medium mb-2 block">{t('flyerTemplate')}</Label>
                     <div className="grid grid-cols-3 gap-2">
                       {[
-                        { id: 'classic', name: 'Clásico' },
-                        { id: 'minimal', name: 'Minimal' },
-                        { id: 'promo', name: 'Promo' },
-                      ].map((t) => (
+                        { id: 'classic', name: t('flyerClassic') },
+                        { id: 'minimal', name: t('flyerMinimal') },
+                        { id: 'promo', name: t('flyerPromo') },
+                      ].map((tmpl) => (
                         <button
-                          key={t.id}
-                          onClick={() => setFlyerTemplate(t.id)}
+                          key={tmpl.id}
+                          onClick={() => setFlyerTemplate(tmpl.id)}
                           className={`p-3 rounded-lg border-2 text-sm font-medium transition-all ${
-                            flyerTemplate === t.id
+                            flyerTemplate === tmpl.id
                               ? 'border-violet-500 bg-violet-50 dark:bg-violet-950 text-violet-700 dark:text-violet-300'
                               : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 text-gray-600 dark:text-gray-400'
                           }`}
                         >
-                          {t.name}
+                          {tmpl.name}
                         </button>
                       ))}
                     </div>
@@ -379,7 +378,7 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
                   {/* Custom Title */}
                   <div>
                     <Label htmlFor="customTitle" className="text-sm font-medium">
-                      Título
+                      {t('flyerTitle')}
                     </Label>
                     <Input
                       id="customTitle"
@@ -393,11 +392,11 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
                   {/* Custom Subtitle */}
                   <div>
                     <Label htmlFor="customSubtitle" className="text-sm font-medium">
-                      Subtítulo
+                      {t('flyerSubtitle')}
                     </Label>
                     <Input
                       id="customSubtitle"
-                      placeholder="Escanea y únete gratis"
+                      placeholder={t('flyerSubtitlePlaceholder')}
                       value={customSubtitle}
                       onChange={(e) => setCustomSubtitle(e.target.value)}
                       className="mt-1"
@@ -407,11 +406,11 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
                   {/* Custom Reward */}
                   <div>
                     <Label htmlFor="customReward" className="text-sm font-medium">
-                      Recompensa
+                      {t('flyerReward')}
                     </Label>
                     <Input
                       id="customReward"
-                      placeholder={card.reward_text || 'Recompensa especial'}
+                      placeholder={card.reward_text || t('flyerRewardPlaceholder')}
                       value={customReward}
                       onChange={(e) => setCustomReward(e.target.value)}
                       className="mt-1"
@@ -423,12 +422,12 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
                     {isDownloading ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Generando...
+                        {t('flyerGenerating')}
                       </>
                     ) : (
                       <>
                         <Download className="w-4 h-4" />
-                        Descargar Flyer
+                        {t('flyerDownload')}
                       </>
                     )}
                   </Button>
@@ -436,7 +435,7 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
 
                 {/* Right Side: Preview */}
                 <div className="flex flex-col items-center">
-                  <Label className="text-sm font-medium mb-2 block w-full">Vista Previa</Label>
+                  <Label className="text-sm font-medium mb-2 block w-full">{t('livePreview')}</Label>
                   <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm bg-gray-50 dark:bg-gray-800 p-2">
                     <div
                       style={{
@@ -456,9 +455,7 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
                       />
                     </div>
                   </div>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 text-center">
-                    El flyer se descargará en PDF
-                  </p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 text-center">{t('flyerDownloadNote')}</p>
                 </div>
               </div>
             </TabsContent>

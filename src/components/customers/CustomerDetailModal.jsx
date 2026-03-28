@@ -35,6 +35,7 @@ import { toast } from 'sonner'
 import { api } from '@/api/client'
 import { getTransactionErrorMessage } from '@/lib/utils'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useLanguage } from '@/components/auth/LanguageContext'
 
 const CONFETTI_PIECES = [
   { left: '8%', color: '#22c55e', w: 8, h: 10, rotate: 120, dur: 1.2, delay: 0 },
@@ -60,6 +61,7 @@ const CONFETTI_PIECES = [
 ]
 
 export default function CustomerDetailModal({ customer, brandId, initialData, onClose }) {
+  const { t } = useLanguage()
   const queryClient = useQueryClient()
   const [isConfirming, setIsConfirming] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
@@ -133,8 +135,8 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
   // Mismo flujo que ScanQR: transactions.create + regenerar imagen
   const addStampMutation = useMutation({
     mutationFn: async () => {
-      if (!selectedStore) throw new Error('Seleccioná una sucursal antes de agregar el sello.')
-      if (!autoSelectedCardId) throw new Error('No se encontró la tarjeta del cliente.')
+      if (!selectedStore) throw new Error(t('customerSelectStoreFirst'))
+      if (!autoSelectedCardId) throw new Error(t('customerCardNotFound'))
 
       await api.transactions.create(autoSelectedCardId, selectedStore, 'stamp_added', 'stamp', 1)
 
@@ -168,7 +170,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
     },
     onError: (err) => {
       setIsConfirming(false)
-      toast.error(getTransactionErrorMessage(err, 'Error al agregar sello'))
+      toast.error(getTransactionErrorMessage(err, t('customerStampError')))
     },
   })
 
@@ -181,7 +183,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
       setShowRedeemSuccess(true)
     },
     onError: (err) => {
-      toast.error(err.message || 'Error al canjear el premio')
+      toast.error(err.message || t('customerRedeemError'))
     },
   })
 
@@ -226,7 +228,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
                 >
-                  ¡Premio Canjeado!
+                  {t('customerRewardRedeemed')}
                 </motion.h3>
                 <motion.p
                   className="text-sm text-gray-500 dark:text-gray-400"
@@ -241,7 +243,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
           </AnimatePresence>
 
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Detalle del Cliente</DialogTitle>
+            <DialogTitle className="text-xl font-bold">{t('customerDetailTitle')}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-6 mt-4">
@@ -262,7 +264,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                   <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                     <Calendar className="w-4 h-4" />
                     <span>
-                      Se unió: <strong>{format(new Date(customerCreatedAt), 'dd MMM yyyy')}</strong>
+                      {t('customerJoined')} <strong>{format(new Date(customerCreatedAt), 'dd MMM yyyy')}</strong>
                     </span>
                   </div>
                 )}
@@ -271,7 +273,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                   <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                     <Smartphone className="w-4 h-4" />
                     <span>
-                      Cel: <strong>{customerPhone}</strong>
+                      {t('customerPhone')} <strong>{customerPhone}</strong>
                     </span>
                   </div>
                 )}
@@ -280,7 +282,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                   <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                     <Cake className="w-4 h-4" />
                     <span>
-                      Cumple: <strong>{format(new Date(customerBirthDate), 'dd MMM')}</strong>
+                      {t('customerBirthday')} <strong>{format(new Date(customerBirthDate), 'dd MMM')}</strong>
                     </span>
                   </div>
                 )}
@@ -293,7 +295,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                 <CreditCard className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
                 <Select value={selectedCardId || ''} onValueChange={setSelectedCardId}>
                   <SelectTrigger className="h-10 flex-1">
-                    <SelectValue placeholder="Seleccioná un programa" />
+                    <SelectValue placeholder={t('customerSelectProgram')} />
                   </SelectTrigger>
                   <SelectContent>
                     {userData?.loyalty_cards?.map((lc) => (
@@ -315,7 +317,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
               </div>
             ) : multipleCards && !activeCard ? (
               <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-2">
-                Seleccioná un programa para ver las métricas
+                {t('customerSelectProgramMetrics')}
               </p>
             ) : activeCard ? (
               <div className="space-y-3">
@@ -327,7 +329,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                     <p className="text-xl sm:text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">
                       {activeCard.current_balance ?? 0}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Sellos Actuales</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('customerCurrentStamps')}</p>
                   </Card>
                   <Card className="p-3 text-center">
                     <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto mb-2">
@@ -336,7 +338,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                     <p className="text-xl sm:text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">
                       {activeCard.total_visits ?? 0}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Visitas Totales</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('customerTotalVisits')}</p>
                   </Card>
                   <Card className="p-3 text-center">
                     <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 flex items-center justify-center mx-auto mb-2">
@@ -345,12 +347,12 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                     <p className="text-xl sm:text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">
                       {activeCard.redemptions?.filter((r) => r.status === 'completed').length || 0}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Premios Canjeados</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('customerRewardsRedeemed')}</p>
                   </Card>
                 </div>
                 <Card className="p-4 bg-gradient-to-r from-amber-50 dark:from-amber-950 to-yellow-50 dark:to-yellow-950">
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Progreso al próximo premio
+                    {t('customerProgressToReward')}
                   </p>
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                     <div
@@ -361,8 +363,8 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                     />
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    {activeCard.current_balance ?? 0} de {activeCard.program?.program_rules?.stamps_required ?? 10}{' '}
-                    sellos
+                    {activeCard.current_balance ?? 0} {t('of')}{' '}
+                    {activeCard.program?.program_rules?.stamps_required ?? 10} {t('stampPlural')}
                   </p>
                 </Card>
               </div>
@@ -377,7 +379,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                   <div className="flex items-center gap-2 mb-1">
                     <Gift className="w-4 h-4 text-green-600 dark:text-green-400" />
                     <span className="text-sm font-semibold text-green-800 dark:text-green-200">
-                      Premio pendiente de canje
+                      {t('customerPendingReward')}
                     </span>
                   </div>
                   <p className="text-xs text-green-700 dark:text-green-300 mb-2">
@@ -390,7 +392,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                     disabled={redeemMutation.isPending}
                   >
                     {redeemMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
-                    Canjear Premio
+                    {t('customerRedeemReward')}
                   </Button>
                 </div>
               )
@@ -401,7 +403,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Clock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Historial</h4>
+                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">{t('customerHistory')}</h4>
                 </div>
                 <Card className="max-h-48 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
                   {[...activeCard.transactions]
@@ -411,7 +413,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                         <div className="flex items-center gap-2">
                           <Stamp className="w-3.5 h-3.5 text-amber-500" />
                           <span className="text-sm text-gray-700 dark:text-gray-300">
-                            {tx.transaction_type === 'stamp_added' ? 'Sello agregado' : tx.transaction_type}
+                            {tx.transaction_type === 'stamp_added' ? t('customerStampAdded') : tx.transaction_type}
                           </span>
                         </div>
                         <span className="text-xs text-gray-400 dark:text-gray-500 tabular-nums">
@@ -434,7 +436,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                 ) : (
                   <Select value={selectedStore || ''} onValueChange={handleStoreSelect}>
                     <SelectTrigger className="h-10 flex-1">
-                      <SelectValue placeholder="Seleccioná una sucursal" />
+                      <SelectValue placeholder={t('customerSelectStore')} />
                     </SelectTrigger>
                     <SelectContent>
                       {stores.map((store) => (
@@ -460,19 +462,20 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                   ) : (
                     <Plus className="w-5 h-5 mr-2" />
                   )}
-                  {addStampMutation.isPending ? 'Agregando...' : 'Agregar Sello Manualmente'}
+                  {addStampMutation.isPending ? t('customerAdding') : t('customerAddStampManually')}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                  <AlertDialogTitle>{t('confirmAreYouSure')}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Estás a punto de agregar un sello manualmente a {customerName}. Esta acción no se puede deshacer.
+                    {t('customerAddStampConfirmDesc')} {customerName}
+                    {t('customerAddStampConfirmSuffix')}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => addStampMutation.mutate()}>Confirmar</AlertDialogAction>
+                  <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => addStampMutation.mutate()}>{t('confirm')}</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
@@ -485,15 +488,15 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                     <CheckCircle2 className="h-6 w-6" />
                   </div>
                   <AlertDialogHeader>
-                    <AlertDialogTitle className="text-center text-xl">¡Sello Entregado!</AlertDialogTitle>
+                    <AlertDialogTitle className="text-center text-xl">{t('customerStampDelivered')}</AlertDialogTitle>
                     <AlertDialogDescription className="text-center">
-                      Se agregó un sello a {customerName}.
+                      {t('customerStampAddedTo')} {customerName}.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                 </div>
                 <AlertDialogFooter className="sm:justify-center">
                   <AlertDialogAction onClick={() => setShowSuccess(false)} className="w-full">
-                    Aceptar
+                    {t('accept')}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

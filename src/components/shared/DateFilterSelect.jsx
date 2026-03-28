@@ -43,7 +43,7 @@ export default function DateFilterSelect({
           >
             <div className="flex gap-2">
               <div className="flex flex-1 md:flex-none flex-col gap-1">
-                <Label className="text-xs text-gray-500 dark:text-gray-400">Desde</Label>
+                <Label className="text-xs text-gray-500 dark:text-gray-400">{t('dateFrom')}</Label>
                 <Input
                   type="date"
                   className="bg-white dark:bg-gray-900 w-full md:w-[160px] h-10"
@@ -57,7 +57,7 @@ export default function DateFilterSelect({
                 />
               </div>
               <div className="flex flex-1 md:flex-none flex-col gap-1">
-                <Label className="text-xs text-gray-500 dark:text-gray-400">Hasta</Label>
+                <Label className="text-xs text-gray-500 dark:text-gray-400">{t('dateTo')}</Label>
                 <Input
                   type="date"
                   className="bg-white dark:bg-gray-900 w-full md:w-[160px] h-10"
