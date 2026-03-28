@@ -1,3 +1,4 @@
+import posthog from 'posthog-js'
 import { processAuthToken } from '../authHelpers'
 import { setCachedToken, clearAuthStorage } from '../client'
 
@@ -19,6 +20,15 @@ export function createAuthNamespace(client) {
             localStorage.setItem('user_onboarding_completed', 'false')
           }
         }
+
+        if (decoded && posthog.__loaded) {
+          posthog.identify(decoded.user_id, {
+            email: decoded.email,
+            name: decoded.full_name,
+            brand_id: decoded.brand_id,
+            user_type: decoded.user_type,
+          })
+        }
       }
       return res
     },
@@ -32,7 +42,15 @@ export function createAuthNamespace(client) {
       const jwtToken = res.token || res.data?.token
       if (jwtToken) {
         setCachedToken(jwtToken)
-        processAuthToken(jwtToken)
+        const decoded = processAuthToken(jwtToken)
+
+        if (decoded && posthog.__loaded) {
+          posthog.identify(decoded.user_id, {
+            email: decoded.email,
+            name: decoded.full_name,
+            user_type: decoded.user_type || 'brand_admin',
+          })
+        }
 
         try {
           const brandAdminResponse = await client.patch('/auth/brand-admin', {})
@@ -85,6 +103,9 @@ export function createAuthNamespace(client) {
     },
 
     logout: () => {
+      if (posthog.__loaded) {
+        posthog.reset()
+      }
       setCachedToken(null)
       clearAuthStorage()
     },

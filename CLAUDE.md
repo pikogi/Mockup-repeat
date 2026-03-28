@@ -53,6 +53,10 @@ Tiny namespaces (`health`, `redemptions`, `shortUrls`, `notifications`) are defi
 
 In dev, Vite proxies `/api` to the AWS backend. In prod, uses `VITE_API_URL`. JWT is cached in a module-level variable (`_cachedToken`) and synced to localStorage via `setCachedToken()`; 401 responses auto-clear token and redirect to login. All token mutations (login, register, verifyEmail, updateBrandAdmin, logout) use `setCachedToken()` to keep the cache in sync. An optional `VITE_API_KEY` is sent as `x-api-key` header on all requests when set.
 
+**Error monitoring**: Sentry (`src/sentry.jsx`) — initialized before React in `main.jsx`, wraps `<Pages />` with `SentryErrorBoundary` in `App.jsx`. Auto-derives environment from `VITE_API_URL` (dev/stg/prod). Disabled entirely without `VITE_SENTRY_DSN`. API errors get breadcrumbs and 5xx responses are auto-captured via `Sentry.captureException()` in `client.js`. Source maps uploaded during CI builds via `@sentry/vite-plugin` (conditional on `SENTRY_AUTH_TOKEN`). Sample rates: 10% traces, 10% session replays, 100% error replays.
+
+**Product analytics**: PostHog (`src/posthog.js`) — initialized before React in `main.jsx`. Captures pageviews automatically via the `ScrollToTop` component in `src/pages/index.jsx`. Users are identified on login/register and reset on logout in `src/api/namespaces/auth.js`. Disabled entirely without `VITE_POSTHOG_KEY`. Uses `person_profiles: 'identified_only'` to only create profiles for identified users.
+
 **UI**: shadcn/ui components (~30) built on Radix UI primitives, in `src/components/ui/`. Styled with Tailwind CSS using HSL CSS variables for theming (light/dark via class). Icons from lucide-react.
 
 **Path alias**: `@` maps to `./src` (configured in both vite.config.js and jsconfig.json).
@@ -102,7 +106,7 @@ In dev, Vite proxies `/api` to the AWS backend. In prod, uses `VITE_API_URL`. JW
 
 ## Deployment
 
-Automated via GitHub Actions (`.github/workflows/deploy.yml`) to AWS S3 + CloudFront. Three stages: `develop` → dev, `stage` → stg, `main` → prod. Each stage uses a separate GitHub Environment with its own `VITE_API_URL`, `VITE_AWS_S3_BUCKET_PROGRAM_IMAGES`, `AWS_S3_BUCKET`, and `AWS_CLOUDFRONT_DISTRIBUTION_ID`.
+Automated via GitHub Actions (`.github/workflows/deploy.yml`) to AWS S3 + CloudFront. Three stages: `develop` → dev, `stage` → stg, `main` → prod. Each stage uses a separate GitHub Environment with its own `VITE_API_URL`, `VITE_AWS_S3_BUCKET_PROGRAM_IMAGES`, `VITE_SENTRY_DSN`, `VITE_POSTHOG_KEY`, `AWS_S3_BUCKET`, and `AWS_CLOUDFRONT_DISTRIBUTION_ID`. Sentry source maps are uploaded during CI builds when `SENTRY_AUTH_TOKEN` secret is set.
 
 ## Releases & Changelog
 
@@ -115,6 +119,10 @@ Automated via [release-please](https://github.com/googleapis/release-please) (`.
 - `VITE_API_KEY` — optional API key sent as `x-api-key` header on all requests. Used when the backend requires API Gateway key authentication.
 - Backend API (dev): `https://service-dev.repeat.la` (Vite proxy target)
 - `VITE_AWS_S3_BUCKET_PROGRAM_IMAGES` — S3 bucket for program images (stamp cards and logos). Each environment has its own bucket; dev fallback: `repeat-program-images-dev`. URL pattern: `https://<bucket>.s3.us-east-1.amazonaws.com`
+- `VITE_SENTRY_DSN` — Sentry DSN for error tracking. If not set, Sentry is completely disabled.
+- `SENTRY_AUTH_TOKEN` / `SENTRY_ORG` / `SENTRY_PROJECT` — CI-only, used by `@sentry/vite-plugin` to upload source maps during builds.
+- `VITE_POSTHOG_KEY` — PostHog project API key. If not set, PostHog is completely disabled.
+- `VITE_POSTHOG_HOST` — PostHog ingestion host (optional, defaults to `https://us.i.posthog.com`).
 
 ## Performance Patterns
 
@@ -133,7 +141,7 @@ A Content-Security-Policy is defined via `<meta>` tag in `index.html`. Key direc
 - `script-src 'self'` — the short-URL redirect script was externalized to `public/redirect.js` to avoid `'unsafe-inline'`.
 - `style-src 'self' 'unsafe-inline'` — required by Tailwind, Framer Motion, and Radix UI inline styles.
 - `img-src 'self' data: blob: https://*.s3.us-east-1.amazonaws.com https://api.qrserver.com` — covers canvas base64, QR downloads, S3 program images, and QR generation.
-- `connect-src 'self' %VITE_API_URL%` — Vite replaces the env var at build time per environment.
+- `connect-src 'self' %VITE_API_URL% https://*.ingest.sentry.io https://us.i.posthog.com` — Vite replaces the env var at build time per environment. Sentry ingest and PostHog endpoints are always allowed.
 
 When adding new external resources (CDN fonts, analytics, etc.), update the CSP directives in `index.html`.
 

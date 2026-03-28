@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { Loader2 } from 'lucide-react'
+import posthog from 'posthog-js'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import Layout from './Layout'
 import Login from './Login'
@@ -10,6 +11,9 @@ function ScrollToTop() {
   const { pathname } = useLocation()
   useEffect(() => {
     window.scrollTo(0, 0)
+    if (posthog.__loaded) {
+      posthog.capture('$pageview')
+    }
   }, [pathname])
   return null
 }

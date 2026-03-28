@@ -51,11 +51,17 @@ repeat-app/
 VITE_API_URL=https://your-api-gateway-url.execute-api.us-east-1.amazonaws.com/dev
 VITE_API_KEY=
 VITE_AWS_S3_BUCKET_PROGRAM_IMAGES=repeat-program-images-dev
+VITE_SENTRY_DSN=
+VITE_POSTHOG_KEY=
+VITE_POSTHOG_HOST=
 ```
 
 - `VITE_API_URL` — **Development**: Not required (Vite proxies `/api` to the dev backend; `.env.development` sets the dev URL). **Production**: Required, injected at build time via GitHub Actions. `.env` provides an empty default to suppress Vite HTML replacement warnings.
 - `VITE_API_KEY` — Optional API key sent as `x-api-key` header on all requests. Used when the backend requires API Gateway key authentication.
 - `VITE_AWS_S3_BUCKET_PROGRAM_IMAGES` — S3 bucket for program images (stamp cards and logos). Each environment has its own bucket. Falls back to `repeat-program-images-dev` if not set.
+- `VITE_SENTRY_DSN` — Sentry DSN for error tracking. If not set, Sentry is completely disabled (safe for local dev).
+- `VITE_POSTHOG_KEY` — PostHog project API key for product analytics. If not set, PostHog is completely disabled.
+- `VITE_POSTHOG_HOST` — PostHog ingestion host (optional, defaults to `https://us.i.posthog.com`).
 
 ## Scripts
 
@@ -116,6 +122,15 @@ Deployment is automated via GitHub Actions to AWS S3 + CloudFront.
 
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
+- `SENTRY_AUTH_TOKEN` — Sentry auth token for source map uploads
+
+**GitHub Variables** (per-environment):
+
+- `VITE_SENTRY_DSN` — Sentry DSN
+- `SENTRY_ORG` — Sentry organization slug
+- `SENTRY_PROJECT` — Sentry project slug
+- `VITE_POSTHOG_KEY` — PostHog project API key
+- `VITE_POSTHOG_HOST` — PostHog ingestion host (optional)
 
 **AWS** (per stage):
 
@@ -123,9 +138,17 @@ Deployment is automated via GitHub Actions to AWS S3 + CloudFront.
 - CloudFront with OAC, custom error responses (403/404 → `/index.html` with HTTP 200)
 - IAM with permissions: `s3:PutObject`, `s3:DeleteObject`, `s3:ListBucket`, `cloudfront:CreateInvalidation`
 
+## Error Monitoring
+
+Sentry is integrated for error tracking, performance monitoring, and session replay (`src/sentry.jsx`). It initializes before React in `src/main.jsx` and wraps the router with an error boundary in `src/App.jsx`. API errors (5xx) are automatically captured with breadcrumbs via `src/api/client.js`. Source maps are uploaded to Sentry during CI builds via `@sentry/vite-plugin` (only when `SENTRY_AUTH_TOKEN` is set). Environment is auto-derived from `VITE_API_URL`.
+
+## Product Analytics
+
+PostHog is integrated for product analytics (`src/posthog.js`). It initializes before React in `src/main.jsx` and captures pageviews automatically via the router's `ScrollToTop` component. Users are identified on login/register with their `user_id`, `email`, `name`, `brand_id`, and `user_type`. Identity is reset on logout. Disabled entirely without `VITE_POSTHOG_KEY`.
+
 ## Security
 
-A Content-Security-Policy is enforced via `<meta>` tag in `index.html`. Key directives: `script-src 'self'` (no inline scripts), `connect-src 'self' + API URL`, `img-src` restricted to `self`, `data:`, `blob:`, S3, and QR provider. The short-URL redirect logic lives in `public/redirect.js` (externalized to avoid `'unsafe-inline'`). When adding new external resources, update the CSP directives in `index.html`.
+A Content-Security-Policy is enforced via `<meta>` tag in `index.html`. Key directives: `script-src 'self'` (no inline scripts), `connect-src 'self' + API URL + Sentry ingest + PostHog`, `img-src` restricted to `self`, `data:`, `blob:`, S3, and QR provider. The short-URL redirect logic lives in `public/redirect.js` (externalized to avoid `'unsafe-inline'`). When adding new external resources, update the CSP directives in `index.html`.
 
 ## Authentication
 
