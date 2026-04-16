@@ -5,7 +5,6 @@ import posthog from 'posthog-js'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import Layout from './Layout'
 import Login from './Login'
-import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import { LanguageProvider } from '@/components/auth/LanguageContext'
 
 function ScrollToTop() {
@@ -41,7 +40,6 @@ const Survey = lazy(() => import('./Survey'))
 const Menu = lazy(() => import('./Menu'))
 const ShortUrlRedirect = lazy(() => import('./ShortUrlRedirect'))
 
-// Componente wrapper para obtener el nombre de la página actual
 function LayoutWrapper({ children }) {
   const location = useLocation()
   const pageName = location.pathname.split('/').pop() || 'home'
@@ -65,7 +63,6 @@ export default function Pages() {
           }
         >
           <Routes>
-            {/* Rutas públicas - sin protección */}
             <Route path="/publicprogram" element={<PublicCard />} />
             <Route path="/store/:storeId" element={<PublicStore />} />
             <Route path="/catalog/:programId" element={<PublicCatalog />} />
@@ -76,145 +73,117 @@ export default function Pages() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
-            {/* Todas las demás rutas requieren autenticación */}
             <Route
               path="/"
               element={
-                <ProtectedRoute>
+                <LayoutWrapper>
                   <Home />
-                </ProtectedRoute>
+                </LayoutWrapper>
               }
             />
-
-            {/* Rutas protegidas (con layout) */}
             <Route
               path="/onboarding"
               element={
-                <ProtectedRoute>
-                  <LayoutWrapper>
-                    <Onboarding />
-                  </LayoutWrapper>
-                </ProtectedRoute>
+                <LayoutWrapper>
+                  <Onboarding />
+                </LayoutWrapper>
               }
             />
             <Route
               path="/dashboard"
               element={
-                <ProtectedRoute>
-                  <LayoutWrapper>
-                    <Dashboard />
-                  </LayoutWrapper>
-                </ProtectedRoute>
+                <LayoutWrapper>
+                  <Dashboard />
+                </LayoutWrapper>
               }
             />
             <Route
               path="/myprograms"
               element={
-                <ProtectedRoute>
-                  <LayoutWrapper>
-                    <MyPrograms />
-                  </LayoutWrapper>
-                </ProtectedRoute>
+                <LayoutWrapper>
+                  <MyPrograms />
+                </LayoutWrapper>
               }
             />
             <Route
               path="/createclub"
               element={
-                <ProtectedRoute>
-                  <LayoutWrapper>
-                    <CreateClub />
-                  </LayoutWrapper>
-                </ProtectedRoute>
+                <LayoutWrapper>
+                  <CreateClub />
+                </LayoutWrapper>
               }
             />
             <Route
               path="/customers"
               element={
-                <ProtectedRoute>
-                  <LayoutWrapper>
-                    <Customers />
-                  </LayoutWrapper>
-                </ProtectedRoute>
+                <LayoutWrapper>
+                  <Customers />
+                </LayoutWrapper>
               }
             />
             <Route
               path="/stores"
               element={
-                <ProtectedRoute>
-                  <LayoutWrapper>
-                    <Stores />
-                  </LayoutWrapper>
-                </ProtectedRoute>
+                <LayoutWrapper>
+                  <Stores />
+                </LayoutWrapper>
               }
             />
             <Route
               path="/team"
               element={
-                <ProtectedRoute>
-                  <LayoutWrapper>
-                    <Team />
-                  </LayoutWrapper>
-                </ProtectedRoute>
+                <LayoutWrapper>
+                  <Team />
+                </LayoutWrapper>
               }
             />
             <Route
               path="/notifications"
               element={
-                <ProtectedRoute>
-                  <LayoutWrapper>
-                    <Notifications />
-                  </LayoutWrapper>
-                </ProtectedRoute>
+                <LayoutWrapper>
+                  <Notifications />
+                </LayoutWrapper>
               }
             />
             <Route
               path="/profile"
               element={
-                <ProtectedRoute>
-                  <LayoutWrapper>
-                    <Profile />
-                  </LayoutWrapper>
-                </ProtectedRoute>
+                <LayoutWrapper>
+                  <Profile />
+                </LayoutWrapper>
               }
             />
             <Route
               path="/scanqr"
               element={
-                <ProtectedRoute>
-                  <LayoutWrapper>
-                    <ScanQR />
-                  </LayoutWrapper>
-                </ProtectedRoute>
+                <LayoutWrapper>
+                  <ScanQR />
+                </LayoutWrapper>
               }
             />
             <Route
               path="/survey"
               element={
-                <ProtectedRoute>
-                  <LayoutWrapper>
-                    <Survey />
-                  </LayoutWrapper>
-                </ProtectedRoute>
+                <LayoutWrapper>
+                  <Survey />
+                </LayoutWrapper>
               }
             />
             <Route
               path="/menu"
               element={
-                <ProtectedRoute>
-                  <LayoutWrapper>
-                    <Menu />
-                  </LayoutWrapper>
-                </ProtectedRoute>
+                <LayoutWrapper>
+                  <Menu />
+                </LayoutWrapper>
               }
             />
 
-            {/* Ruta catch-all para redirigir a login si no está autenticado */}
             <Route
               path="*"
               element={
-                <ProtectedRoute>
+                <LayoutWrapper>
                   <Home />
-                </ProtectedRoute>
+                </LayoutWrapper>
               }
             />
           </Routes>
