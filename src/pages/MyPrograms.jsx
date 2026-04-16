@@ -41,6 +41,19 @@ const MOCK_CARDS = [
     short_url: null,
     program_type_id: '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc157',
   },
+  {
+    id: 'beauty-demo',
+    club_name: 'Spa Alma',
+    card_title: 'Programa de Puntos',
+    reward_text: 'Canjeá puntos por servicios del catálogo',
+    card_color: '#0f766e',
+    is_active: true,
+    total_scans: 87,
+    description: 'Cada servicio suma puntos que podés canjear en el catálogo.',
+    logo_url: null,
+    short_url: null,
+    program_type_id: '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc157',
+  },
 ]
 
 export default function MyPrograms() {

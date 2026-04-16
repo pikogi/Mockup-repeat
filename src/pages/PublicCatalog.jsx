@@ -1,11 +1,14 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
+  CheckCircle2,
   Coins,
+  Gift,
+  Mail,
   Package,
   ChevronRight,
   X,
-  MapPin,
   Clock,
   Info,
   Megaphone,
@@ -23,6 +26,14 @@ const MOCK_PROGRAM = {
   name: 'Club Café Bonafide',
   logo_url: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=80&h=80&fit=crop&q=80',
   brand_color: '#2563EB',
+  money_per_point: 1000,
+  money_per_point_redeem: 100,
+}
+
+const MOCK_PROGRAM_BEAUTY = {
+  name: 'Spa Alma',
+  logo_url: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=80&h=80&fit=crop&q=80',
+  brand_color: '#0f766e',
   money_per_point: 1000,
   money_per_point_redeem: 100,
 }
@@ -75,6 +86,116 @@ const MOCK_ITEMS = [
   },
 ]
 
+const MOCK_ITEMS_BEAUTY = [
+  {
+    id: 1,
+    name: 'Corte de cabello',
+    points_cost: 300,
+    image_url: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Incluye lavado, corte y secado a elección.',
+  },
+  {
+    id: 2,
+    name: 'Coloración completa',
+    points_cost: 800,
+    image_url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Tinte de raíz a puntas con productos profesionales.',
+  },
+  {
+    id: 3,
+    name: 'Manicura permanente',
+    points_cost: 400,
+    image_url: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=400&h=400&fit=crop&q=80',
+    stock_enabled: true,
+    stock: 5,
+    description: 'Esmaltado permanente con preparación y acabado.',
+  },
+  {
+    id: 4,
+    name: 'Pedicura spa',
+    points_cost: 450,
+    image_url: 'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Tratamiento completo de pies con exfoliación y esmaltado.',
+  },
+  {
+    id: 5,
+    name: "Masaje relajante 60'",
+    points_cost: 600,
+    image_url: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Masaje corporal con aceites esenciales, 60 minutos.',
+  },
+  {
+    id: 6,
+    name: 'Limpieza facial profunda',
+    points_cost: 700,
+    image_url: 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=400&h=400&fit=crop&q=80',
+    stock_enabled: true,
+    stock: 3,
+    description: 'Extracción, hidratación y mascarilla según tipo de piel.',
+  },
+  {
+    id: 7,
+    name: 'Tratamiento capilar',
+    points_cost: 350,
+    image_url: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Keratina o hidratación profunda para cabello dañado.',
+  },
+  {
+    id: 8,
+    name: 'Descuento 15%',
+    points_cost: 200,
+    image_url: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Aplicable a cualquier servicio en una sola visita.',
+  },
+]
+
+const MOCK_POSTS_BEAUTY = [
+  {
+    id: 1,
+    type: 'promo',
+    title: '2x1 en manicura los martes',
+    body: 'Todos los martes presenta tu tarjeta y llévate dos manicuras al precio de una.',
+    image_url: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=600&h=400&fit=crop&q=80',
+    date: '15 nov',
+  },
+  {
+    id: 2,
+    type: 'novedad',
+    title: 'Nuevo servicio: lifting de pestañas',
+    body: 'Incorporamos lifting y laminado de pestañas con productos premium. ¡Reserva tu turno!',
+    image_url: 'https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=600&h=400&fit=crop&q=80',
+    date: '10 nov',
+  },
+  {
+    id: 3,
+    type: 'evento',
+    title: 'Noche de belleza — viernes 25',
+    body: 'El viernes 25 a las 19hs: masajes express + promociones exclusivas para socias.',
+    image_url: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=600&h=400&fit=crop&q=80',
+    date: '8 nov',
+  },
+  {
+    id: 4,
+    type: 'promo',
+    title: 'Tratamiento capilar -20%',
+    body: 'Keratina e hidratación profunda con 20% de descuento todos los miércoles.',
+    image_url: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=600&h=400&fit=crop&q=80',
+    date: '3 nov',
+  },
+]
+
 const BADGE_STYLES = {
   promo: { label: 'Promo', bg: 'bg-rose-500', icon: Tag },
   novedad: { label: 'Novedad', bg: 'bg-violet-500', icon: Megaphone },
@@ -86,7 +207,7 @@ const MOCK_POSTS = [
     id: 1,
     type: 'promo',
     title: '2x1 en cafés los jueves',
-    body: 'Todos los jueves de noviembre presentá tu tarjeta y llevate dos cafés al precio de uno. Válido de 8 a 12hs.',
+    body: 'Todos los jueves de noviembre presenta tu tarjeta y llévate dos cafés al precio de uno. Válido de 8 a 12hs.',
     image_url: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=600&h=400&fit=crop&q=80',
     date: '15 nov',
   },
@@ -94,7 +215,7 @@ const MOCK_POSTS = [
     id: 2,
     type: 'novedad',
     title: 'Nuevo menú de invierno',
-    body: 'Incorporamos chocolates calientes, tés especiales y nuevas opciones de repostería. ¡Vení a probarlos!',
+    body: 'Incorporamos chocolates calientes, tés especiales y nuevas opciones de repostería. ¡Ven a probarlos!',
     image_url: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=600&h=400&fit=crop&q=80',
     date: '10 nov',
   },
@@ -208,10 +329,10 @@ function PostsCarousel({ posts, color }) {
               <button
                 key={i}
                 onClick={() => setSelectedPost(post)}
-                className="flex-shrink-0 w-56 rounded-2xl overflow-hidden bg-white border border-gray-200 hover:shadow-md hover:border-gray-300 transition-all text-left"
+                className="flex-shrink-0 w-56 sm:w-72 rounded-2xl overflow-hidden bg-white border border-gray-200 hover:shadow-md hover:border-gray-300 transition-all text-left"
               >
                 {/* Imagen */}
-                <div className="relative h-32 overflow-hidden">
+                <div className="relative h-32 sm:h-44 overflow-hidden">
                   <img src={post.image_url} alt={post.title} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                   <span
@@ -301,7 +422,7 @@ function PostsCarousel({ posts, color }) {
 // Desktop (sm): ≤6 → 2 cols, 7-8 → 3 cols, >8 → 4 cols
 function getGridClass(count) {
   const mobile = count > 4 ? 'grid-cols-2' : 'grid-cols-1'
-  const desktop = count <= 6 ? 'sm:grid-cols-2' : count <= 8 ? 'sm:grid-cols-3' : 'sm:grid-cols-4'
+  const desktop = count <= 4 ? 'sm:grid-cols-2' : count <= 6 ? 'sm:grid-cols-3' : 'sm:grid-cols-4'
   return `grid ${mobile} ${desktop} gap-3`
 }
 
@@ -318,7 +439,7 @@ function CatalogItem({ item, color, moneyPerPoint, onSelect, compact = false }) 
       whileTap={!isOutOfStock ? { scale: 0.98 } : {}}
       onClick={() => !isOutOfStock && onSelect(item)}
       disabled={isOutOfStock}
-      className={`w-full text-left bg-white rounded-2xl border transition-all overflow-hidden ${
+      className={`w-full h-full text-left bg-white rounded-2xl border transition-all overflow-hidden ${
         isOutOfStock
           ? 'opacity-50 cursor-not-allowed border-gray-200'
           : 'border-gray-200 hover:border-blue-300 hover:shadow-md active:shadow-sm cursor-pointer'
@@ -326,7 +447,7 @@ function CatalogItem({ item, color, moneyPerPoint, onSelect, compact = false }) 
     >
       {compact ? (
         /* Layout vertical para 3-4 columnas */
-        <div className="flex flex-col">
+        <div className="flex flex-col h-full">
           <div className="w-full h-28 flex items-center justify-center" style={{ backgroundColor: `${color}10` }}>
             {item.image_url ? (
               <img src={item.image_url} alt={item.name} className="h-full w-full object-cover" />
@@ -334,20 +455,23 @@ function CatalogItem({ item, color, moneyPerPoint, onSelect, compact = false }) 
               <Package className="w-10 h-10" style={{ color }} />
             )}
           </div>
-          <div className="p-3 space-y-1.5">
+          <div className="p-3 flex flex-col flex-1 gap-1.5">
             <p className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2">{item.name}</p>
-            <span
-              className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full"
-              style={{ backgroundColor: `${color}15`, color }}
-            >
-              <Coins className="w-3 h-3" />
-              {item.points_cost} pts
-            </span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span
+                className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full"
+                style={{ backgroundColor: `${color}15`, color }}
+              >
+                <Coins className="w-3 h-3" />
+                {item.points_cost} pts
+              </span>
+              {item.stock_enabled && !isOutOfStock && item.stock !== null && (
+                <span className="text-xs text-amber-600 font-medium">Quedan {item.stock}</span>
+              )}
+              {isOutOfStock && <span className="text-xs text-red-500 font-medium">Sin stock</span>}
+            </div>
             <p className="text-xs text-gray-400">Gastar {spendNeeded}</p>
-            {item.stock_enabled && !isOutOfStock && item.stock !== null && (
-              <p className="text-xs text-amber-600 font-medium">Quedan {item.stock}</p>
-            )}
-            {isOutOfStock && <p className="text-xs text-red-500 font-medium">Sin stock</p>}
+            <div className="flex-1" />
           </div>
         </div>
       ) : (
@@ -390,8 +514,18 @@ function CatalogItem({ item, color, moneyPerPoint, onSelect, compact = false }) 
 }
 
 // ─── Modal de detalle ─────────────────────────────────────────────────────────
-function ItemDetailModal({ item, color, moneyPerPoint, onClose, onSurvey }) {
+function ItemDetailModal({ item, color, moneyPerPoint, onClose, onSurvey, isIdentified, userPoints }) {
   const spendNeeded = (item.points_cost * moneyPerPoint).toLocaleString()
+  const canRedeem = isIdentified && userPoints >= item.points_cost
+  const missingPoints = isIdentified ? Math.max(0, item.points_cost - userPoints) : null
+  const [step, setStep] = useState('detail') // 'detail' | 'confirm' | 'success'
+  const [redeemCode] = useState(() => 'REP-' + Math.random().toString(36).slice(2, 6).toUpperCase())
+
+  const handleConfirm = () => setStep('confirm')
+  const handleRedeem = () => {
+    setStep('success')
+    setTimeout(() => onSurvey(), 3000)
+  }
 
   return (
     <motion.div
@@ -400,7 +534,7 @@ function ItemDetailModal({ item, color, moneyPerPoint, onClose, onSurvey }) {
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
-      onClick={onClose}
+      onClick={step === 'detail' ? onClose : undefined}
     >
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
@@ -410,79 +544,223 @@ function ItemDetailModal({ item, color, moneyPerPoint, onClose, onSurvey }) {
         className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header con imagen o color */}
-        <div className="relative h-40 flex items-center justify-center" style={{ backgroundColor: `${color}15` }}>
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/80 flex items-center justify-center shadow-sm"
-          >
-            <X className="w-4 h-4 text-gray-600" />
-          </button>
-
-          {item.image_url ? (
-            <img src={item.image_url} alt={item.name} className="h-28 w-28 object-cover rounded-2xl shadow-lg" />
-          ) : (
-            <div
-              className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg"
-              style={{ backgroundColor: color }}
-            >
-              <Package className="w-10 h-10 text-white" />
-            </div>
-          )}
-        </div>
-
-        {/* Contenido */}
-        <div className="p-6 space-y-4">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">{item.name}</h2>
-            {item.description && <p className="text-sm text-gray-500 mt-1 leading-relaxed">{item.description}</p>}
-          </div>
-
-          {/* Puntos necesarios */}
-          <div className="flex items-center justify-between p-4 rounded-2xl" style={{ backgroundColor: `${color}10` }}>
-            <div className="flex items-center gap-2">
-              <Coins className="w-5 h-5" style={{ color }} />
-              <span className="font-semibold text-gray-800">Puntos necesarios</span>
-            </div>
-            <span className="text-2xl font-black" style={{ color }}>
-              {item.points_cost}
-            </span>
-          </div>
-
-          {/* Info de canje */}
-          <div className="space-y-2.5">
-            <div className="flex items-center gap-3 text-sm text-gray-600">
-              <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
-              <span>Canjeable en el local presentando tu tarjeta</span>
-            </div>
-            <div className="flex items-center gap-3 text-sm text-gray-600">
-              <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
-              <span>
-                Gastar <strong>{spendNeeded}</strong> para acumular los puntos necesarios
-              </span>
-            </div>
-            {item.stock_enabled && item.stock !== null && (
-              <div className="flex items-center gap-3 text-sm text-amber-600">
-                <Info className="w-4 h-4 flex-shrink-0" />
-                <span>
-                  Stock limitado: quedan <strong>{item.stock}</strong> disponibles
-                </span>
+        <AnimatePresence mode="wait">
+          {/* ── Paso 1: Detalle ── */}
+          {step === 'detail' && (
+            <motion.div key="detail" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <div className="relative h-40 flex items-center justify-center" style={{ backgroundColor: `${color}15` }}>
+                <button
+                  onClick={onClose}
+                  className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/80 flex items-center justify-center shadow-sm"
+                >
+                  <X className="w-4 h-4 text-gray-600" />
+                </button>
+                {item.image_url ? (
+                  <img src={item.image_url} alt={item.name} className="h-28 w-28 object-cover rounded-2xl shadow-lg" />
+                ) : (
+                  <div
+                    className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg"
+                    style={{ backgroundColor: color }}
+                  >
+                    <Package className="w-10 h-10 text-white" />
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          {/* CTA */}
-          <div className="pt-2 space-y-2">
-            <Button
-              className="w-full h-12 rounded-xl font-semibold text-white"
-              style={{ backgroundColor: color }}
-              onClick={onSurvey}
+              <div className="p-6 space-y-4">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">{item.name}</h2>
+                  {item.description && <p className="text-sm text-gray-500 mt-1 leading-relaxed">{item.description}</p>}
+                </div>
+
+                {/* Puntos necesarios */}
+                <div
+                  className="flex items-center justify-between p-4 rounded-2xl"
+                  style={{ backgroundColor: `${color}10` }}
+                >
+                  <div className="flex items-center gap-2">
+                    <Coins className="w-5 h-5" style={{ color }} />
+                    <span className="font-semibold text-gray-800">Puntos necesarios</span>
+                  </div>
+                  <span className="text-2xl font-black" style={{ color }}>
+                    {item.points_cost}
+                  </span>
+                </div>
+
+                {/* Info contextual */}
+                <div className="space-y-2.5">
+                  {isIdentified ? (
+                    canRedeem ? (
+                      <div className="flex items-center gap-3 text-sm text-emerald-600">
+                        <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                        <span>Tienes suficientes puntos para canjear este premio</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3 text-sm text-amber-600">
+                        <Info className="w-4 h-4 flex-shrink-0" />
+                        <span>
+                          Te faltan <strong>{missingPoints}</strong> puntos para este premio
+                        </span>
+                      </div>
+                    )
+                  ) : (
+                    <div className="flex items-center gap-3 text-sm text-gray-500">
+                      <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <span>
+                        Gasta <strong>{spendNeeded}</strong> para acumular los puntos necesarios
+                      </span>
+                    </div>
+                  )}
+                  {item.stock_enabled && item.stock !== null && (
+                    <div className="flex items-center gap-3 text-sm text-amber-600">
+                      <Info className="w-4 h-4 flex-shrink-0" />
+                      <span>
+                        Stock limitado: quedan <strong>{item.stock}</strong> disponibles
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* CTA */}
+                <div className="pt-2 space-y-2">
+                  {canRedeem ? (
+                    <Button
+                      className="w-full h-12 rounded-xl font-semibold text-white"
+                      style={{ backgroundColor: color }}
+                      onClick={handleConfirm}
+                    >
+                      Canjear premio
+                    </Button>
+                  ) : isIdentified ? (
+                    <Button disabled className="w-full h-12 rounded-xl font-semibold">
+                      No tienes suficientes puntos
+                    </Button>
+                  ) : (
+                    <>
+                      <Button
+                        className="w-full h-12 rounded-xl font-semibold text-white"
+                        style={{ backgroundColor: color }}
+                        onClick={onClose}
+                      >
+                        Entendido
+                      </Button>
+                      <p className="text-center text-xs text-gray-400">Únete al club para poder canjear tus puntos</p>
+                    </>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── Paso 2: Confirmación ── */}
+          {step === 'confirm' && (
+            <motion.div
+              key="confirm"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
             >
-              Entendido
-            </Button>
-            <p className="text-center text-xs text-gray-400">Acercate al local para canjear tus puntos</p>
-          </div>
-        </div>
+              <div className="p-6 space-y-5">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setStep('detail')}
+                    className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"
+                  >
+                    <ChevronLeft className="w-4 h-4 text-gray-600" />
+                  </button>
+                  <h2 className="text-lg font-bold text-gray-900">Confirmar canje</h2>
+                </div>
+
+                {/* Resumen del item */}
+                <div className="flex items-center gap-4 p-4 rounded-2xl border border-gray-100 bg-gray-50">
+                  {item.image_url ? (
+                    <img
+                      src={item.image_url}
+                      alt={item.name}
+                      className="w-16 h-16 rounded-xl object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <div
+                      className="w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: `${color}15` }}
+                    >
+                      <Package className="w-7 h-7" style={{ color }} />
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-semibold text-gray-900">{item.name}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{item.description}</p>
+                  </div>
+                </div>
+
+                {/* Detalle del descuento */}
+                <div className="rounded-2xl border border-gray-100 divide-y divide-gray-100">
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <span className="text-sm text-gray-600">Tus puntos actuales</span>
+                    <span className="font-semibold text-gray-900">{userPoints.toLocaleString()} pts</span>
+                  </div>
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <span className="text-sm text-gray-600">Se descontarán</span>
+                    <span className="font-semibold text-red-500">− {item.points_cost} pts</span>
+                  </div>
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <span className="text-sm font-semibold text-gray-800">Saldo restante</span>
+                    <span className="font-bold" style={{ color }}>
+                      {(userPoints - item.points_cost).toLocaleString()} pts
+                    </span>
+                  </div>
+                </div>
+
+                <Button
+                  className="w-full h-12 rounded-xl font-semibold text-white"
+                  style={{ backgroundColor: color }}
+                  onClick={handleRedeem}
+                >
+                  Confirmar canje
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── Paso 3: Código de canje ── */}
+          {step === 'success' && (
+            <motion.div
+              key="success"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="p-6 space-y-5 text-center"
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', damping: 15, stiffness: 200, delay: 0.1 }}
+                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto"
+                style={{ backgroundColor: `${color}20` }}
+              >
+                <CheckCircle2 className="w-9 h-9" style={{ color }} />
+              </motion.div>
+
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">¡Canje confirmado!</h2>
+                <p className="text-sm text-gray-500 mt-1">Muestra este código en el local para recibir tu premio.</p>
+              </div>
+
+              {/* Código */}
+              <div
+                className="rounded-2xl p-5 space-y-1"
+                style={{ backgroundColor: `${color}12`, border: `2px dashed ${color}40` }}
+              >
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Código de canje</p>
+                <p className="text-3xl font-black tracking-widest" style={{ color }}>
+                  {redeemCode}
+                </p>
+                <p className="text-xs text-gray-400">{item.name}</p>
+              </div>
+
+              <p className="text-xs text-gray-400">En unos segundos te pediremos tu opinión sobre el servicio...</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </motion.div>
   )
@@ -668,13 +946,34 @@ function SurveyModal({ color, onClose }) {
 
 // ─── Página principal ─────────────────────────────────────────────────────────
 export default function PublicCatalog() {
+  const { programId } = useParams()
+  const [searchParams] = useSearchParams()
+  const cardId = searchParams.get('card')
+  const isIdentified = !!cardId
+  const MOCK_POINTS = 1250
+
+  const isBeauty = programId === 'beauty-demo'
+
+  const program = isBeauty ? MOCK_PROGRAM_BEAUTY : MOCK_PROGRAM
+  const items = isBeauty ? MOCK_ITEMS_BEAUTY : MOCK_ITEMS
+  const posts = isBeauty ? MOCK_POSTS_BEAUTY : MOCK_POSTS
+
   const [selectedItem, setSelectedItem] = useState(null)
   const [showSurvey, setShowSurvey] = useState(false)
   const [howOpen, setHowOpen] = useState(false)
-  const color = MOCK_PROGRAM.brand_color
+  const [showEmailLookup, setShowEmailLookup] = useState(false)
+  const [emailInput, setEmailInput] = useState('')
+  const color = program.brand_color
 
-  const availableItems = useMemo(() => MOCK_ITEMS.filter((i) => !(i.stock_enabled && i.stock === 0)), [])
-  const outOfStockItems = useMemo(() => MOCK_ITEMS.filter((i) => i.stock_enabled && i.stock === 0), [])
+  const handleEmailLookup = (e) => {
+    e.preventDefault()
+    if (!emailInput.trim()) return
+    // Mockup: redirigir con ?card=mock para simular cliente identificado
+    window.location.href = `/catalog/${programId}?card=mock`
+  }
+
+  const availableItems = useMemo(() => items.filter((i) => !(i.stock_enabled && i.stock === 0)), [items])
+  const outOfStockItems = useMemo(() => items.filter((i) => i.stock_enabled && i.stock === 0), [items])
   const availableGridClass = getGridClass(availableItems.length)
   const outOfStockGridClass = getGridClass(outOfStockItems.length)
   const availableCompact = availableItems.length > 6
@@ -692,8 +991,8 @@ export default function PublicCatalog() {
       {/* Header + Ticker sticky juntos */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center gap-3">
-          {MOCK_PROGRAM.logo_url ? (
-            <img src={MOCK_PROGRAM.logo_url} alt={MOCK_PROGRAM.name} className="w-10 h-10 rounded-xl object-contain" />
+          {program.logo_url ? (
+            <img src={program.logo_url} alt={program.name} className="w-10 h-10 rounded-xl object-contain" />
           ) : (
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -703,7 +1002,7 @@ export default function PublicCatalog() {
             </div>
           )}
           <div>
-            <h1 className="font-bold text-gray-900 leading-tight">{MOCK_PROGRAM.name}</h1>
+            <h1 className="font-bold text-gray-900 leading-tight">{program.name}</h1>
             <p className="text-xs text-gray-400">Catálogo de canje</p>
           </div>
         </div>
@@ -713,8 +1012,9 @@ export default function PublicCatalog() {
           <div className="flex whitespace-nowrap" style={{ animation: 'marquee 18s linear infinite' }}>
             {[...Array(6)].map((_, i) => (
               <span key={i} className="text-white text-xs font-medium px-8">
-                🚀 Referí un amigo y ganá 100 puntos &nbsp;·&nbsp; 🎁 Acumulá puntos en cada compra &nbsp;·&nbsp; ⭐
-                Canjeá premios exclusivos para miembros
+                {isBeauty
+                  ? '✨ Refiere a una amiga y gana 150 puntos · 💅 Acumula puntos en cada servicio · 🎁 Canjea servicios exclusivos para socias'
+                  : '🚀 Refiere a un amigo y gana 100 puntos · 🎁 Acumula puntos en cada compra · ⭐ Canjea premios exclusivos para miembros'}
               </span>
             ))}
           </div>
@@ -728,31 +1028,160 @@ export default function PublicCatalog() {
       </div>
 
       {/* Carrusel de novedades */}
-      <div className="max-w-3xl mx-auto px-4 pt-5">
-        <PostsCarousel posts={MOCK_POSTS} color={color} />
+      <div className="max-w-5xl mx-auto px-4 pt-5">
+        <PostsCarousel posts={posts} color={color} />
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
         {/* Banner de puntos */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl p-4 flex items-center gap-4"
-          style={{ background: `linear-gradient(135deg, ${color} 0%, ${color}cc 100%)` }}
-        >
-          <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-            <Coins className="w-6 h-6 text-white" />
-          </div>
-          <div className="flex-1 text-white">
-            <p className="text-xs opacity-80 uppercase tracking-wider">Tus puntos</p>
-            <p className="text-3xl font-black leading-none">—</p>
-            <p className="text-xs opacity-70 mt-0.5">Consultá tu saldo en el local</p>
-          </div>
-          <div className="text-right text-white">
-            <p className="text-xs opacity-70">Acumulás</p>
-            <p className="text-sm font-bold">{MOCK_PROGRAM.money_per_point.toLocaleString()} = 1 pt</p>
-          </div>
-        </motion.div>
+        {isIdentified ? (
+          /* Estado identificado: cliente con tarjeta */
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl p-4 space-y-3"
+            style={{ background: `linear-gradient(135deg, ${color} 0%, ${color}cc 100%)` }}
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                <Coins className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1 text-white">
+                <p className="text-xs opacity-80 uppercase tracking-wider">Tus puntos</p>
+                <p className="text-3xl font-black leading-none">{MOCK_POINTS.toLocaleString()}</p>
+                <p className="text-xs opacity-70 mt-0.5">
+                  Podés canjear {availableItems.filter((i) => i.points_cost <= MOCK_POINTS).length} servicios
+                </p>
+              </div>
+              <div className="text-right text-white">
+                <p className="text-xs opacity-70">Acumulas</p>
+                <p className="text-sm font-bold">{program.money_per_point.toLocaleString()} = 1 pt</p>
+              </div>
+            </div>
+            {/* Barra de progreso hacia el item más barato */}
+            {(() => {
+              const nextItem = [...availableItems]
+                .sort((a, b) => a.points_cost - b.points_cost)
+                .find((i) => i.points_cost > MOCK_POINTS)
+              if (!nextItem) return null
+              const pct = Math.min((MOCK_POINTS / nextItem.points_cost) * 100, 100)
+              return (
+                <div className="space-y-1">
+                  <div className="flex justify-between text-white text-xs opacity-70">
+                    <span>{MOCK_POINTS.toLocaleString()} pts</span>
+                    <span>
+                      {nextItem.points_cost.toLocaleString()} pts — {nextItem.name}
+                    </span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-white/20 overflow-hidden">
+                    <div className="h-full rounded-full bg-white/80" style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              )
+            })()}
+          </motion.div>
+        ) : (
+          /* Estado anónimo: cliente sin tarjeta */
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl p-4 border"
+            style={{ backgroundColor: `${color}12`, borderColor: `${color}30` }}
+          >
+            <AnimatePresence mode="wait">
+              {!showEmailLookup ? (
+                /* Vista: nuevo o miembro que no sabe */
+                <motion.div
+                  key="cta"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex flex-col sm:flex-row sm:items-center gap-3"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: `${color}25` }}
+                    >
+                      <Gift className="w-5 h-5" style={{ color }} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-gray-900 text-sm leading-tight">
+                        ¿Todavía no eres parte del Club?
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Únete al programa y empieza a acumular puntos en cada visita.
+                      </p>
+                      <button
+                        onClick={() => setShowEmailLookup(true)}
+                        className="text-xs mt-1.5 font-medium underline underline-offset-2"
+                        style={{ color }}
+                      >
+                        ¿Ya sos miembro? Ver mis puntos
+                      </button>
+                    </div>
+                  </div>
+                  <a
+                    href={`/publicprogram?id=${programId}`}
+                    className="w-full sm:w-auto text-center text-sm font-bold px-4 py-2.5 rounded-xl text-black"
+                    style={{ backgroundColor: '#facc15' }}
+                  >
+                    Unirte al Club →
+                  </a>
+                </motion.div>
+              ) : (
+                /* Vista: lookup por email */
+                <motion.div
+                  key="email"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="space-y-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: `${color}25` }}
+                    >
+                      <Mail className="w-5 h-5" style={{ color }} />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 text-sm leading-tight">¿Ya sos miembro?</p>
+                      <p className="text-xs text-gray-500">Ingresa tu email para ver tu saldo.</p>
+                    </div>
+                  </div>
+                  <form onSubmit={handleEmailLookup} className="flex gap-2">
+                    <input
+                      type="email"
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
+                      placeholder="tu@email.com"
+                      required
+                      className="flex-1 h-9 px-3 text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2"
+                      style={{ '--tw-ring-color': `${color}50` }}
+                    />
+                    <button
+                      type="submit"
+                      className="h-9 px-4 text-xs font-bold rounded-xl text-black whitespace-nowrap"
+                      style={{ backgroundColor: '#facc15' }}
+                    >
+                      Ver puntos →
+                    </button>
+                  </form>
+                  <button
+                    onClick={() => {
+                      setShowEmailLookup(false)
+                      setEmailInput('')
+                    }}
+                    className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    ← Volver
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        )}
 
         {/* Cómo funciona */}
         <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
@@ -779,10 +1208,15 @@ export default function PublicCatalog() {
                   {[
                     {
                       step: '1',
-                      text: `Cada vez que gastás ${MOCK_PROGRAM.money_per_point.toLocaleString()} acumulás 1 punto`,
+                      text: `Cada vez que gastas ${program.money_per_point.toLocaleString()} acumulas 1 punto`,
                     },
-                    { step: '2', text: 'Elegí un premio del catálogo y acercate al local' },
-                    { step: '3', text: 'Mostrá tu tarjeta del wallet y canjea tus puntos' },
+                    {
+                      step: '2',
+                      text: isBeauty
+                        ? 'Elige un servicio del catálogo y reserva tu turno'
+                        : 'Elige un premio del catálogo y acércate al local',
+                    },
+                    { step: '3', text: 'Muestra tu tarjeta del wallet y canjea tus puntos' },
                   ].map((s) => (
                     <div key={s.step} className="flex items-center gap-3 text-sm text-gray-600">
                       <span
@@ -802,7 +1236,9 @@ export default function PublicCatalog() {
 
         {/* Lista de ítems */}
         <div>
-          <p className="text-sm font-semibold text-gray-700 mb-3">{availableItems.length} premios disponibles</p>
+          <p className="text-sm font-semibold text-gray-700 mb-3">
+            {availableItems.length} {isBeauty ? 'servicios disponibles' : 'premios disponibles'}
+          </p>
 
           <div className={availableGridClass}>
             {availableItems.map((item, i) => (
@@ -810,7 +1246,7 @@ export default function PublicCatalog() {
                 <CatalogItem
                   item={item}
                   color={color}
-                  moneyPerPoint={MOCK_PROGRAM.money_per_point}
+                  moneyPerPoint={program.money_per_point}
                   onSelect={setSelectedItem}
                   compact={availableCompact}
                 />
@@ -828,7 +1264,7 @@ export default function PublicCatalog() {
                     <CatalogItem
                       item={item}
                       color={color}
-                      moneyPerPoint={MOCK_PROGRAM.money_per_point}
+                      moneyPerPoint={program.money_per_point}
                       onSelect={setSelectedItem}
                       compact={outOfStockCompact}
                     />
@@ -851,7 +1287,9 @@ export default function PublicCatalog() {
           <ItemDetailModal
             item={selectedItem}
             color={color}
-            moneyPerPoint={MOCK_PROGRAM.money_per_point}
+            moneyPerPoint={program.money_per_point}
+            isIdentified={isIdentified}
+            userPoints={isIdentified ? MOCK_POINTS : 0}
             onClose={() => setSelectedItem(null)}
             onSurvey={() => {
               setSelectedItem(null)

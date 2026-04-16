@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '@/api/client'
 import { getTransactionErrorMessage } from '@/lib/utils'
 import { getCurrentUser } from '@/utils/jwt'
@@ -7,9 +7,13 @@ import useStoresStore from '@/stores/useStoresStore'
 import { createPageUrl } from '@/utils'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { X, CheckCircle, AlertCircle, Store, Gift, Loader2 } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { X, CheckCircle, AlertCircle, Store, Gift, Loader2, Coins, Plus, QrCode } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+
+const POINTS_PROGRAM_TYPE_ID = '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc157'
+const MOCK_STORE_ID = 'mock-store'
 import { useLanguage } from '@/components/auth/LanguageContext'
 import jsQR from 'jsqr'
 
@@ -42,6 +46,8 @@ function extractCardId(rawValue) {
 export default function ScanQR() {
   const { t, language } = useLanguage()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const isDemoPoints = searchParams.get('demo') === 'points' || searchParams.get('demo') === 'points-direct'
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const [hasCamera, setHasCamera] = useState(true)
@@ -54,13 +60,47 @@ export default function ScanQR() {
   const [step, setStep] = useState('scan') // scan, review, success, error
   const [errorMsg, setErrorMsg] = useState('')
   const [isAuthError, setIsAuthError] = useState(false)
-  const [cardData, setCardData] = useState(null) // { card, cardId }
+  const [cardData, setCardData] = useState(null) // { card, cardId, programTypeId, moneyPerPoint }
   const [redeemProcessing, setRedeemProcessing] = useState(false)
+  const [pointsTab, setPointsTab] = useState('add') // 'add' | 'redeem' | 'direct'
+  const [purchaseAmount, setPurchaseAmount] = useState('')
+  const [redeemCodeInput, setRedeemCodeInput] = useState('')
+  const [pointsToRedeem, setPointsToRedeem] = useState('')
 
   const processingRef = useRef(false)
 
   const user = getCurrentUser()
   const brandId = user?.brand_id || localStorage.getItem('brand_id')
+
+  // Auto-trigger demo de puntos si viene con ?demo=points o ?demo=points-direct
+  useEffect(() => {
+    const demo = searchParams.get('demo')
+    if (demo === 'points' || demo === 'points-direct') {
+      const isDirect = demo === 'points-direct'
+      setSelectedStore(MOCK_STORE_ID)
+      setScanning(false)
+      setPointsTab('add')
+      setPurchaseAmount('')
+      setRedeemCodeInput('')
+      setPointsToRedeem('')
+      setCardData({
+        card: {
+          customer: { full_name: 'Laura Gómez', email: 'laura@gmail.com' },
+          current_balance: 1250,
+          created_at: '2024-03-01T00:00:00Z',
+          redemptions: [],
+        },
+        cardId: 'mock-points-card',
+        stampsRequired: 10,
+        programTypeId: POINTS_PROGRAM_TYPE_ID,
+        moneyPerPoint: 1000,
+        redeemMode: isDirect ? 'direct' : 'catalog',
+        moneyPerPointRedeem: 100,
+      })
+      setStep('review')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Cargar stores del brand del usuario
   const { stores, isLoading: loadingStores, fetchStores } = useStoresStore()
@@ -217,6 +257,10 @@ export default function ScanQR() {
       if (!card) throw new Error(t('scanCardNotFound'))
 
       let stampsRequired = 10
+      let programTypeId = null
+      let moneyPerPoint = 1000
+      let redeemMode = 'catalog'
+      let moneyPerPointRedeem = 100
       if (card.program_id) {
         try {
           const progRes = await api.loyaltyPrograms.get(card.program_id)
@@ -231,13 +275,17 @@ export default function ScanQR() {
               ? JSON.parse(program.program_rules)
               : program?.program_rules || {}
           stampsRequired = rules.stamps_required || 20
+          programTypeId = program?.program_type_id || null
+          moneyPerPoint = rules.money_per_point || 1000
+          redeemMode = rules.redeem_mode || 'catalog'
+          moneyPerPointRedeem = rules.money_per_point_redeem || 100
         } catch (err) {
           if (err.message === t('scanCardNotYours')) throw err
           // usar fallback 20
         }
       }
 
-      setCardData({ card, cardId, stampsRequired })
+      setCardData({ card, cardId, stampsRequired, programTypeId, moneyPerPoint, redeemMode, moneyPerPointRedeem })
       setStep('review')
     } catch (err) {
       console.error('[ScanQR] Error al obtener tarjeta:', err)
@@ -326,6 +374,106 @@ export default function ScanQR() {
     }
   }
 
+  // Paso 2b: agregar puntos (programa de puntos)
+  const handleAddPoints = async () => {
+    if (!cardData || !purchaseAmount) return
+    setProcessing(true)
+    const points = Math.max(1, Math.floor(parseFloat(purchaseAmount) / cardData.moneyPerPoint))
+    try {
+      await api.transactions.create(cardData.cardId, selectedStore, 'points_added', 'point', points)
+      setResult({
+        success: true,
+        customerName: cardData.card.customer?.full_name,
+        points,
+        isPoints: true,
+      })
+      setStep('success')
+    } catch (err) {
+      setStep('error')
+      const authFailed =
+        err?.response?.status === 401 ||
+        err?.response?.status === 403 ||
+        err?.message?.toLowerCase().includes('unauthorized')
+      setIsAuthError(authFailed)
+      setErrorMsg(authFailed ? t('scanSessionExpired') : err.message || 'Error al agregar puntos')
+    } finally {
+      setProcessing(false)
+    }
+  }
+
+  // Paso 2d: canje directo por puntos → descuento en $ (programa de puntos modo direct)
+  const handleDirectRedeem = async () => {
+    const pts = parseInt(pointsToRedeem)
+    if (!pts || pts <= 0 || !cardData) return
+    setProcessing(true)
+    try {
+      await api.transactions.create(cardData.cardId, selectedStore, 'points_redeemed', 'point', pts)
+      const discount = pts * cardData.moneyPerPointRedeem
+      setResult({
+        success: true,
+        customerName: cardData.card.customer?.full_name,
+        points: pts,
+        discount,
+        isDirectRedeem: true,
+      })
+      setStep('success')
+    } catch (err) {
+      setStep('error')
+      setErrorMsg(err.message || 'Error al procesar el canje')
+    } finally {
+      setProcessing(false)
+    }
+  }
+
+  // Paso 2c: validar canje por código (programa de puntos)
+  const handleValidateRedeem = async () => {
+    if (!redeemCodeInput.trim()) return
+    setProcessing(true)
+    try {
+      // Mockup: simulamos éxito para cualquier código REP-XXXX
+      await new Promise((r) => setTimeout(r, 800))
+      setResult({
+        success: true,
+        customerName: cardData?.card.customer?.full_name,
+        isPointsRedeem: true,
+        redeemCode: redeemCodeInput.trim().toUpperCase(),
+        redeemItem: 'Corte de cabello',
+        redeemPoints: 300,
+        redeemImage: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=120&h=120&fit=crop&q=80',
+      })
+      setStep('success')
+    } catch (err) {
+      setStep('error')
+      setErrorMsg(err.message || 'Error al validar el canje')
+    } finally {
+      setProcessing(false)
+    }
+  }
+
+  // Demo: simular escaneo de tarjeta de puntos
+  const handleMockPointsScan = (mode = 'catalog') => {
+    setScanning(false)
+    setPointsTab('add')
+    setPurchaseAmount('')
+    setRedeemCodeInput('')
+    setPointsToRedeem('')
+    setCardData({
+      card: {
+        customer: { full_name: 'Laura Gómez', email: 'laura@gmail.com' },
+        current_balance: 1250,
+        created_at: '2024-03-01T00:00:00Z',
+        redemptions: [],
+      },
+      cardId: 'mock-points-card',
+      stampsRequired: 10,
+      programTypeId: POINTS_PROGRAM_TYPE_ID,
+      moneyPerPoint: 1000,
+      redeemMode: mode,
+      moneyPerPointRedeem: 100,
+    })
+    setStep('review')
+  }
+
   const resetScanner = () => {
     setScanning(true)
     setStep('scan')
@@ -333,11 +481,15 @@ export default function ScanQR() {
     setCardData(null)
     setErrorMsg('')
     setIsAuthError(false)
+    setPurchaseAmount('')
+    setRedeemCodeInput('')
+    setPointsToRedeem('')
+    setPointsTab('add')
     processingRef.current = false
   }
 
   // Pantalla de selección de tienda (solo si hay más de una)
-  if (!selectedStore && stores.length > 1) {
+  if (!isDemoPoints && !selectedStore && stores.length > 1) {
     return (
       <div className="fixed inset-0 bg-black z-50 flex items-center justify-center p-4">
         <Card className="p-8 w-full max-w-md bg-white dark:bg-gray-900">
@@ -371,7 +523,7 @@ export default function ScanQR() {
   }
 
   // Pantalla de carga de tiendas
-  if (loadingStores) {
+  if (!isDemoPoints && loadingStores) {
     return (
       <div className="fixed inset-0 bg-black z-50 flex items-center justify-center p-4">
         <Card className="p-8 w-full max-w-md bg-white dark:bg-gray-900 text-center">
@@ -383,7 +535,7 @@ export default function ScanQR() {
   }
 
   // Pantalla si no hay tiendas
-  if (!loadingStores && stores.length === 0) {
+  if (!isDemoPoints && !loadingStores && stores.length === 0) {
     return (
       <div className="fixed inset-0 bg-black z-50 flex items-center justify-center p-4">
         <Card className="p-8 w-full max-w-md bg-white dark:bg-gray-900 text-center">
@@ -468,7 +620,25 @@ export default function ScanQR() {
               </div>
 
               <p className="text-white text-lg font-medium mb-2">{t('scanCustomerQR')}</p>
-              <p className="text-white/70 text-sm mb-6">{t('positionQR')}</p>
+              <p className="text-white/70 text-sm mb-4">{t('positionQR')}</p>
+
+              {/* Demo buttons */}
+              <div className="flex gap-2 mb-6">
+                <button
+                  onClick={() => handleMockPointsScan('catalog')}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/10 border border-white/20 text-white/80 text-xs hover:bg-white/20 transition-colors"
+                >
+                  <Coins className="w-3 h-3 text-yellow-400" />
+                  Demo · Catálogo
+                </button>
+                <button
+                  onClick={() => handleMockPointsScan('direct')}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/10 border border-white/20 text-white/80 text-xs hover:bg-white/20 transition-colors"
+                >
+                  <Coins className="w-3 h-3 text-green-400" />
+                  Demo · Directo
+                </button>
+              </div>
 
               {/* Processing Indicator */}
               {processing && (
@@ -503,19 +673,25 @@ export default function ScanQR() {
                 </div>
               )}
 
-              {/* ── REVIEW: info del cliente + botón manual ── */}
+              {/* ── REVIEW: info del cliente ── */}
               {step === 'review' &&
                 cardData &&
                 (() => {
                   const card = cardData.card
                   const current = card.current_balance || 0
                   const required = card.program?.program_rules?.stamps_required ?? cardData.stampsRequired ?? 20
+                  const isPoints = cardData.programTypeId === POINTS_PROGRAM_TYPE_ID
+                  const redeemMode = cardData.redeemMode || 'catalog'
+                  const moneyPerPointRedeem = cardData.moneyPerPointRedeem || 100
                   const initials = (card.customer?.full_name || '?')
                     .split(' ')
                     .map((w) => w[0])
                     .join('')
                     .slice(0, 2)
                     .toUpperCase()
+                  const pointsToAdd = purchaseAmount
+                    ? Math.max(1, Math.floor(parseFloat(purchaseAmount) / cardData.moneyPerPoint))
+                    : 0
 
                   return (
                     <>
@@ -523,7 +699,6 @@ export default function ScanQR() {
                       <div className="w-20 h-20 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center mx-auto mb-4">
                         <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{initials}</span>
                       </div>
-
                       <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">
                         {card.customer?.full_name}
                       </h3>
@@ -540,67 +715,287 @@ export default function ScanQR() {
                         </p>
                       )}
 
-                      {/* Pending redemption banner */}
-                      {(() => {
-                        const pending = card.redemptions?.find((r) => r.status === 'pending')
-                        if (!pending) return null
-                        return (
-                          <div className="mb-4 p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-xl text-left">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Gift className="w-4 h-4 text-green-600 dark:text-green-400" />
-                              <span className="text-sm font-semibold text-green-800 dark:text-green-200">
-                                {t('scanRewardReady')}
+                      {/* ── PUNTOS: balance + tabs ── */}
+                      {isPoints ? (
+                        <>
+                          {/* Balance actual */}
+                          <div className="mb-4 p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950 border border-indigo-100 dark:border-indigo-800">
+                            <div className="flex items-center justify-center gap-2 mb-1">
+                              <Coins className="w-5 h-5 text-indigo-500" />
+                              <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">
+                                Puntos actuales
                               </span>
                             </div>
-                            <p className="text-xs text-green-700 dark:text-green-300 mb-2">
-                              {card.program?.reward_description}
+                            <p className="text-4xl font-black text-indigo-600 dark:text-indigo-400 text-center leading-none">
+                              {current.toLocaleString()}
                             </p>
-                            <Button
-                              size="sm"
-                              className="w-full bg-green-600 hover:bg-green-700 text-white"
-                              onClick={() => handleRedeemReward(pending.redemption_id)}
-                              disabled={redeemProcessing}
-                            >
-                              {redeemProcessing ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
-                              {t('scanRedeemReward')}
-                            </Button>
                           </div>
-                        )
-                      })()}
 
-                      {/* Progress bar */}
-                      <div className="mb-4 text-left">
-                        <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
-                          <span>{t('scanStampsLabel')}</span>
-                          <span>
-                            {current} / {required}
-                          </span>
-                        </div>
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                          <div
-                            className="bg-gradient-to-r from-amber-400 to-yellow-500 h-2 rounded-full transition-all"
-                            style={{ width: `${Math.min(100, (current / required) * 100)}%` }}
-                          />
-                        </div>
-                      </div>
+                          {/* Tabs */}
+                          <div className="flex rounded-xl bg-gray-100 dark:bg-gray-800 p-1 mb-4">
+                            {[
+                              { key: 'add', label: 'Agregar puntos', icon: Plus },
+                              redeemMode === 'direct'
+                                ? { key: 'direct', label: 'Canje directo', icon: Coins }
+                                : { key: 'redeem', label: 'Validar canje', icon: QrCode },
+                            ].map(({ key, label, icon: Icon }) => (
+                              <button
+                                key={key}
+                                onClick={() => setPointsTab(key)}
+                                className={`flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-lg transition-all ${
+                                  pointsTab === key
+                                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
+                                    : 'text-gray-500 dark:text-gray-400'
+                                }`}
+                              >
+                                <Icon className="w-3.5 h-3.5" />
+                                {label}
+                              </button>
+                            ))}
+                          </div>
 
-                      {/* Action buttons */}
-                      <Button
-                        className="w-full h-12 bg-yellow-500 hover:bg-yellow-600 text-black font-bold text-base mb-3"
-                        onClick={handleAddStamp}
-                        disabled={processing}
-                      >
-                        {processing ? (
-                          <span className="flex items-center gap-2">
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            {t('scanAddingStamp')}
-                          </span>
-                        ) : (
-                          t('scanAddStamp')
-                        )}
-                      </Button>
+                          <AnimatePresence mode="wait">
+                            {pointsTab === 'direct' ? (
+                              <motion.div
+                                key="direct"
+                                initial={{ opacity: 0, x: 8 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -8 }}
+                                className="space-y-3 text-left"
+                              >
+                                {/* Valor del saldo */}
+                                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950 border border-emerald-100 dark:border-emerald-800">
+                                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mb-0.5">
+                                    Valor del saldo
+                                  </p>
+                                  <p className="text-sm text-emerald-800 dark:text-emerald-200">
+                                    {current.toLocaleString()} pts ={' '}
+                                    <strong>${(current * moneyPerPointRedeem).toLocaleString()}</strong> de descuento
+                                    disponible
+                                  </p>
+                                </div>
+                                <div>
+                                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">
+                                    Puntos a canjear
+                                  </label>
+                                  <div className="relative">
+                                    <Input
+                                      type="number"
+                                      min="1"
+                                      max={current}
+                                      value={pointsToRedeem}
+                                      onChange={(e) => setPointsToRedeem(e.target.value)}
+                                      placeholder="0"
+                                      className="h-11 text-base font-semibold pr-16"
+                                    />
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">
+                                      pts
+                                    </span>
+                                  </div>
+                                  {pointsToRedeem && parseInt(pointsToRedeem) > 0 && (
+                                    <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1.5 font-medium">
+                                      ={' '}
+                                      <strong>
+                                        ${(parseInt(pointsToRedeem) * moneyPerPointRedeem).toLocaleString()}
+                                      </strong>{' '}
+                                      de descuento
+                                    </p>
+                                  )}
+                                  {pointsToRedeem && parseInt(pointsToRedeem) > current && (
+                                    <p className="text-xs text-red-500 mt-1">
+                                      El cliente solo tiene {current.toLocaleString()} puntos
+                                    </p>
+                                  )}
+                                </div>
+                                <Button
+                                  className="w-full h-11 bg-yellow-500 hover:bg-yellow-600 text-black font-bold"
+                                  onClick={handleDirectRedeem}
+                                  disabled={
+                                    processing ||
+                                    !pointsToRedeem ||
+                                    parseInt(pointsToRedeem) <= 0 ||
+                                    parseInt(pointsToRedeem) > current
+                                  }
+                                >
+                                  {processing ? (
+                                    <span className="flex items-center gap-2">
+                                      <Loader2 className="w-4 h-4 animate-spin" />
+                                      Procesando...
+                                    </span>
+                                  ) : pointsToRedeem && parseInt(pointsToRedeem) > 0 ? (
+                                    `Aplicar $${(parseInt(pointsToRedeem) * moneyPerPointRedeem).toLocaleString()} de descuento`
+                                  ) : (
+                                    'Aplicar descuento'
+                                  )}
+                                </Button>
+                              </motion.div>
+                            ) : pointsTab === 'add' ? (
+                              <motion.div
+                                key="add"
+                                initial={{ opacity: 0, x: -8 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 8 }}
+                                className="space-y-3 text-left"
+                              >
+                                <div>
+                                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">
+                                    Monto de la compra
+                                  </label>
+                                  <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-semibold text-sm">
+                                      $
+                                    </span>
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      value={purchaseAmount}
+                                      onChange={(e) => setPurchaseAmount(e.target.value)}
+                                      placeholder="0"
+                                      className="pl-7 h-11 text-base font-semibold"
+                                    />
+                                  </div>
+                                  {pointsToAdd > 0 && (
+                                    <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1.5 font-medium">
+                                      = <strong>{pointsToAdd}</strong> {pointsToAdd === 1 ? 'punto' : 'puntos'} a
+                                      acreditar
+                                    </p>
+                                  )}
+                                </div>
+                                <Button
+                                  className="w-full h-11 bg-yellow-500 hover:bg-yellow-600 text-black font-bold"
+                                  onClick={handleAddPoints}
+                                  disabled={processing || !purchaseAmount || parseFloat(purchaseAmount) <= 0}
+                                >
+                                  {processing ? (
+                                    <span className="flex items-center gap-2">
+                                      <Loader2 className="w-4 h-4 animate-spin" />
+                                      Agregando...
+                                    </span>
+                                  ) : (
+                                    `Agregar${pointsToAdd > 0 ? ` ${pointsToAdd}` : ''} puntos`
+                                  )}
+                                </Button>
+                              </motion.div>
+                            ) : (
+                              <motion.div
+                                key="redeem"
+                                initial={{ opacity: 0, x: 8 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -8 }}
+                                className="space-y-3 text-left"
+                              >
+                                <div>
+                                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">
+                                    Código de canje
+                                  </label>
+                                  <Input
+                                    value={redeemCodeInput}
+                                    onChange={(e) => setRedeemCodeInput(e.target.value.toUpperCase())}
+                                    placeholder="REP-XXXX"
+                                    className="h-11 text-base font-mono tracking-widest"
+                                  />
+                                  {redeemCodeInput.startsWith('REP-') && redeemCodeInput.length >= 8 && (
+                                    <div className="mt-2 p-3 rounded-xl bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800">
+                                      <p className="text-xs font-semibold text-green-600 uppercase tracking-wider mb-2">
+                                        Canje encontrado
+                                      </p>
+                                      <div className="flex items-center gap-3">
+                                        <img
+                                          src="https://images.unsplash.com/photo-1562322140-8baeececf3df?w=120&h=120&fit=crop&q=80"
+                                          alt="Corte de cabello"
+                                          className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
+                                        />
+                                        <div className="flex-1 min-w-0">
+                                          <p className="font-semibold text-green-900 dark:text-green-100">
+                                            Corte de cabello
+                                          </p>
+                                          <span className="text-xs font-bold text-green-700 dark:text-green-300">
+                                            300 pts
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                                <Button
+                                  className="w-full h-11 bg-yellow-500 hover:bg-yellow-600 text-black font-bold"
+                                  onClick={handleValidateRedeem}
+                                  disabled={processing || !redeemCodeInput.trim()}
+                                >
+                                  {processing ? (
+                                    <span className="flex items-center gap-2">
+                                      <Loader2 className="w-4 h-4 animate-spin" />
+                                      Validando...
+                                    </span>
+                                  ) : (
+                                    'Confirmar canje'
+                                  )}
+                                </Button>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </>
+                      ) : (
+                        <>
+                          {/* ── SELLOS: flujo original ── */}
+                          {(() => {
+                            const pending = card.redemptions?.find((r) => r.status === 'pending')
+                            if (!pending) return null
+                            return (
+                              <div className="mb-4 p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-xl text-left">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <Gift className="w-4 h-4 text-green-600 dark:text-green-400" />
+                                  <span className="text-sm font-semibold text-green-800 dark:text-green-200">
+                                    {t('scanRewardReady')}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-green-700 dark:text-green-300 mb-2">
+                                  {card.program?.reward_description}
+                                </p>
+                                <Button
+                                  size="sm"
+                                  className="w-full bg-green-600 hover:bg-green-700 text-white"
+                                  onClick={() => handleRedeemReward(pending.redemption_id)}
+                                  disabled={redeemProcessing}
+                                >
+                                  {redeemProcessing ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+                                  {t('scanRedeemReward')}
+                                </Button>
+                              </div>
+                            )
+                          })()}
+                          <div className="mb-4 text-left">
+                            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
+                              <span>{t('scanStampsLabel')}</span>
+                              <span>
+                                {current} / {required}
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                              <div
+                                className="bg-gradient-to-r from-amber-400 to-yellow-500 h-2 rounded-full transition-all"
+                                style={{ width: `${Math.min(100, (current / required) * 100)}%` }}
+                              />
+                            </div>
+                          </div>
+                          <Button
+                            className="w-full h-12 bg-yellow-500 hover:bg-yellow-600 text-black font-bold text-base mb-3"
+                            onClick={handleAddStamp}
+                            disabled={processing}
+                          >
+                            {processing ? (
+                              <span className="flex items-center gap-2">
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                {t('scanAddingStamp')}
+                              </span>
+                            ) : (
+                              t('scanAddStamp')
+                            )}
+                          </Button>
+                        </>
+                      )}
 
-                      <Button variant="outline" className="w-full" onClick={resetScanner} disabled={processing}>
+                      <Button variant="outline" className="w-full mt-2" onClick={resetScanner} disabled={processing}>
                         {t('cancel')}
                       </Button>
                     </>
@@ -614,11 +1009,52 @@ export default function ScanQR() {
                     <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                    {result?.isRedemption ? t('scanRewardRedeemed') : t('scanStampAdded')}
+                    {result?.isDirectRedeem
+                      ? 'Descuento aplicado'
+                      : result?.isPointsRedeem
+                        ? 'Canje validado'
+                        : result?.isPoints
+                          ? 'Puntos agregados'
+                          : result?.isRedemption
+                            ? t('scanRewardRedeemed')
+                            : t('scanStampAdded')}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-6">
-                    {result?.isRedemption ? t('scanRewardRedeemedSuccess') : result?.customerName}
+                  <p className="text-gray-600 dark:text-gray-400 mb-3">
+                    {result?.isDirectRedeem
+                      ? `$${result.discount?.toLocaleString()} de descuento aplicado a ${result.customerName}`
+                      : result?.isPointsRedeem
+                        ? result.customerName
+                        : result?.isPoints
+                          ? `+${result.points} ${result.points === 1 ? 'punto' : 'puntos'} acreditados a ${result.customerName}`
+                          : result?.isRedemption
+                            ? t('scanRewardRedeemedSuccess')
+                            : result?.customerName}
                   </p>
+
+                  {/* Producto canjeado */}
+                  {result?.isPointsRedeem && result.redeemItem && (
+                    <div className="mb-6 p-3 rounded-xl bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 text-left">
+                      <p className="text-xs font-semibold text-green-600 dark:text-green-400 uppercase tracking-wider mb-2">
+                        Entregar al cliente
+                      </p>
+                      <div className="flex items-center gap-3">
+                        {result.redeemImage && (
+                          <img
+                            src={result.redeemImage}
+                            alt={result.redeemItem}
+                            className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-green-900 dark:text-green-100">{result.redeemItem}</p>
+                          <span className="text-xs font-bold text-green-700 dark:text-green-300">
+                            {result.redeemPoints} pts
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex gap-3">
                     <Button variant="outline" className="flex-1" onClick={handleClose}>
                       {t('scanClose')}
