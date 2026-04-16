@@ -29,7 +29,7 @@ const MOCK_CARDS = [
     short_url: null,
   },
   {
-    id: 'mock-2',
+    id: 'demo',
     club_name: 'Puntos Deliciosos',
     card_title: 'Programa de Puntos',
     reward_text: 'Canjeá puntos por productos del catálogo',

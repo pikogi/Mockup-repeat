@@ -24,6 +24,8 @@ import {
   Calendar,
   ImageIcon,
   Star,
+  Package,
+  CreditCard,
 } from 'lucide-react'
 import {
   AlertDialog,
@@ -37,6 +39,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AnimatePresence, motion } from 'framer-motion'
 import PricingModal from '@/components/subscription/PricingModal'
@@ -604,10 +607,37 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
 
             {/* Actions */}
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" className="gap-2 h-10 md:h-8" onClick={handlePreview}>
-                <Eye className="w-4 h-4" />
-                {t('programPreview')}
-              </Button>
+              {card.program_type_id === '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc157' ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2 h-10 md:h-8">
+                      <Eye className="w-4 h-4" />
+                      {t('programPreview')}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-48 p-2" align="start">
+                    <button
+                      onClick={() => window.open(`/catalog/${card.id}`, '_blank')}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      <Package className="w-4 h-4 text-gray-400" />
+                      Ver catálogo
+                    </button>
+                    <button
+                      onClick={handlePreview}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      <CreditCard className="w-4 h-4 text-gray-400" />
+                      Ver tarjeta
+                    </button>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <Button variant="outline" size="sm" className="gap-2 h-10 md:h-8" onClick={handlePreview}>
+                  <Eye className="w-4 h-4" />
+                  {t('programPreview')}
+                </Button>
+              )}
               <Button variant="outline" size="sm" className="gap-2 h-10 md:h-8" onClick={() => onEdit(card)}>
                 <Edit className="w-4 h-4" />
                 {t('programEdit')}
