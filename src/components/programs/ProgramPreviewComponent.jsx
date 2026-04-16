@@ -1,6 +1,18 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Gift, CreditCard, Percent, DollarSign, Crown, Ticket, ChevronUp, Pencil, Check, Mail } from 'lucide-react'
+import {
+  Gift,
+  CreditCard,
+  Percent,
+  DollarSign,
+  Crown,
+  Ticket,
+  ChevronUp,
+  Pencil,
+  Check,
+  Mail,
+  Coins,
+} from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import { getProgramTypeFromId } from '@/constants/programTypes'
 import { useLanguage } from '@/components/auth/LanguageContext'
@@ -28,6 +40,7 @@ function getCardTypeInfo(cardType, t) {
     membership: { name: t('cardTypeMembership'), color: '#8B5CF6', icon: Crown },
     discount: { name: t('cardTypeDiscount'), color: '#3B82F6', icon: Percent },
     coupon: { name: t('cardTypeCoupon'), color: '#F97316', icon: Ticket },
+    points: { name: 'Puntos', color: '#3B82F6', icon: Coins },
   }
   return types[cardType] || types['stamps']
 }
@@ -548,6 +561,127 @@ function CouponPreview({ card, foregroundColor, backgroundColor }) {
   )
 }
 
+// Preview para Puntos - iOS Apple Wallet style
+function PointsPreview({ card, foregroundColor, backgroundColor }) {
+  const moneyPerPoint = card.money_per_point || 1000
+  const moneyPerPointRedeem = card.money_per_point_redeem || 100
+  // Demo: cliente lleva 5 puntos acumulados
+  const currentPoints = 5
+  const redeemValue = currentPoints * moneyPerPointRedeem
+
+  return (
+    <div className="relative h-44 overflow-hidden">
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `linear-gradient(135deg, ${backgroundColor} 0%, ${adjustColor(backgroundColor, -30)} 100%)`,
+        }}
+      />
+      <div
+        className="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-10"
+        style={{ backgroundColor: foregroundColor }}
+      />
+
+      <div className="relative h-full flex flex-col p-4">
+        {/* Puntos actuales */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{ backgroundColor: `${foregroundColor}20` }}
+            >
+              <Coins className="w-5 h-5" style={{ color: foregroundColor }} />
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wider opacity-60" style={{ color: foregroundColor }}>
+                Mis puntos
+              </p>
+              <p className="text-3xl font-bold leading-none" style={{ color: foregroundColor }}>
+                {currentPoints}
+                <span className="text-sm font-normal opacity-60 ml-1">pts</span>
+              </p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-xs opacity-50" style={{ color: foregroundColor }}>
+              Valor de canje
+            </p>
+            <p className="text-lg font-bold" style={{ color: foregroundColor }}>
+              {redeemValue.toLocaleString()}
+            </p>
+          </div>
+        </div>
+
+        {/* Tasas de conversión */}
+        <div className="mt-auto flex items-center gap-2">
+          <div
+            className="flex-1 text-center px-2 py-1.5 rounded-lg text-xs font-medium"
+            style={{ backgroundColor: `${foregroundColor}15`, color: foregroundColor }}
+          >
+            {moneyPerPoint.toLocaleString()} → 1 pt
+          </div>
+          <div
+            className="w-4 h-4 flex items-center justify-center opacity-40 flex-shrink-0"
+            style={{ color: foregroundColor }}
+          >
+            ·
+          </div>
+          <div
+            className="flex-1 text-center px-2 py-1.5 rounded-lg text-xs font-medium"
+            style={{ backgroundColor: `${foregroundColor}15`, color: foregroundColor }}
+          >
+            1 pt → {moneyPerPointRedeem.toLocaleString()}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Preview para Puntos - Android Google Wallet style
+function AndroidPointsPreview({ card, backgroundColor }) {
+  const moneyPerPoint = card.money_per_point || 1000
+  const moneyPerPointRedeem = card.money_per_point_redeem || 100
+  const currentPoints = 5
+  const redeemValue = currentPoints * moneyPerPointRedeem
+
+  return (
+    <div className="relative h-48">
+      {/* Hero con puntos */}
+      <div className="h-24 w-full flex items-center px-5 gap-4" style={{ backgroundColor }}>
+        <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
+          <Coins className="w-7 h-7 text-white" />
+        </div>
+        <div>
+          <p className="text-white/70 text-xs uppercase tracking-wide">Mis puntos</p>
+          <div className="flex items-baseline gap-1">
+            <span className="text-4xl font-black text-white">{currentPoints}</span>
+            <span className="text-lg font-semibold text-white/80">pts</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Card blanca con conversiones */}
+      <div className="px-4 -mt-4">
+        <div className="bg-white rounded-xl p-3 shadow-lg">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="text-center p-2 rounded-lg bg-gray-50">
+              <p className="text-xs text-gray-400 mb-0.5">Acumulás</p>
+              <p className="text-xs font-semibold text-gray-700">{moneyPerPoint.toLocaleString()} → 1 pt</p>
+            </div>
+            <div className="text-center p-2 rounded-lg" style={{ backgroundColor: `${backgroundColor}10` }}>
+              <p className="text-xs text-gray-400 mb-0.5">Canjeás</p>
+              <p className="text-xs font-semibold" style={{ color: backgroundColor }}>
+                {currentPoints} pts → {redeemValue.toLocaleString()}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ============================================
 // ANDROID / GOOGLE WALLET PREVIEW COMPONENTS
 // ============================================
@@ -892,6 +1026,8 @@ export default function ProgramPreviewComponent({
         return <MembershipPreview card={card} foregroundColor={foregroundColor} backgroundColor={cardBackgroundColor} />
       case 'coupon':
         return <CouponPreview card={card} foregroundColor={foregroundColor} backgroundColor={cardBackgroundColor} />
+      case 'points':
+        return <PointsPreview card={card} foregroundColor={foregroundColor} backgroundColor={cardBackgroundColor} />
       case 'stamps':
       default: {
         // Rendering normal: background + StampsGrid
@@ -957,6 +1093,10 @@ export default function ProgramPreviewComponent({
       case 'coupon':
         return (
           <AndroidCouponPreview card={card} foregroundColor={foregroundColor} backgroundColor={cardBackgroundColor} />
+        )
+      case 'points':
+        return (
+          <AndroidPointsPreview card={card} foregroundColor={foregroundColor} backgroundColor={cardBackgroundColor} />
         )
       case 'stamps':
       default: {
@@ -1179,6 +1319,7 @@ export default function ProgramPreviewComponent({
                   {programType === 'discount' && 'Aplica en'}
                   {programType === 'membership' && 'Beneficio Principal'}
                   {programType === 'coupon' && 'Próxima Recompensa'}
+                  {programType === 'points' && 'Recompensa al canjear'}
                 </p>
                 <p className="font-semibold text-sm" style={{ color: foregroundColor }}>
                   {card.reward_text || 'Sin definir'}
@@ -1192,6 +1333,7 @@ export default function ProgramPreviewComponent({
                   {programType === 'discount' && 'Validez'}
                   {programType === 'membership' && 'Status'}
                   {programType === 'coupon' && 'Cupones'}
+                  {programType === 'points' && 'Mis puntos'}
                 </p>
                 <p className="font-semibold text-sm" style={{ color: foregroundColor }}>
                   {programType === 'stamps' && `${currentStamps}/${stampsRequired}`}
@@ -1200,6 +1342,7 @@ export default function ProgramPreviewComponent({
                   {programType === 'discount' && 'Vigente'}
                   {programType === 'membership' && 'Activo'}
                   {programType === 'coupon' && `${card.available_coupons || 3} disp.`}
+                  {programType === 'points' && '5 pts'}
                 </p>
               </div>
             </div>

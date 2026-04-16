@@ -31,6 +31,8 @@ const Profile = lazy(() => import('./Profile'))
 const ScanQR = lazy(() => import('./ScanQR'))
 const PublicCard = lazy(() => import('./PublicCard'))
 const PublicStore = lazy(() => import('./PublicStore'))
+const PublicCatalog = lazy(() => import('./PublicCatalog'))
+const Demo = lazy(() => import('./Demo'))
 const VerifyEmail = lazy(() => import('./VerifyEmail'))
 const ForgotPassword = lazy(() => import('./ForgotPassword'))
 const ResetPassword = lazy(() => import('./ResetPassword'))
@@ -66,6 +68,8 @@ export default function Pages() {
             {/* Rutas públicas - sin protección */}
             <Route path="/publicprogram" element={<PublicCard />} />
             <Route path="/store/:storeId" element={<PublicStore />} />
+            <Route path="/catalog/:programId" element={<PublicCatalog />} />
+            <Route path="/demo" element={<Demo />} />
             <Route path="/s/:code" element={<ShortUrlRedirect />} />
             <Route path="/login" element={<Login />} />
             <Route path="/verify-email" element={<VerifyEmail />} />

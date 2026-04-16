@@ -7,6 +7,13 @@ export const PROGRAM_TYPES = [
       'Programa clásico donde los clientes acumulan sellos por cada compra. Al completar todos los sellos, obtienen una recompensa. Ejemplo: Compra 5 cafés, el 6° es gratis.',
   },
   {
+    id: '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc157',
+    key: 'points',
+    name: 'Puntos',
+    description:
+      'Los clientes acumulan puntos según el monto de cada compra. Vos definís la conversión (ej: $1 = 10 puntos) y cuántos puntos se necesitan para obtener la recompensa.',
+  },
+  {
     id: '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc152',
     key: 'giftCard',
     name: 'Gift Card',

@@ -15,6 +15,34 @@ import { useQuery } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import StoreFilterSelect from '@/components/shared/StoreFilterSelect'
 
+const MOCK_CARDS = [
+  {
+    id: 'mock-1',
+    club_name: 'Mi Cafetería',
+    card_title: 'Programa de Sellos',
+    reward_text: 'Café gratis al completar 10 sellos',
+    card_color: '#c0392b',
+    is_active: true,
+    total_scans: 48,
+    description: 'Acumulá sellos en cada visita y ganá un café gratis.',
+    logo_url: null,
+    short_url: null,
+  },
+  {
+    id: 'mock-2',
+    club_name: 'Puntos Deliciosos',
+    card_title: 'Programa de Puntos',
+    reward_text: 'Canjeá puntos por productos del catálogo',
+    card_color: '#2980b9',
+    is_active: true,
+    total_scans: 123,
+    description: 'Cada compra suma puntos que podés canjear en el catálogo.',
+    logo_url: null,
+    short_url: null,
+    program_type_id: '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc157',
+  },
+]
+
 export default function MyPrograms() {
   const { t } = useLanguage()
   const [searchQuery, setSearchQuery] = useState('')
@@ -48,7 +76,9 @@ export default function MyPrograms() {
     setSelectedStore,
   } = useMyPrograms(brandId)
 
-  const filteredCards = cards.filter(
+  const displayCards = cards.length > 0 ? cards : MOCK_CARDS
+
+  const filteredCards = displayCards.filter(
     (card) =>
       card.club_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       card.card_title?.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -83,7 +113,7 @@ export default function MyPrograms() {
             </div>
           </div>
 
-          {(cards.length > 0 || isLoading || selectedStore !== 'all') && (
+          {(displayCards.length > 0 || isLoading || selectedStore !== 'all') && (
             <div className="flex flex-col gap-4">
               <Link to={createPageUrl('CreateClub')} className="w-full md:w-fit md:hidden">
                 <Button

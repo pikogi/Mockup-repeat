@@ -311,6 +311,11 @@ export function useClubForm() {
 
     if (!brandId) return
 
+    if (formData.program_type_id === '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc157') {
+      toast.info('El programa de Puntos todavía no está disponible. Este es un mockup visual.')
+      return
+    }
+
     const program_rules = buildProgramRules(formData)
     const required_customer_fields = buildRequiredCustomerFields(formData)
     const metadata = buildMetadata(formData)
@@ -539,12 +544,13 @@ export function useClubForm() {
   }
 
   const handleCreate = async ({ program_rules, required_customer_fields, metadata, reward_rules }) => {
+    const isPoints = formData.program_type_id === '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc157'
     // Validate required images in create mode
     if (!formData.background_image_url) {
       toast.error(t('clubFormBackgroundRequired'))
       return
     }
-    if (!formData.stamp_image_url) {
+    if (!isPoints && !formData.stamp_image_url) {
       toast.error(t('clubFormStampRequired'))
       return
     }

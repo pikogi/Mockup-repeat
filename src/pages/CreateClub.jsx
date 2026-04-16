@@ -17,6 +17,7 @@ import {
   CustomerDataFields,
   SecuritySection,
   BusinessInfoSection,
+  PointsConversionSection,
 } from '@/components/programs/ClubFormSections'
 
 export default function CreateClub() {
@@ -44,6 +45,8 @@ export default function CreateClub() {
     isLoadingProgram,
     getValidityTermsText,
   } = useClubForm()
+
+  const isPointsProgram = formData.program_type_id === '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc157'
 
   const previewProps = {
     formData,
@@ -160,6 +163,8 @@ export default function CreateClub() {
                   />
 
                   <ColorPickerGroup formData={formData} setFormData={setFormData} />
+
+                  {isPointsProgram && <PointsConversionSection formData={formData} setFormData={setFormData} />}
 
                   <ValiditySection
                     formData={formData}
