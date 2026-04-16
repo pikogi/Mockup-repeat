@@ -11,11 +11,11 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { X, CheckCircle, AlertCircle, Store, Gift, Loader2, Coins, Plus, QrCode } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useLanguage } from '@/components/auth/LanguageContext'
+import jsQR from 'jsqr'
 
 const POINTS_PROGRAM_TYPE_ID = '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc157'
 const MOCK_STORE_ID = 'mock-store'
-import { useLanguage } from '@/components/auth/LanguageContext'
-import jsQR from 'jsqr'
 
 // Extrae card_id de cualquier formato de QR razonable
 function extractCardId(rawValue) {
