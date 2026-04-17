@@ -38,6 +38,14 @@ const MOCK_PROGRAM_BEAUTY = {
   money_per_point_redeem: 100,
 }
 
+const MOCK_PROGRAM_BARBER = {
+  name: 'Barbería Don Carlos',
+  logo_url: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=80&h=80&fit=crop&q=80',
+  brand_color: '#1e3a5f',
+  money_per_point: 1000,
+  money_per_point_redeem: 100,
+}
+
 const MOCK_ITEMS = [
   {
     id: 1,
@@ -193,6 +201,116 @@ const MOCK_POSTS_BEAUTY = [
     body: 'Keratina e hidratación profunda con 20% de descuento todos los miércoles.',
     image_url: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=600&h=400&fit=crop&q=80',
     date: '3 nov',
+  },
+]
+
+const MOCK_ITEMS_BARBER = [
+  {
+    id: 1,
+    name: 'Corte de caballero',
+    points_cost: 250,
+    image_url: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Corte clásico o degradé a elección. Incluye lavado y secado.',
+  },
+  {
+    id: 2,
+    name: 'Arreglo de barba',
+    points_cost: 150,
+    image_url: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Perfilado y arreglo de barba con navaja y productos premium.',
+  },
+  {
+    id: 3,
+    name: 'Corte + barba combo',
+    points_cost: 350,
+    image_url: 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Servicio completo: corte a elección más arreglo de barba.',
+  },
+  {
+    id: 4,
+    name: 'Afeitado clásico',
+    points_cost: 200,
+    image_url: 'https://images.unsplash.com/photo-1598387993441-a364f854c3e1?w=400&h=400&fit=crop&q=80',
+    stock_enabled: true,
+    stock: 4,
+    description: 'Afeitado con navaja, toalla caliente y bálsamo post-afeitado.',
+  },
+  {
+    id: 5,
+    name: 'Tinte de barba',
+    points_cost: 300,
+    image_url: 'https://images.unsplash.com/photo-1622288432450-277d0fef5ed6?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Coloración de barba con productos profesionales sin amoníaco.',
+  },
+  {
+    id: 6,
+    name: 'Tratamiento capilar',
+    points_cost: 400,
+    image_url: 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Hidratación profunda o anticaída con masaje de cuero cabelludo.',
+  },
+  {
+    id: 7,
+    name: 'Cera o pomada gratis',
+    points_cost: 80,
+    image_url: 'https://images.unsplash.com/photo-1585751119414-ef2636f8aede?w=400&h=400&fit=crop&q=80',
+    stock_enabled: true,
+    stock: 10,
+    description: 'Llévate un producto de styling de las marcas que usamos en el local.',
+  },
+  {
+    id: 8,
+    name: 'Descuento 20%',
+    points_cost: 180,
+    image_url: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Válido en cualquier servicio en tu próxima visita.',
+  },
+]
+
+const MOCK_POSTS_BARBER = [
+  {
+    id: 1,
+    type: 'promo',
+    title: 'Corte + barba a precio especial los lunes',
+    body: 'Todos los lunes el combo corte + barba tiene un 15% de descuento. Presentá tu tarjeta al pagar.',
+    image_url: 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=600&h=400&fit=crop&q=80',
+    date: '14 abr',
+  },
+  {
+    id: 2,
+    type: 'novedad',
+    title: 'Nuevo: afeitado con navaja japonesa',
+    body: 'Incorporamos el servicio de afeitado tradicional con navaja japonesa Feather. ¡Reserva tu turno!',
+    image_url: 'https://images.unsplash.com/photo-1598387993441-a364f854c3e1?w=600&h=400&fit=crop&q=80',
+    date: '10 abr',
+  },
+  {
+    id: 3,
+    type: 'evento',
+    title: 'Tarde de barbería — sábado 19',
+    body: 'El sábado 19 de 14 a 20hs: música en vivo, cerveza fría y 2x1 en arreglo de barba.',
+    image_url: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600&h=400&fit=crop&q=80',
+    date: '8 abr',
+  },
+  {
+    id: 4,
+    type: 'promo',
+    title: 'Tinte de barba -20% en abril',
+    body: 'Durante todo abril el servicio de tinte de barba tiene un 20% de descuento para miembros del club.',
+    image_url: 'https://images.unsplash.com/photo-1622288432450-277d0fef5ed6?w=600&h=400&fit=crop&q=80',
+    date: '3 abr',
   },
 ]
 
@@ -953,10 +1071,11 @@ export default function PublicCatalog() {
   const MOCK_POINTS = 1250
 
   const isBeauty = programId === 'beauty-demo'
+  const isBarber = programId === 'barber-demo'
 
-  const program = isBeauty ? MOCK_PROGRAM_BEAUTY : MOCK_PROGRAM
-  const items = isBeauty ? MOCK_ITEMS_BEAUTY : MOCK_ITEMS
-  const posts = isBeauty ? MOCK_POSTS_BEAUTY : MOCK_POSTS
+  const program = isBarber ? MOCK_PROGRAM_BARBER : isBeauty ? MOCK_PROGRAM_BEAUTY : MOCK_PROGRAM
+  const items = isBarber ? MOCK_ITEMS_BARBER : isBeauty ? MOCK_ITEMS_BEAUTY : MOCK_ITEMS
+  const posts = isBarber ? MOCK_POSTS_BARBER : isBeauty ? MOCK_POSTS_BEAUTY : MOCK_POSTS
 
   const [selectedItem, setSelectedItem] = useState(null)
   const [showSurvey, setShowSurvey] = useState(false)
@@ -1012,9 +1131,11 @@ export default function PublicCatalog() {
           <div className="flex whitespace-nowrap" style={{ animation: 'marquee 18s linear infinite' }}>
             {[...Array(6)].map((_, i) => (
               <span key={i} className="text-white text-xs font-medium px-8">
-                {isBeauty
-                  ? '✨ Refiere a una amiga y gana 150 puntos · 💅 Acumula puntos en cada servicio · 🎁 Canjea servicios exclusivos para socias'
-                  : '🚀 Refiere a un amigo y gana 100 puntos · 🎁 Acumula puntos en cada compra · ⭐ Canjea premios exclusivos para miembros'}
+                {isBarber
+                  ? '✂️ Refiere a un amigo y gana 100 puntos · 💈 Acumula puntos en cada visita · 🎁 Canjea servicios exclusivos para miembros'
+                  : isBeauty
+                    ? '✨ Refiere a una amiga y gana 150 puntos · 💅 Acumula puntos en cada servicio · 🎁 Canjea servicios exclusivos para socias'
+                    : '🚀 Refiere a un amigo y gana 100 puntos · 🎁 Acumula puntos en cada compra · ⭐ Canjea premios exclusivos para miembros'}
               </span>
             ))}
           </div>
@@ -1212,9 +1333,10 @@ export default function PublicCatalog() {
                     },
                     {
                       step: '2',
-                      text: isBeauty
-                        ? 'Elige un servicio del catálogo y reserva tu turno'
-                        : 'Elige un premio del catálogo y acércate al local',
+                      text:
+                        isBeauty || isBarber
+                          ? 'Elige un servicio del catálogo y reserva tu turno'
+                          : 'Elige un premio del catálogo y acércate al local',
                     },
                     { step: '3', text: 'Muestra tu tarjeta del wallet y canjea tus puntos' },
                   ].map((s) => (
@@ -1237,7 +1359,7 @@ export default function PublicCatalog() {
         {/* Lista de ítems */}
         <div>
           <p className="text-sm font-semibold text-gray-700 mb-3">
-            {availableItems.length} {isBeauty ? 'servicios disponibles' : 'premios disponibles'}
+            {availableItems.length} {isBeauty || isBarber ? 'servicios disponibles' : 'premios disponibles'}
           </p>
 
           <div className={availableGridClass}>

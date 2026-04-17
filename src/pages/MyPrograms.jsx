@@ -54,6 +54,19 @@ const MOCK_CARDS = [
     short_url: null,
     program_type_id: '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc157',
   },
+  {
+    id: 'barber-demo',
+    club_name: 'Barbería Don Carlos',
+    card_title: 'Programa de Puntos',
+    reward_text: 'Canjea puntos por servicios del catálogo',
+    card_color: '#1e3a5f',
+    is_active: true,
+    total_scans: 214,
+    description: 'Cada visita suma puntos que puedes canjear en el catálogo.',
+    logo_url: null,
+    short_url: null,
+    program_type_id: '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc157',
+  },
 ]
 
 export default function MyPrograms() {
