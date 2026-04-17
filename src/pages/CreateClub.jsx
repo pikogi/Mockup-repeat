@@ -18,6 +18,7 @@ import {
   SecuritySection,
   BusinessInfoSection,
   PointsConversionSection,
+  ReferralSection,
 } from '@/components/programs/ClubFormSections'
 
 export default function CreateClub() {
@@ -173,6 +174,8 @@ export default function CreateClub() {
                   />
 
                   <CustomerDataFields formData={formData} setFormData={setFormData} />
+
+                  <ReferralSection formData={formData} setFormData={setFormData} />
 
                   <SecuritySection formData={formData} setFormData={setFormData} />
 

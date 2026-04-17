@@ -4,7 +4,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
-import { Loader2, Upload, Plus, Trash2, ImageIcon, Package, ArrowRightLeft } from 'lucide-react'
+import { Loader2, Upload, Plus, Trash2, ImageIcon, Package, ArrowRightLeft, Users } from 'lucide-react'
 import { useLanguage } from '@/components/auth/LanguageContext'
 
 export function StoreSelector({ stores, formData, setFormData }) {
@@ -880,5 +880,97 @@ export function BusinessInfoSection({ formData, setFormData, setIsFlipped }) {
         </p>
       </div>
     </>
+  )
+}
+
+export function ReferralSection({ formData, setFormData }) {
+  const isPoints = formData.program_type_id === POINTS_TYPE_ID
+  const enabled = formData.referral_enabled || false
+
+  return (
+    <div className="border-t pt-6 pb-6">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Programa de referidos</h3>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        Premia a tus clientes cuando traen a un amigo que se registra en el programa.
+      </p>
+
+      <div className="flex items-start justify-between gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+        <div className="flex items-center gap-3">
+          <Users className="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+          <div className="space-y-0.5">
+            <Label className="text-base">Activar referidos</Label>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {isPoints
+                ? 'El cliente que refiere recibe puntos cuando su amigo se registra.'
+                : 'El cliente que refiere recibe sellos cuando su amigo se registra.'}
+            </p>
+          </div>
+        </div>
+        <input
+          type="checkbox"
+          checked={enabled}
+          onChange={(e) => setFormData((prev) => ({ ...prev, referral_enabled: e.target.checked }))}
+          className="w-6 h-6 mt-0.5 accent-yellow-500 cursor-pointer flex-shrink-0"
+        />
+      </div>
+
+      {enabled && (
+        <div className="mt-4 grid gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="referral_reward">
+              {isPoints ? 'Puntos para el que refiere' : 'Sellos para el que refiere'}
+            </Label>
+            <div className="flex items-center gap-3">
+              <Input
+                id="referral_reward"
+                type="number"
+                min="1"
+                placeholder={isPoints ? '150' : '1'}
+                value={isPoints ? formData.referral_reward_points || '' : formData.referral_reward_stamps || ''}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value) || 0
+                  setFormData((prev) =>
+                    isPoints ? { ...prev, referral_reward_points: v } : { ...prev, referral_reward_stamps: v },
+                  )
+                }}
+                className="h-12 max-w-[140px]"
+              />
+              <span className="text-sm text-gray-500">{isPoints ? 'puntos' : 'sellos'}</span>
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {isPoints
+                ? 'Se acreditarán automáticamente cuando el amigo complete su registro y realice su primera visita.'
+                : 'Se acreditarán automáticamente cuando el amigo complete su registro y realice su primera visita.'}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/40 p-4 space-y-1.5">
+            <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wider">
+              ¿Cómo funciona?
+            </p>
+            <ul className="text-sm text-blue-900 dark:text-blue-200 space-y-1">
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 flex-shrink-0">①</span>
+                <span>El cliente comparte su link personal desde el catálogo del programa.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 flex-shrink-0">②</span>
+                <span>Su amigo se registra usando ese link y obtiene su tarjeta.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 flex-shrink-0">③</span>
+                <span>
+                  Al completar su primera visita, el cliente que refirió recibe{' '}
+                  {isPoints
+                    ? `${formData.referral_reward_points || '—'} puntos`
+                    : `${formData.referral_reward_stamps || '—'} ${(formData.referral_reward_stamps || 0) === 1 ? 'sello' : 'sellos'}`}{' '}
+                  automáticamente.
+                </span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }

@@ -18,6 +18,9 @@ import {
   ChevronDown,
   Star,
   ExternalLink,
+  Share2,
+  Check,
+  Users,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -311,6 +314,100 @@ const MOCK_POSTS_BARBER = [
     body: 'Durante todo abril el servicio de tinte de barba tiene un 20% de descuento para miembros del club.',
     image_url: 'https://images.unsplash.com/photo-1622288432450-277d0fef5ed6?w=600&h=400&fit=crop&q=80',
     date: '3 abr',
+  },
+]
+
+// type: 'earned' = puntos sumados, 'redeemed' = canje
+const MOCK_ACTIVITY_BEAUTY = [
+  { id: 1, type: 'earned', label: 'Visita', points: 400, date: '16 abr 2026' },
+  { id: 7, type: 'referral', label: 'Referido — Sofía Martínez', points: 150, date: '13 abr 2026' },
+  {
+    id: 2,
+    type: 'redeemed',
+    label: 'Corte de cabello',
+    points: 300,
+    date: '12 abr 2026',
+    image_url: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=80&h=80&fit=crop&q=80',
+  },
+  { id: 3, type: 'earned', label: 'Visita', points: 350, date: '5 abr 2026' },
+  {
+    id: 4,
+    type: 'redeemed',
+    label: 'Descuento 15%',
+    points: 200,
+    date: '28 mar 2026',
+    image_url: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=80&h=80&fit=crop&q=80',
+  },
+  { id: 5, type: 'earned', label: 'Visita', points: 400, date: '20 mar 2026' },
+  {
+    id: 6,
+    type: 'redeemed',
+    label: 'Manicura permanente',
+    points: 400,
+    date: '10 mar 2026',
+    image_url: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=80&h=80&fit=crop&q=80',
+  },
+]
+
+const MOCK_ACTIVITY_BARBER = [
+  { id: 1, type: 'earned', label: 'Visita', points: 350, date: '14 abr 2026' },
+  { id: 7, type: 'referral', label: 'Referido — Mateo López', points: 150, date: '11 abr 2026' },
+  {
+    id: 2,
+    type: 'redeemed',
+    label: 'Corte + barba combo',
+    points: 350,
+    date: '14 abr 2026',
+    image_url: 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=80&h=80&fit=crop&q=80',
+  },
+  { id: 3, type: 'earned', label: 'Visita', points: 250, date: '5 abr 2026' },
+  {
+    id: 4,
+    type: 'redeemed',
+    label: 'Cera o pomada gratis',
+    points: 80,
+    date: '1 abr 2026',
+    image_url: 'https://images.unsplash.com/photo-1585751119414-ef2636f8aede?w=80&h=80&fit=crop&q=80',
+  },
+  { id: 5, type: 'earned', label: 'Visita', points: 300, date: '20 mar 2026' },
+  {
+    id: 6,
+    type: 'redeemed',
+    label: 'Corte de caballero',
+    points: 250,
+    date: '15 mar 2026',
+    image_url: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=80&h=80&fit=crop&q=80',
+  },
+]
+
+const MOCK_ACTIVITY_CAFE = [
+  { id: 1, type: 'earned', label: 'Visita', points: 120, date: '15 abr 2026' },
+  { id: 7, type: 'referral', label: 'Referido — Carlos Ruiz', points: 150, date: '12 abr 2026' },
+  {
+    id: 2,
+    type: 'redeemed',
+    label: 'Café mediano gratis',
+    points: 50,
+    date: '15 abr 2026',
+    image_url: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=80&h=80&fit=crop&q=80',
+  },
+  { id: 3, type: 'earned', label: 'Visita', points: 80, date: '3 abr 2026' },
+  {
+    id: 4,
+    type: 'redeemed',
+    label: 'Combo café + sandwich',
+    points: 120,
+    date: '3 abr 2026',
+    image_url: 'https://images.unsplash.com/photo-1553909489-cd47e0907980?w=80&h=80&fit=crop&q=80',
+  },
+  { id: 5, type: 'earned', label: 'Visita', points: 50, date: '22 mar 2026' },
+  {
+    id: 6,
+    type: 'redeemed',
+    label: 'Medialunas x3',
+    points: 30,
+    date: '22 mar 2026',
+    image_url: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=80&h=80&fit=crop&q=80',
   },
 ]
 
@@ -1068,7 +1165,7 @@ export default function PublicCatalog() {
   const [searchParams] = useSearchParams()
   const cardId = searchParams.get('card')
   const isIdentified = !!cardId
-  const MOCK_POINTS = 1250
+  const MOCK_POINTS = 620
 
   const isBeauty = programId === 'beauty-demo'
   const isBarber = programId === 'barber-demo'
@@ -1076,13 +1173,37 @@ export default function PublicCatalog() {
   const program = isBarber ? MOCK_PROGRAM_BARBER : isBeauty ? MOCK_PROGRAM_BEAUTY : MOCK_PROGRAM
   const items = isBarber ? MOCK_ITEMS_BARBER : isBeauty ? MOCK_ITEMS_BEAUTY : MOCK_ITEMS
   const posts = isBarber ? MOCK_POSTS_BARBER : isBeauty ? MOCK_POSTS_BEAUTY : MOCK_POSTS
+  const activity = isBarber ? MOCK_ACTIVITY_BARBER : isBeauty ? MOCK_ACTIVITY_BEAUTY : MOCK_ACTIVITY_CAFE
 
   const [selectedItem, setSelectedItem] = useState(null)
   const [showSurvey, setShowSurvey] = useState(false)
   const [howOpen, setHowOpen] = useState(false)
+  const [activityOpen, setActivityOpen] = useState(false)
+  const [activityExpanded, setActivityExpanded] = useState(false)
+  const [shareDone, setShareDone] = useState(false)
   const [showEmailLookup, setShowEmailLookup] = useState(false)
   const [emailInput, setEmailInput] = useState('')
   const color = program.brand_color
+
+  const handleShare = async () => {
+    const referralUrl = `${window.location.origin}/publicprogram?id=${programId}&ref=${cardId}`
+    const shareData = {
+      title: program.name,
+      text: `¡Únete al club de ${program.name} y empieza a acumular puntos!`,
+      url: referralUrl,
+    }
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData)
+      } else {
+        await navigator.clipboard.writeText(referralUrl)
+      }
+      setShareDone(true)
+      setTimeout(() => setShareDone(false), 2500)
+    } catch {
+      // user cancelled share
+    }
+  }
 
   const handleEmailLookup = (e) => {
     e.preventDefault()
@@ -1155,53 +1276,162 @@ export default function PublicCatalog() {
 
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
         {/* Banner de puntos */}
-        {isIdentified ? (
-          /* Estado identificado: cliente con tarjeta */
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl p-4 space-y-3"
-            style={{ background: `linear-gradient(135deg, ${color} 0%, ${color}cc 100%)` }}
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                <Coins className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1 text-white">
-                <p className="text-xs opacity-80 uppercase tracking-wider">Tus puntos</p>
-                <p className="text-3xl font-black leading-none">{MOCK_POINTS.toLocaleString()}</p>
-                <p className="text-xs opacity-70 mt-0.5">
-                  Podés canjear {availableItems.filter((i) => i.points_cost <= MOCK_POINTS).length} servicios
-                </p>
-              </div>
-              <div className="text-right text-white">
-                <p className="text-xs opacity-70">Acumulas</p>
-                <p className="text-sm font-bold">{program.money_per_point.toLocaleString()} = 1 pt</p>
-              </div>
-            </div>
-            {/* Barra de progreso hacia el item más barato */}
-            {(() => {
-              const nextItem = [...availableItems]
+        {isIdentified
+          ? (() => {
+              const nextItem = [...items]
                 .sort((a, b) => a.points_cost - b.points_cost)
-                .find((i) => i.points_cost > MOCK_POINTS)
-              if (!nextItem) return null
-              const pct = Math.min((MOCK_POINTS / nextItem.points_cost) * 100, 100)
+                .find((i) => i.points_cost > MOCK_POINTS && (!i.stock_enabled || i.stock > 0))
+              const pct = nextItem ? Math.min((MOCK_POINTS / nextItem.points_cost) * 100, 100) : 100
+              const missing = nextItem ? nextItem.points_cost - MOCK_POINTS : 0
               return (
-                <div className="space-y-1">
-                  <div className="flex justify-between text-white text-xs opacity-70">
-                    <span>{MOCK_POINTS.toLocaleString()} pts</span>
-                    <span>
-                      {nextItem.points_cost.toLocaleString()} pts — {nextItem.name}
-                    </span>
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-2xl p-4 space-y-3"
+                  style={{ background: `linear-gradient(135deg, ${color} 0%, ${color}cc 100%)` }}
+                >
+                  {/* Fila principal: ícono + puntos + ratio */}
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                      <Coins className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1 text-white">
+                      <p className="text-xs opacity-80 uppercase tracking-wider">Tus puntos</p>
+                      <p className="text-3xl font-black leading-none">{MOCK_POINTS.toLocaleString()}</p>
+                    </div>
+                    <div className="text-right text-white">
+                      <p className="text-xs opacity-70">Acumulas</p>
+                      <p className="text-sm font-bold">{program.money_per_point.toLocaleString()} = 1 pt</p>
+                    </div>
                   </div>
-                  <div className="h-1.5 rounded-full bg-white/20 overflow-hidden">
-                    <div className="h-full rounded-full bg-white/80" style={{ width: `${pct}%` }} />
-                  </div>
-                </div>
+
+                  {/* Barra de progreso hacia el próximo item */}
+                  {nextItem && (
+                    <div className="space-y-1.5">
+                      <div className="h-2 rounded-full bg-white/20 overflow-hidden">
+                        <motion.div
+                          className="h-full rounded-full bg-white/80"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${pct}%` }}
+                          transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between text-white text-xs opacity-70">
+                        <span>
+                          Te faltan <span className="font-bold opacity-100">{missing} pts</span>
+                        </span>
+                        <span className="truncate max-w-[55%] text-right">{nextItem.name}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Referidos — botón compartir */}
+                  <button
+                    onClick={handleShare}
+                    className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-white/15 hover:bg-white/25 transition-colors text-white text-xs font-semibold"
+                  >
+                    <AnimatePresence mode="wait">
+                      {shareDone ? (
+                        <motion.span
+                          key="done"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="flex items-center gap-2"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                          Link copiado
+                        </motion.span>
+                      ) : (
+                        <motion.span
+                          key="share"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="flex items-center gap-2"
+                        >
+                          <Share2 className="w-3.5 h-3.5" />
+                          Invitar amigos · ganas 150 pts por cada uno
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </button>
+
+                  {/* Actividad — toggle dentro del banner */}
+                  {activity.length > 0 && (
+                    <div>
+                      <button
+                        onClick={() => setActivityOpen((v) => !v)}
+                        className="w-full flex items-center justify-between py-1 text-white/70 hover:text-white transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-3.5 h-3.5" />
+                          <span className="text-xs font-semibold uppercase tracking-wider">Actividad</span>
+                        </div>
+                        <ChevronDown
+                          className="w-3.5 h-3.5 transition-transform"
+                          style={{ transform: activityOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                        />
+                      </button>
+
+                      <AnimatePresence>
+                        {activityOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="mt-2 space-y-0 rounded-xl overflow-hidden">
+                              {(activityExpanded ? activity : activity.slice(0, 4)).map((entry) => (
+                                <div key={entry.id} className="flex items-center gap-3 px-3 py-2.5 bg-white/10">
+                                  {entry.type === 'redeemed' && entry.image_url ? (
+                                    <img
+                                      src={entry.image_url}
+                                      alt={entry.label}
+                                      className="w-8 h-8 rounded-lg object-cover flex-shrink-0"
+                                    />
+                                  ) : entry.type === 'referral' ? (
+                                    <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
+                                      <Users className="w-4 h-4 text-white" />
+                                    </div>
+                                  ) : (
+                                    <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
+                                      <Coins className="w-4 h-4 text-white" />
+                                    </div>
+                                  )}
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-medium text-white truncate">{entry.label}</p>
+                                    <p className="text-xs text-white/50">{entry.date}</p>
+                                  </div>
+                                  <span
+                                    className={`text-xs font-bold flex-shrink-0 ${entry.type === 'redeemed' ? 'text-white/60' : 'text-white'}`}
+                                  >
+                                    {entry.type === 'redeemed' ? '−' : '+'}
+                                    {entry.points} pts
+                                  </span>
+                                </div>
+                              ))}
+                              {activity.length > 4 && (
+                                <button
+                                  onClick={() => setActivityExpanded((v) => !v)}
+                                  className="w-full py-2 text-xs text-white/60 hover:text-white transition-colors bg-white/5 hover:bg-white/10"
+                                >
+                                  {activityExpanded ? 'Ver menos' : `Ver ${activity.length - 4} más`}
+                                </button>
+                              )}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
+                </motion.div>
               )
-            })()}
-          </motion.div>
-        ) : (
+            })()
+          : null}
+
+        {!isIdentified && (
           /* Estado anónimo: cliente sin tarjeta */
           <motion.div
             initial={{ opacity: 0, y: -10 }}
