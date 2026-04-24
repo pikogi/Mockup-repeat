@@ -44,6 +44,26 @@ const DEFAULT_FORM_DATA = {
   collect_phone: false,
   collect_birthday: false,
   selected_store_ids: [],
+  // Cupones
+  coupon_trigger: 'purchase',
+  coupon_benefit_type: 'percent',
+  coupon_benefit_value: 10,
+  coupon_description: '',
+  coupon_validity_days: 30,
+  // Membresías
+  membership_activation: 'free',
+  membership_tiers: [],
+  membership_catalog: [],
+  // Referidos (por tipo)
+  referral_reward_cashback: 500,
+  referral_reward_membership_type: 'days',
+  referral_reward_membership_days: 30,
+  referral_reward_membership_benefit: '',
+  // Cashback
+  cashback_percentage: 5,
+  cashback_min_purchase: 0,
+  cashback_min_redeem: 500,
+  cashback_validity_days: 365,
 }
 
 function getSavedImages(programId) {

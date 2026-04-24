@@ -15,6 +15,9 @@ import { useLanguage } from '@/components/auth/LanguageContext'
 import jsQR from 'jsqr'
 
 const POINTS_PROGRAM_TYPE_ID = '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc157'
+const STAMPS_PROGRAM_TYPE_ID = '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc151'
+const MEMBERSHIP_PROGRAM_TYPE_ID = '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc155'
+const CASHBACK_PROGRAM_TYPE_ID = '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc154'
 const MOCK_STORE_ID = 'mock-store'
 
 // Extrae card_id de cualquier formato de QR razonable
@@ -47,7 +50,12 @@ export default function ScanQR() {
   const { t, language } = useLanguage()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const isDemoPoints = searchParams.get('demo') === 'points' || searchParams.get('demo') === 'points-direct'
+  const demoParam = searchParams.get('demo')
+  const isDemoPoints = demoParam === 'points' || demoParam === 'points-direct'
+  const isDemoStamps = demoParam === 'stamps'
+  const isDemoMembership = demoParam === 'membership'
+  const isDemoCashback = demoParam === 'cashback'
+  const isDemo = isDemoPoints || isDemoStamps || isDemoMembership || isDemoCashback
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const [hasCamera, setHasCamera] = useState(true)
@@ -72,17 +80,19 @@ export default function ScanQR() {
   const user = getCurrentUser()
   const brandId = user?.brand_id || localStorage.getItem('brand_id')
 
-  // Auto-trigger demo de puntos si viene con ?demo=points o ?demo=points-direct
+  // Auto-trigger demo según ?demo=<type>
   useEffect(() => {
     const demo = searchParams.get('demo')
+    if (!demo) return
+    setSelectedStore(MOCK_STORE_ID)
+    setScanning(false)
+    setPointsTab('add')
+    setPurchaseAmount('')
+    setRedeemCodeInput('')
+    setPointsToRedeem('')
+
     if (demo === 'points' || demo === 'points-direct') {
       const isDirect = demo === 'points-direct'
-      setSelectedStore(MOCK_STORE_ID)
-      setScanning(false)
-      setPointsTab('add')
-      setPurchaseAmount('')
-      setRedeemCodeInput('')
-      setPointsToRedeem('')
       setCardData({
         card: {
           customer: { full_name: 'Laura Gómez', email: 'laura@gmail.com' },
@@ -97,8 +107,50 @@ export default function ScanQR() {
         redeemMode: isDirect ? 'direct' : 'catalog',
         moneyPerPointRedeem: 100,
       })
-      setStep('review')
+    } else if (demo === 'stamps') {
+      setCardData({
+        card: {
+          customer: { full_name: 'Carlos Martínez', email: 'carlos@gmail.com' },
+          current_balance: 4,
+          created_at: '2024-01-15T00:00:00Z',
+          redemptions: [],
+          program: { reward_description: 'Café gratis', program_rules: { stamps_required: 8 } },
+        },
+        cardId: 'mock-stamps-card',
+        stampsRequired: 8,
+        programTypeId: STAMPS_PROGRAM_TYPE_ID,
+        moneyPerPoint: null,
+      })
+    } else if (demo === 'membership') {
+      setCardData({
+        card: {
+          customer: { full_name: 'Valentina Ríos', email: 'valentina@gmail.com' },
+          current_balance: 2,
+          created_at: '2024-02-10T00:00:00Z',
+          redemptions: [],
+          program: { reward_description: 'Mes gratis de membresía', program_rules: { stamps_required: 1 } },
+        },
+        cardId: 'mock-membership-card',
+        stampsRequired: 1,
+        programTypeId: MEMBERSHIP_PROGRAM_TYPE_ID,
+        moneyPerPoint: null,
+      })
+    } else if (demo === 'cashback') {
+      setCardData({
+        card: {
+          customer: { full_name: 'Martín Gómez', email: 'martin@gmail.com' },
+          current_balance: 7,
+          created_at: '2024-04-01T00:00:00Z',
+          redemptions: [],
+          program: { reward_description: '$500 de cashback', program_rules: { stamps_required: 10 } },
+        },
+        cardId: 'mock-cashback-card',
+        stampsRequired: 10,
+        programTypeId: CASHBACK_PROGRAM_TYPE_ID,
+        moneyPerPoint: null,
+      })
     }
+    setStep('review')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -489,7 +541,7 @@ export default function ScanQR() {
   }
 
   // Pantalla de selección de tienda (solo si hay más de una)
-  if (!isDemoPoints && !selectedStore && stores.length > 1) {
+  if (!isDemo && !selectedStore && stores.length > 1) {
     return (
       <div className="fixed inset-0 bg-black z-50 flex items-center justify-center p-4">
         <Card className="p-8 w-full max-w-md bg-white dark:bg-gray-900">
@@ -523,7 +575,7 @@ export default function ScanQR() {
   }
 
   // Pantalla de carga de tiendas
-  if (!isDemoPoints && loadingStores) {
+  if (!isDemo && loadingStores) {
     return (
       <div className="fixed inset-0 bg-black z-50 flex items-center justify-center p-4">
         <Card className="p-8 w-full max-w-md bg-white dark:bg-gray-900 text-center">
@@ -535,7 +587,7 @@ export default function ScanQR() {
   }
 
   // Pantalla si no hay tiendas
-  if (!isDemoPoints && !loadingStores && stores.length === 0) {
+  if (!isDemo && !loadingStores && stores.length === 0) {
     return (
       <div className="fixed inset-0 bg-black z-50 flex items-center justify-center p-4">
         <Card className="p-8 w-full max-w-md bg-white dark:bg-gray-900 text-center">

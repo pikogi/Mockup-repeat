@@ -31,6 +31,8 @@ const ScanQR = lazy(() => import('./ScanQR'))
 const PublicCard = lazy(() => import('./PublicCard'))
 const PublicStore = lazy(() => import('./PublicStore'))
 const PublicCatalog = lazy(() => import('./PublicCatalog'))
+const PublicMembership = lazy(() => import('./PublicMembership'))
+const PublicCashback = lazy(() => import('./PublicCashback'))
 const Demo = lazy(() => import('./Demo'))
 const VerifyEmail = lazy(() => import('./VerifyEmail'))
 const ForgotPassword = lazy(() => import('./ForgotPassword'))
@@ -66,6 +68,8 @@ export default function Pages() {
             <Route path="/publicprogram" element={<PublicCard />} />
             <Route path="/store/:storeId" element={<PublicStore />} />
             <Route path="/catalog/:programId" element={<PublicCatalog />} />
+            <Route path="/membership/:programId" element={<PublicMembership />} />
+            <Route path="/cashback/:programId" element={<PublicCashback />} />
             <Route path="/demo" element={<Demo />} />
             <Route path="/s/:code" element={<ShortUrlRedirect />} />
             <Route path="/login" element={<Login />} />

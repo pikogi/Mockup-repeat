@@ -50,9 +50,22 @@ export function StoreSelector({ stores, formData, setFormData }) {
 }
 
 const POINTS_TYPE_ID = '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc157'
+const COUPON_TYPE_ID = '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc156'
+const MEMBERSHIP_TYPE_ID = '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc155'
+const CASHBACK_TYPE_ID = '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc154'
 
-const POINTS_DESCRIPTION =
-  'Los clientes acumulan puntos según el monto gastado. Vos definís cuánto dinero equivale a 1 punto y cuánto vale cada punto al canjear.'
+const TYPE_DESCRIPTIONS = {
+  [POINTS_TYPE_ID]:
+    'Los clientes acumulan puntos según el monto gastado. Vos definís cuánto dinero equivale a 1 punto y cuánto vale cada punto al canjear.',
+  [COUPON_TYPE_ID]:
+    'Emitís cupones digitales con descuentos o beneficios. Los clientes los reciben automáticamente y los presentan en caja para usarlos.',
+  [MEMBERSHIP_TYPE_ID]:
+    'Los clientes pagan una cuota mensual o anual para acceder a beneficios exclusivos. Ideal para fidelizar con servicios recurrentes.',
+  [CASHBACK_TYPE_ID]:
+    'El cliente recibe un porcentaje de cada compra como saldo a favor. Cuando acumula suficiente, lo usa como descuento en su próxima visita.',
+  default:
+    'Programa clásico donde los clientes acumulan sellos por cada compra. Al completar todos los sellos, obtienen una recompensa. Ejemplo: Compra 5 cafés, el 6° es gratis.',
+}
 
 export function ProgramTypeSelector({ formData, setFormData, className }) {
   const { t } = useLanguage()
@@ -70,13 +83,14 @@ export function ProgramTypeSelector({ formData, setFormData, className }) {
         <SelectContent>
           <SelectItem value="7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc151">{t('formStampsType')}</SelectItem>
           <SelectItem value="7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc157">Puntos</SelectItem>
+          <SelectItem value={COUPON_TYPE_ID}>Cupones</SelectItem>
+          <SelectItem value={MEMBERSHIP_TYPE_ID}>Membresías</SelectItem>
+          <SelectItem value={CASHBACK_TYPE_ID}>Cashback</SelectItem>
         </SelectContent>
       </Select>
       <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-950 border border-yellow-300 rounded-lg">
         <p className="text-xs text-yellow-900 dark:text-yellow-200 leading-relaxed">
-          {formData.program_type_id === POINTS_TYPE_ID
-            ? POINTS_DESCRIPTION
-            : 'Programa clásico donde los clientes acumulan sellos por cada compra. Al completar todos los sellos, obtienen una recompensa. Ejemplo: Compra 5 cafés, el 6° es gratis.'}
+          {TYPE_DESCRIPTIONS[formData.program_type_id] ?? TYPE_DESCRIPTIONS.default}
         </p>
       </div>
     </div>
@@ -86,6 +100,9 @@ export function ProgramTypeSelector({ formData, setFormData, className }) {
 export function BasicInfoFields({ formData, setFormData, setIsFlipped }) {
   const { t } = useLanguage()
   const isPoints = formData.program_type_id === POINTS_TYPE_ID
+  const isCoupon = formData.program_type_id === COUPON_TYPE_ID
+  const isMembership = formData.program_type_id === MEMBERSHIP_TYPE_ID
+  const isCashback = formData.program_type_id === CASHBACK_TYPE_ID
 
   return (
     <>
@@ -117,7 +134,7 @@ export function BasicInfoFields({ formData, setFormData, setIsFlipped }) {
         />
       </div>
 
-      {!isPoints && (
+      {!isPoints && !isCoupon && !isMembership && !isCashback && (
         <div className="space-y-2">
           <Label htmlFor="reward_text">{t('rewardOffer')} *</Label>
           <Input
@@ -136,7 +153,7 @@ export function BasicInfoFields({ formData, setFormData, setIsFlipped }) {
         </div>
       )}
 
-      {!isPoints && (
+      {!isPoints && !isCoupon && !isMembership && !isCashback && (
         <div className="space-y-2">
           <Label htmlFor="stamps_required">{t('stampsRequired')}</Label>
           <Input
@@ -553,6 +570,8 @@ export function ImageUploadGroup({
 }) {
   const { t } = useLanguage()
   const isPoints = formData.program_type_id === POINTS_TYPE_ID
+  const isMembershipImg = formData.program_type_id === MEMBERSHIP_TYPE_ID
+  const isCashbackImg = formData.program_type_id === CASHBACK_TYPE_ID
 
   return (
     <>
@@ -593,7 +612,7 @@ export function ImageUploadGroup({
         </div>
       </div>
 
-      {!isPoints && (
+      {!isPoints && !isMembershipImg && !isCashbackImg && (
         <div className="space-y-2">
           <Label>{t('formStampImage')}</Label>
           <div className="flex gap-3 items-center">
@@ -883,9 +902,82 @@ export function BusinessInfoSection({ formData, setFormData, setIsFlipped }) {
   )
 }
 
+// Per-type referral config: label, unit, field, placeholder, reward description
+function getReferralConfig(programTypeId, formData) {
+  switch (programTypeId) {
+    case POINTS_TYPE_ID:
+      return {
+        description: 'El cliente que refiere recibe puntos cuando su amigo se registra.',
+        label: 'Puntos para el que refiere',
+        unit: 'puntos',
+        field: 'referral_reward_points',
+        placeholder: '150',
+        rewardSummary: `${formData.referral_reward_points || '—'} puntos`,
+      }
+    case CASHBACK_TYPE_ID:
+      return {
+        description: 'El cliente que refiere recibe saldo de cashback cuando su amigo se registra.',
+        label: 'Cashback para el que refiere',
+        unit: 'pesos',
+        prefix: '$',
+        field: 'referral_reward_cashback',
+        placeholder: '500',
+        rewardSummary: `$${formData.referral_reward_cashback || '—'} de cashback`,
+      }
+    case COUPON_TYPE_ID:
+      return {
+        description: 'El cliente que refiere recibe un cupón gratis cuando su amigo se registra.',
+        label: null, // no amount input — fixed: one free coupon
+        unit: null,
+        field: null,
+        placeholder: null,
+        rewardSummary: 'un cupón gratis',
+      }
+    case MEMBERSHIP_TYPE_ID: {
+      const rewardType = formData.referral_reward_membership_type || 'days'
+      if (rewardType === 'benefit') {
+        return {
+          description: 'El cliente que refiere recibe un beneficio exclusivo cuando su amigo se activa.',
+          label: null,
+          unit: null,
+          field: 'referral_reward_membership_benefit',
+          fieldType: 'text',
+          placeholder: 'Ej: Una sesión de masaje gratis, Kit de bienvenida...',
+          rewardSummary: formData.referral_reward_membership_benefit || 'beneficio a elección',
+        }
+      }
+      return {
+        description: 'El cliente que refiere recibe días gratis de membresía cuando su amigo se activa.',
+        label: 'Días gratis para el que refiere',
+        unit: 'días',
+        field: 'referral_reward_membership_days',
+        fieldType: 'number',
+        placeholder: '30',
+        rewardSummary: `${formData.referral_reward_membership_days || '—'} días gratis`,
+      }
+    }
+    default: // stamps
+      return {
+        description: 'El cliente que refiere recibe sellos cuando su amigo se registra.',
+        label: 'Sellos para el que refiere',
+        unit: 'sellos',
+        field: 'referral_reward_stamps',
+        placeholder: '1',
+        rewardSummary: `${formData.referral_reward_stamps || '—'} ${(formData.referral_reward_stamps || 0) === 1 ? 'sello' : 'sellos'}`,
+      }
+  }
+}
+
+const MEMBERSHIP_REFERRAL_TYPES = [
+  { value: 'days', label: 'Días gratis', desc: 'Días extra de membresía para el que refiere.' },
+  { value: 'benefit', label: 'Beneficio exclusivo', desc: 'Un producto, servicio o regalo que vos definís.' },
+]
+
 export function ReferralSection({ formData, setFormData }) {
-  const isPoints = formData.program_type_id === POINTS_TYPE_ID
   const enabled = formData.referral_enabled || false
+  const isMembership = formData.program_type_id === MEMBERSHIP_TYPE_ID
+  const membershipRewardType = formData.referral_reward_membership_type || 'days'
+  const config = getReferralConfig(formData.program_type_id, formData)
 
   return (
     <div className="border-t pt-6 pb-6">
@@ -899,11 +991,7 @@ export function ReferralSection({ formData, setFormData }) {
           <Users className="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
           <div className="space-y-0.5">
             <Label className="text-base">Activar referidos</Label>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {isPoints
-                ? 'El cliente que refiere recibe puntos cuando su amigo se registra.'
-                : 'El cliente que refiere recibe sellos cuando su amigo se registra.'}
-            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{config.description}</p>
           </div>
         </div>
         <input
@@ -916,33 +1004,94 @@ export function ReferralSection({ formData, setFormData }) {
 
       {enabled && (
         <div className="mt-4 grid gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="referral_reward">
-              {isPoints ? 'Puntos para el que refiere' : 'Sellos para el que refiere'}
-            </Label>
-            <div className="flex items-center gap-3">
-              <Input
-                id="referral_reward"
-                type="number"
-                min="1"
-                placeholder={isPoints ? '150' : '1'}
-                value={isPoints ? formData.referral_reward_points || '' : formData.referral_reward_stamps || ''}
-                onChange={(e) => {
-                  const v = parseInt(e.target.value) || 0
-                  setFormData((prev) =>
-                    isPoints ? { ...prev, referral_reward_points: v } : { ...prev, referral_reward_stamps: v },
+          {/* Selector de tipo de recompensa para membresías */}
+          {isMembership && (
+            <div className="space-y-2">
+              <Label>Tipo de recompensa</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {MEMBERSHIP_REFERRAL_TYPES.map((opt) => {
+                  const isSelected = membershipRewardType === opt.value
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, referral_reward_membership_type: opt.value }))}
+                      className={`flex items-start gap-2.5 p-3 rounded-xl border-2 transition-all text-left ${
+                        isSelected
+                          ? 'border-violet-400 bg-violet-50 dark:bg-violet-950/40'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                      }`}
+                    >
+                      <div
+                        className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${isSelected ? 'bg-violet-500' : 'bg-gray-300 dark:bg-gray-600'}`}
+                      />
+                      <div>
+                        <p
+                          className={`text-xs font-semibold ${isSelected ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}
+                        >
+                          {opt.label}
+                        </p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 leading-tight">{opt.desc}</p>
+                      </div>
+                    </button>
                   )
-                }}
-                className="h-12 max-w-[140px]"
-              />
-              <span className="text-sm text-gray-500">{isPoints ? 'puntos' : 'sellos'}</span>
+                })}
+              </div>
             </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {isPoints
-                ? 'Se acreditarán automáticamente cuando el amigo complete su registro y realice su primera visita.'
-                : 'Se acreditarán automáticamente cuando el amigo complete su registro y realice su primera visita.'}
-            </p>
-          </div>
+          )}
+
+          {/* Cupón: sin cantidad, recompensa fija */}
+          {config.field === null && !isMembership ? (
+            <div className="rounded-xl border border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950/40 p-4">
+              <p className="text-sm text-orange-900 dark:text-orange-200">
+                El cliente que refiere recibe <strong>un cupón gratis</strong> automáticamente en cuanto su amigo
+                complete el registro.
+              </p>
+            </div>
+          ) : config.fieldType === 'text' ? (
+            /* Membresía — beneficio exclusivo (texto libre) */
+            <div className="space-y-2">
+              <Label htmlFor="referral_reward_benefit">Describí el beneficio que recibe</Label>
+              <Input
+                id="referral_reward_benefit"
+                type="text"
+                placeholder={config.placeholder}
+                value={formData.referral_reward_membership_benefit || ''}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, referral_reward_membership_benefit: e.target.value }))
+                }
+                className="h-12"
+              />
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Este texto se mostrará al cliente cuando comparta su link de referido.
+              </p>
+            </div>
+          ) : config.field !== null ? (
+            <div className="space-y-2">
+              <Label htmlFor="referral_reward">{config.label}</Label>
+              <div className="flex items-center gap-3">
+                {config.prefix && (
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{config.prefix}</span>
+                )}
+                <Input
+                  id="referral_reward"
+                  type="number"
+                  min="1"
+                  placeholder={config.placeholder}
+                  value={formData[config.field] || ''}
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value) || 0
+                    setFormData((prev) => ({ ...prev, [config.field]: v }))
+                  }}
+                  className="h-12 max-w-[140px]"
+                />
+                <span className="text-sm text-gray-500">{config.unit}</span>
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Se acreditarán automáticamente cuando el amigo complete su registro y realice su primera visita.
+              </p>
+            </div>
+          ) : null}
 
           <div className="rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/40 p-4 space-y-1.5">
             <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wider">
@@ -960,10 +1109,7 @@ export function ReferralSection({ formData, setFormData }) {
               <li className="flex items-start gap-2">
                 <span className="mt-0.5 flex-shrink-0">③</span>
                 <span>
-                  Al completar su primera visita, el cliente que refirió recibe{' '}
-                  {isPoints
-                    ? `${formData.referral_reward_points || '—'} puntos`
-                    : `${formData.referral_reward_stamps || '—'} ${(formData.referral_reward_stamps || 0) === 1 ? 'sello' : 'sellos'}`}{' '}
+                  Al completar su primera visita, el cliente que refirió recibe <strong>{config.rewardSummary}</strong>{' '}
                   automáticamente.
                 </span>
               </li>
@@ -971,6 +1117,723 @@ export function ReferralSection({ formData, setFormData }) {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+const COUPON_TRIGGERS = [
+  { value: 'purchase', label: 'Por cada compra', desc: 'El cliente recibe un cupón cada vez que realiza una compra.' },
+  { value: 'signup', label: 'Al registrarse', desc: 'El cliente recibe un cupón al unirse al programa.' },
+  { value: 'manual', label: 'Manual', desc: 'Vos entregás el cupón manualmente desde el panel.' },
+]
+
+const COUPON_BENEFIT_TYPES = [
+  { value: 'percent', label: '% de descuento' },
+  { value: 'fixed', label: 'Monto fijo' },
+  { value: 'free_item', label: 'Producto gratis' },
+]
+
+export function CouponConfigSection({ formData, setFormData }) {
+  const trigger = formData.coupon_trigger || 'purchase'
+  const benefitType = formData.coupon_benefit_type || 'percent'
+  const benefitValue = formData.coupon_benefit_value ?? 10
+  const validityDays = formData.coupon_validity_days ?? 30
+  const selectedTrigger = COUPON_TRIGGERS.find((t) => t.value === trigger)
+
+  return (
+    <div className="border-t pt-6 pb-6 space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Configuración del cupón</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Definí cómo se obtiene el cupón y qué beneficio ofrece.
+        </p>
+      </div>
+
+      {/* Cómo se obtiene */}
+      <div className="space-y-3">
+        <Label>¿Cómo obtiene el cupón el cliente?</Label>
+        <div className="grid grid-cols-1 gap-2">
+          {COUPON_TRIGGERS.map((opt) => {
+            const isSelected = trigger === opt.value
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setFormData((prev) => ({ ...prev, coupon_trigger: opt.value }))}
+                className={`flex items-start gap-3 p-3 rounded-xl border-2 transition-all text-left ${
+                  isSelected
+                    ? 'border-orange-400 bg-orange-50 dark:bg-orange-950/40'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                }`}
+              >
+                <div
+                  className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${isSelected ? 'bg-orange-500' : 'bg-gray-300 dark:bg-gray-600'}`}
+                />
+                <div>
+                  <p
+                    className={`text-sm font-semibold ${isSelected ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}
+                  >
+                    {opt.label}
+                  </p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{opt.desc}</p>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Tipo de beneficio */}
+      <div className="space-y-3">
+        <Label>Tipo de beneficio</Label>
+        <div className="grid grid-cols-3 gap-2">
+          {COUPON_BENEFIT_TYPES.map((opt) => {
+            const isSelected = benefitType === opt.value
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setFormData((prev) => ({ ...prev, coupon_benefit_type: opt.value }))}
+                className={`p-3 rounded-xl border-2 text-xs font-semibold transition-all ${
+                  isSelected
+                    ? 'border-orange-400 bg-orange-50 dark:bg-orange-950/40 text-gray-900 dark:text-gray-100'
+                    : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600'
+                }`}
+              >
+                {opt.label}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Valor del beneficio */}
+      {benefitType !== 'free_item' ? (
+        <div className="space-y-2">
+          <Label htmlFor="coupon_benefit_value">
+            {benefitType === 'percent' ? 'Porcentaje de descuento' : 'Monto de descuento'}
+          </Label>
+          <div className="flex items-center gap-3">
+            <Input
+              id="coupon_benefit_value"
+              type="number"
+              min="1"
+              value={benefitValue}
+              onChange={(e) => {
+                const v = parseInt(e.target.value)
+                if (!isNaN(v) && v >= 1) setFormData((prev) => ({ ...prev, coupon_benefit_value: v }))
+              }}
+              className="h-12 max-w-[140px]"
+            />
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              {benefitType === 'percent' ? '%' : 'pesos'}
+            </span>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <Label htmlFor="coupon_description">Descripción del producto gratis</Label>
+          <Input
+            id="coupon_description"
+            value={formData.coupon_description || ''}
+            onChange={(e) => setFormData((prev) => ({ ...prev, coupon_description: e.target.value }))}
+            placeholder="Ej: Café mediano a elección"
+            className="h-12"
+          />
+        </div>
+      )}
+
+      {/* Validez */}
+      <div className="space-y-2">
+        <Label htmlFor="coupon_validity_days">Validez del cupón</Label>
+        <p className="text-xs text-gray-500 dark:text-gray-400">¿Cuántos días tiene el cliente para usarlo?</p>
+        <div className="flex items-center gap-3">
+          <Input
+            id="coupon_validity_days"
+            type="number"
+            min="1"
+            value={validityDays}
+            onChange={(e) => {
+              const v = parseInt(e.target.value)
+              if (!isNaN(v) && v >= 1) setFormData((prev) => ({ ...prev, coupon_validity_days: v }))
+            }}
+            className="h-12 max-w-[140px]"
+          />
+          <span className="text-sm text-gray-500 dark:text-gray-400">días</span>
+        </div>
+      </div>
+
+      {/* Resumen */}
+      <div className="rounded-xl border border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950/40 p-4 space-y-1.5">
+        <p className="text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wider">Resumen</p>
+        <p className="text-sm text-orange-900 dark:text-orange-200">
+          {selectedTrigger?.label} → el cliente recibe un cupón de{' '}
+          <strong>
+            {benefitType === 'percent' && `${benefitValue}% de descuento`}
+            {benefitType === 'fixed' && `$${benefitValue} de descuento`}
+            {benefitType === 'free_item' && (formData.coupon_description || 'producto gratis')}
+          </strong>{' '}
+          válido por <strong>{validityDays} días</strong>.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+const TIER_COLOR_PRESETS = ['#cd7f32', '#9ca3af', '#f59e0b', '#7c3aed', '#0ea5e9', '#ec4899']
+
+const USE_TYPES = [
+  { value: 'unlimited', label: 'Ilimitado', desc: 'Sin restricción de uso' },
+  { value: 'monthly', label: '1x por mes', desc: 'Se renueva cada mes' },
+  { value: 'onetime', label: '1 solo uso', desc: 'Se canjea una sola vez' },
+]
+
+export function MembershipConfigSection({ formData, setFormData }) {
+  const [newTier, setNewTier] = useState({ name: '', min_spend: '', color: '#f59e0b' })
+  const [newBenefit, setNewBenefit] = useState({
+    name: '',
+    description: '',
+    use_type: 'unlimited',
+    tier_required: 'all',
+  })
+  const [benefitImagePreview, setBenefitImagePreview] = useState(null)
+
+  const activation = formData.membership_activation || 'free'
+  const tiers = [...(formData.membership_tiers || [])].sort((a, b) => a.min_spend - b.min_spend)
+  const catalog = formData.membership_catalog || []
+
+  const handleAddTier = () => {
+    if (!newTier.name.trim() || newTier.min_spend === '') return
+    const tier = {
+      id: Date.now().toString(),
+      name: newTier.name.trim(),
+      min_spend: parseInt(newTier.min_spend) || 0,
+      color: newTier.color,
+    }
+    setFormData((prev) => ({ ...prev, membership_tiers: [...(prev.membership_tiers || []), tier] }))
+    setNewTier({ name: '', min_spend: '', color: '#f59e0b' })
+  }
+
+  const handleRemoveTier = (id) => {
+    setFormData((prev) => ({
+      ...prev,
+      membership_tiers: prev.membership_tiers.filter((t) => t.id !== id),
+      membership_catalog: (prev.membership_catalog || []).map((b) =>
+        b.tier_required === id ? { ...b, tier_required: 'all' } : b,
+      ),
+    }))
+  }
+
+  const handleAddBenefit = () => {
+    if (!newBenefit.name.trim()) return
+    const benefit = {
+      id: Date.now(),
+      name: newBenefit.name.trim(),
+      description: newBenefit.description.trim(),
+      use_type: newBenefit.use_type,
+      tier_required: newBenefit.tier_required,
+      image_url: benefitImagePreview || null,
+    }
+    setFormData((prev) => ({ ...prev, membership_catalog: [...(prev.membership_catalog || []), benefit] }))
+    setNewBenefit({ name: '', description: '', use_type: 'unlimited', tier_required: 'all' })
+    setBenefitImagePreview(null)
+  }
+
+  const handleRemoveBenefit = (id) => {
+    setFormData((prev) => ({ ...prev, membership_catalog: prev.membership_catalog.filter((b) => b.id !== id) }))
+  }
+
+  const handleBenefitImageChange = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => setBenefitImagePreview(ev.target.result)
+    reader.readAsDataURL(file)
+  }
+
+  return (
+    <div className="border-t pt-6 pb-6 space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Configuración de membresía</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Definí cómo acceden los clientes y qué beneficios tienen según su nivel.
+        </p>
+      </div>
+
+      {/* Tipo de acceso */}
+      <div className="space-y-3">
+        <Label>Acceso a la membresía</Label>
+        <div className="grid grid-cols-1 gap-2">
+          {[
+            { value: 'free', label: 'Libre', desc: 'Cualquier cliente que se registra es miembro automáticamente.' },
+            {
+              value: 'tiers',
+              label: 'Por niveles',
+              desc: 'Los clientes suben de nivel según cuánto gastan. Cada nivel tiene sus propios beneficios.',
+            },
+          ].map((opt) => {
+            const isSelected = activation === opt.value
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setFormData((prev) => ({ ...prev, membership_activation: opt.value }))}
+                className={`flex items-start gap-3 p-3 rounded-xl border-2 transition-all text-left ${
+                  isSelected
+                    ? 'border-violet-400 bg-violet-50 dark:bg-violet-950/40'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                }`}
+              >
+                <div
+                  className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${isSelected ? 'bg-violet-500' : 'bg-gray-300 dark:bg-gray-600'}`}
+                />
+                <div>
+                  <p
+                    className={`text-sm font-semibold ${isSelected ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}
+                  >
+                    {opt.label}
+                  </p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{opt.desc}</p>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Tier builder */}
+      {activation === 'tiers' && (
+        <div className="space-y-4">
+          <Label>Niveles</Label>
+          <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4 space-y-3 bg-gray-50 dark:bg-gray-800/50">
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Agregar nivel</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="tier_name" className="text-xs">
+                  Nombre
+                </Label>
+                <Input
+                  id="tier_name"
+                  value={newTier.name}
+                  onChange={(e) => setNewTier((p) => ({ ...p, name: e.target.value }))}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      handleAddTier()
+                    }
+                  }}
+                  placeholder="Ej: Bronce, Oro..."
+                  className="h-9"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="tier_min_spend" className="text-xs">
+                  Gasto mínimo ($)
+                </Label>
+                <Input
+                  id="tier_min_spend"
+                  type="number"
+                  min="0"
+                  value={newTier.min_spend}
+                  onChange={(e) => setNewTier((p) => ({ ...p, min_spend: e.target.value }))}
+                  placeholder="0"
+                  className="h-9"
+                />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Color</Label>
+              <div className="flex items-center gap-2">
+                {TIER_COLOR_PRESETS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setNewTier((p) => ({ ...p, color: c }))}
+                    className={`w-7 h-7 rounded-full transition-transform ${newTier.color === c ? 'scale-125 ring-2 ring-offset-1 ring-gray-400' : 'hover:scale-110'}`}
+                    style={{ backgroundColor: c }}
+                  />
+                ))}
+              </div>
+            </div>
+            <Button
+              type="button"
+              onClick={handleAddTier}
+              disabled={!newTier.name.trim() || newTier.min_spend === ''}
+              className="w-full gap-2 text-white"
+              style={{ backgroundColor: newTier.color }}
+            >
+              <Plus className="w-4 h-4" />
+              Agregar nivel
+            </Button>
+          </div>
+
+          {tiers.length > 0 ? (
+            <div className="space-y-2">
+              {tiers.map((tier) => (
+                <div
+                  key={tier.id}
+                  className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700"
+                >
+                  <div className="w-8 h-8 rounded-lg flex-shrink-0" style={{ backgroundColor: tier.color }} />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{tier.name}</p>
+                    <p className="text-xs text-gray-400">Gasto mínimo: ${parseInt(tier.min_spend).toLocaleString()}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveTier(tier.id)}
+                    className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-4 text-gray-400 dark:text-gray-500 border border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
+              <p className="text-sm">Agregá al menos un nivel para continuar.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Beneficios / catálogo */}
+      <div className="space-y-4">
+        <div>
+          <Label>Beneficios del programa</Label>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Agregá descuentos, productos o servicios. Definí si son ilimitados, 1 vez por mes, o de un solo uso.
+          </p>
+        </div>
+
+        {/* Form nuevo beneficio */}
+        <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4 space-y-3 bg-gray-50 dark:bg-gray-800/50">
+          <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Agregar beneficio</p>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="benefit_name" className="text-xs">
+              Nombre
+            </Label>
+            <Input
+              id="benefit_name"
+              value={newBenefit.name}
+              onChange={(e) => setNewBenefit((p) => ({ ...p, name: e.target.value }))}
+              placeholder="Ej: 10% de descuento, Gatorade gratis, Corte gratis..."
+              className="h-10"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="benefit_desc" className="text-xs">
+                Descripción <span className="text-gray-400 font-normal">(opcional)</span>
+              </Label>
+              <Input
+                id="benefit_desc"
+                value={newBenefit.description}
+                onChange={(e) => setNewBenefit((p) => ({ ...p, description: e.target.value }))}
+                placeholder="Detalles..."
+                className="h-10"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">
+                Imagen <span className="text-gray-400 font-normal">(opcional)</span>
+              </Label>
+              <label className="cursor-pointer flex items-center gap-2 h-10 px-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 transition-colors">
+                <input type="file" accept="image/*" onChange={handleBenefitImageChange} className="hidden" />
+                {benefitImagePreview ? (
+                  <img src={benefitImagePreview} className="w-6 h-6 rounded object-cover flex-shrink-0" />
+                ) : (
+                  <ImageIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                )}
+                <span className="text-xs text-gray-500 truncate">{benefitImagePreview ? 'Cambiar' : 'Subir'}</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Tipo de uso */}
+          <div className="space-y-1.5">
+            <Label className="text-xs">Tipo de uso</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {USE_TYPES.map((opt) => {
+                const isSelected = newBenefit.use_type === opt.value
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setNewBenefit((p) => ({ ...p, use_type: opt.value }))}
+                    className={`p-2.5 rounded-xl border-2 text-left transition-all ${
+                      isSelected
+                        ? 'border-violet-400 bg-violet-50 dark:bg-violet-950/40'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    <p
+                      className={`text-xs font-semibold ${isSelected ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}
+                    >
+                      {opt.label}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-0.5 leading-tight">{opt.desc}</p>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Nivel requerido */}
+          {activation === 'tiers' && tiers.length > 0 && (
+            <div className="space-y-1.5">
+              <Label className="text-xs">Nivel mínimo requerido</Label>
+              <Select
+                value={newBenefit.tier_required}
+                onValueChange={(v) => setNewBenefit((p) => ({ ...p, tier_required: v }))}
+              >
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los niveles</SelectItem>
+                  {tiers.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      {t.name}+
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          <Button
+            type="button"
+            onClick={handleAddBenefit}
+            disabled={!newBenefit.name.trim()}
+            className="w-full gap-2 bg-violet-500 hover:bg-violet-600 text-white"
+          >
+            <Plus className="w-4 h-4" />
+            Agregar beneficio
+          </Button>
+        </div>
+
+        {/* Lista beneficios */}
+        {catalog.length > 0 ? (
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              {catalog.length} {catalog.length === 1 ? 'beneficio' : 'beneficios'}
+            </p>
+            {catalog.map((benefit) => {
+              const useType = USE_TYPES.find((u) => u.value === benefit.use_type)
+              const tierInfo =
+                benefit.tier_required !== 'all' ? tiers.find((t) => t.id === benefit.tier_required) : null
+              return (
+                <div
+                  key={benefit.id}
+                  className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700"
+                >
+                  {benefit.image_url ? (
+                    <img src={benefit.image_url} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-lg bg-violet-50 dark:bg-violet-950/30 flex items-center justify-center flex-shrink-0">
+                      <Package className="w-5 h-5 text-violet-400" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{benefit.name}</p>
+                    <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                      <span className="text-xs px-1.5 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 font-medium">
+                        {useType?.label}
+                      </span>
+                      {tierInfo ? (
+                        <span
+                          className="text-xs px-1.5 py-0.5 rounded-full font-medium text-white"
+                          style={{ backgroundColor: tierInfo.color }}
+                        >
+                          {tierInfo.name}+
+                        </span>
+                      ) : (
+                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-medium">
+                          Todos
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveBenefit(benefit.id)}
+                    className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-6 text-gray-400 dark:text-gray-500">
+            <Package className="w-8 h-8 mx-auto mb-2 opacity-40" />
+            <p className="text-sm">Todavía no hay beneficios cargados</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export function CashbackConfigSection({ formData, setFormData }) {
+  const percentage = formData.cashback_percentage ?? 5
+  const minPurchase = formData.cashback_min_purchase ?? 0
+  const minRedeem = formData.cashback_min_redeem ?? 500
+  const validityDays = formData.cashback_validity_days ?? 365
+
+  const examplePurchase = 10000
+  const exampleCashback = Math.round(examplePurchase * (percentage / 100))
+
+  return (
+    <div className="border-t pt-6 pb-6 space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Configuración de cashback</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Definí cuánto cashback acumulan tus clientes y cuándo pueden usarlo.
+        </p>
+      </div>
+
+      {/* Porcentaje */}
+      <div className="space-y-2">
+        <Label htmlFor="cashback_percentage">Porcentaje de cashback</Label>
+        <p className="text-xs text-gray-500 dark:text-gray-400">¿Qué % de cada compra recibe el cliente como saldo?</p>
+        <div className="flex items-center gap-3">
+          <Input
+            id="cashback_percentage"
+            type="number"
+            min="1"
+            max="100"
+            value={percentage}
+            onChange={(e) => {
+              const v = parseFloat(e.target.value)
+              if (!isNaN(v) && v >= 1 && v <= 100) setFormData((prev) => ({ ...prev, cashback_percentage: v }))
+            }}
+            className="h-12 max-w-[120px]"
+          />
+          <span className="text-lg font-bold text-gray-500 dark:text-gray-400">%</span>
+          <div className="flex-1 h-3 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all"
+              style={{ width: `${Math.min(percentage, 100)}%`, backgroundColor: '#10b981' }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Monto mínimo de compra */}
+      <div className="space-y-2">
+        <Label htmlFor="cashback_min_purchase">Compra mínima para acumular</Label>
+        <p className="text-xs text-gray-500 dark:text-gray-400">Dejar en 0 para acumular desde cualquier monto.</p>
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium text-gray-500 dark:text-gray-400">$</span>
+          <Input
+            id="cashback_min_purchase"
+            type="number"
+            min="0"
+            value={minPurchase}
+            onChange={(e) => {
+              const v = parseInt(e.target.value)
+              if (!isNaN(v) && v >= 0) setFormData((prev) => ({ ...prev, cashback_min_purchase: v }))
+            }}
+            className="h-12 max-w-[160px]"
+            placeholder="0"
+          />
+        </div>
+      </div>
+
+      {/* Saldo mínimo para canjear */}
+      <div className="space-y-2">
+        <Label htmlFor="cashback_min_redeem">Saldo mínimo para canjear</Label>
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          El cliente puede usar su cashback recién cuando acumule este monto.
+        </p>
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium text-gray-500 dark:text-gray-400">$</span>
+          <Input
+            id="cashback_min_redeem"
+            type="number"
+            min="1"
+            value={minRedeem}
+            onChange={(e) => {
+              const v = parseInt(e.target.value)
+              if (!isNaN(v) && v >= 1) setFormData((prev) => ({ ...prev, cashback_min_redeem: v }))
+            }}
+            className="h-12 max-w-[160px]"
+          />
+        </div>
+      </div>
+
+      {/* Validez */}
+      <div className="space-y-2">
+        <Label htmlFor="cashback_validity_days">Validez del saldo</Label>
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          Días que tiene el cliente para usar el saldo antes de que expire. 0 = sin vencimiento.
+        </p>
+        <div className="flex items-center gap-3">
+          <Input
+            id="cashback_validity_days"
+            type="number"
+            min="0"
+            value={validityDays}
+            onChange={(e) => {
+              const v = parseInt(e.target.value)
+              if (!isNaN(v) && v >= 0) setFormData((prev) => ({ ...prev, cashback_validity_days: v }))
+            }}
+            className="h-12 max-w-[140px]"
+          />
+          <span className="text-sm text-gray-500 dark:text-gray-400">días</span>
+        </div>
+      </div>
+
+      {/* Ejemplo visual */}
+      <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 p-4 space-y-3">
+        <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">
+          Ejemplo con estos valores
+        </p>
+        <div className="space-y-2 text-sm text-emerald-900 dark:text-emerald-200">
+          <div className="flex items-center gap-2">
+            <span className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+              1
+            </span>
+            <span>
+              El cliente compra por <strong>${examplePurchase.toLocaleString()}</strong> → acumula{' '}
+              <strong>${exampleCashback.toLocaleString()} de cashback</strong>
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+              2
+            </span>
+            <span>
+              Cuando su saldo llega a <strong>${minRedeem.toLocaleString()}</strong>, puede usarlo como descuento en
+              caja
+            </span>
+          </div>
+          {validityDays > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                3
+              </span>
+              <span>
+                El saldo vence a los <strong>{validityDays} días</strong> si no lo usa
+              </span>
+            </div>
+          )}
+        </div>
+        <div className="pt-1 border-t border-emerald-200 dark:border-emerald-700">
+          <p className="text-xs text-emerald-700 dark:text-emerald-300">
+            Necesita comprar{' '}
+            <strong>
+              ${minRedeem > 0 && percentage > 0 ? Math.ceil(minRedeem / (percentage / 100)).toLocaleString() : '—'}
+            </strong>{' '}
+            en total para poder hacer su primer canje
+          </p>
+        </div>
+      </div>
     </div>
   )
 }

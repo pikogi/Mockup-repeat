@@ -19,6 +19,9 @@ import {
   BusinessInfoSection,
   PointsConversionSection,
   ReferralSection,
+  CouponConfigSection,
+  MembershipConfigSection,
+  CashbackConfigSection,
 } from '@/components/programs/ClubFormSections'
 
 export default function CreateClub() {
@@ -48,6 +51,9 @@ export default function CreateClub() {
   } = useClubForm()
 
   const isPointsProgram = formData.program_type_id === '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc157'
+  const isCouponProgram = formData.program_type_id === '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc156'
+  const isMembershipProgram = formData.program_type_id === '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc155'
+  const isCashbackProgram = formData.program_type_id === '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc154'
 
   const previewProps = {
     formData,
@@ -166,6 +172,9 @@ export default function CreateClub() {
                   <ColorPickerGroup formData={formData} setFormData={setFormData} />
 
                   {isPointsProgram && <PointsConversionSection formData={formData} setFormData={setFormData} />}
+                  {isCouponProgram && <CouponConfigSection formData={formData} setFormData={setFormData} />}
+                  {isMembershipProgram && <MembershipConfigSection formData={formData} setFormData={setFormData} />}
+                  {isCashbackProgram && <CashbackConfigSection formData={formData} setFormData={setFormData} />}
 
                   <ValiditySection
                     formData={formData}
