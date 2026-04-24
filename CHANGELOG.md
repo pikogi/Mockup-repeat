@@ -1,0 +1,78 @@
+# Changelog
+
+## [1.1.0](https://github.com/pikogi/Mockup-repeat/compare/v1.0.0...v1.1.0) (2026-04-24)
+
+
+### Features
+
+* add barbershop mockup (barber-demo) to catalog and programs list ([1dbaa7e](https://github.com/pikogi/Mockup-repeat/commit/1dbaa7ece4909dbec137587264ee436b826ebd12))
+* add date filter and server-side sorting to customers page ([2338e42](https://github.com/pikogi/Mockup-repeat/commit/2338e42e109b157ca8c2de923e17286be6f3cb5d))
+* add demo links page with scan QR modes per program type ([dad40c5](https://github.com/pikogi/Mockup-repeat/commit/dad40c5ef4d222c78a47213288af66b1419fe0a6))
+* add device info to PostHog user identification ([83b33ef](https://github.com/pikogi/Mockup-repeat/commit/83b33efdc4203b706e92f513eb837c9725351e77))
+* add GitHub Actions CI/CD pipeline for S3 + CloudFront deployment ([293d4b8](https://github.com/pikogi/Mockup-repeat/commit/293d4b8b9d473d69e4da1eb833108429fa1e91fa))
+* add points program mockup with catalog, posts, survey and fraud control ([970cf6c](https://github.com/pikogi/Mockup-repeat/commit/970cf6c2cf6d2e75dfa489937f6e99f289b3311f))
+* add PostHog product analytics with pageview tracking and user identification ([bd9317e](https://github.com/pikogi/Mockup-repeat/commit/bd9317ef19230173d6923fe29dfce3a3a2fd3614))
+* add preview popover for points programs with catalog and card options ([575bf7a](https://github.com/pikogi/Mockup-repeat/commit/575bf7a479bed71473b34cf92e1e59ee54a3ca6a))
+* add redemption rate metric card to dashboard ([3600f10](https://github.com/pikogi/Mockup-repeat/commit/3600f10ef02002ca63db2a95151538442d250e5a))
+* add referral config, activity feed, next goal bar and barbershop mockup ([e1614d1](https://github.com/pikogi/Mockup-repeat/commit/e1614d11448a0d1c1d02d72ed1ffb2b15011798d))
+* add Sentry error monitoring with source map uploads ([74b17e7](https://github.com/pikogi/Mockup-repeat/commit/74b17e768b37d373e5eb56722a954c425931f136))
+* add short URL redirect page at /s/:code ([4865d19](https://github.com/pikogi/Mockup-repeat/commit/4865d197161ad675868a071f0d04f820f211b260))
+* add skeleton loading state to program edit form ([57c4275](https://github.com/pikogi/Mockup-repeat/commit/57c427517c2d16a5e2f1628e44eacf0334cdc063))
+* add stg/prod deploy jobs, lazy loading, and build optimizations ([e4861ed](https://github.com/pikogi/Mockup-repeat/commit/e4861ed67a904375b8434912d765365198f0c3b2))
+* add store filter to programs and customers pages ([f0f27fa](https://github.com/pikogi/Mockup-repeat/commit/f0f27faa7560b7ce24b8af1c4a00c0e6f358dde8))
+* add transaction history to customer modal and improve UI consistency ([47eda63](https://github.com/pikogi/Mockup-repeat/commit/47eda6316f866ecfc1b580e0b96860eee22d3f6f))
+* add wallet push notifications page with PostHog feature flag ([b8b8808](https://github.com/pikogi/Mockup-repeat/commit/b8b8808b4d6059da382cc14f68d8de0fe7bc5a45))
+* expand i18n coverage across pages and reorganize translations by domain ([16abf92](https://github.com/pikogi/Mockup-repeat/commit/16abf923654bc1755ef99b534ba0df431c6c9fdb))
+* expand i18n coverage across pages and reorganize translations by domain ([fce1674](https://github.com/pikogi/Mockup-repeat/commit/fce167459a3cd1ab4793122c6722c6246db94b05))
+* expand i18n coverage across pages and reorganize translations by domain ([67f0aad](https://github.com/pikogi/Mockup-repeat/commit/67f0aada3b50c4f7f93dab0ff3085137a6e3b299))
+* expand i18n coverage across pages and reorganize translations by domain ([fa02bd5](https://github.com/pikogi/Mockup-repeat/commit/fa02bd55070be6a794131fdc56f416bc6b3775c5))
+* filter programs dropdown by selected store on Customers page ([d86aad3](https://github.com/pikogi/Mockup-repeat/commit/d86aad30ac9768afa2d72b222986167635351f35))
+* initial project setup ([6ede42d](https://github.com/pikogi/Mockup-repeat/commit/6ede42d3c932ef5781bb36760c5bbd29ec0e07af))
+* link Clubes Activos card to MyPrograms page ([805ca47](https://github.com/pikogi/Mockup-repeat/commit/805ca479cac3955dcf7e7d7ecf0161af6a539b72))
+* multiple improvements across dashboard, programs, and public card ([790b982](https://github.com/pikogi/Mockup-repeat/commit/790b982d8a569d632fe4da4bb3a0560986573244))
+* paginate customers list and use brand.logo_url for logos ([7335f75](https://github.com/pikogi/Mockup-repeat/commit/7335f75fd891febbc943f36419f1080440c504a1))
+* show product image in redeem code preview banner ([251fb5a](https://github.com/pikogi/Mockup-repeat/commit/251fb5a0e96f881c2d76c9125ad45f1237455f35))
+* use daily history endpoints for dashboard stamps and rewards charts ([b200450](https://github.com/pikogi/Mockup-repeat/commit/b2004506626e805c1018e31b9529cce0eafe172d))
+
+
+### Bug Fixes
+
+* add crossOrigin attribute to Image instances to prevent tainted canvas errors ([692d78e](https://github.com/pikogi/Mockup-repeat/commit/692d78e7879664f324a90f6d0c0356a6017b7dc7))
+* add error handling for image processing in uploads and compression ([368503b](https://github.com/pikogi/Mockup-repeat/commit/368503b09a509689cafb8000b470e3ecbfe488a3))
+* add vercel rewrite rule for SPA routing ([5806e0a](https://github.com/pikogi/Mockup-repeat/commit/5806e0afaaaf668458899fc6571930e4f6c20172))
+* close store dialog immediately on submit instead of waiting for API response ([0e221b7](https://github.com/pikogi/Mockup-repeat/commit/0e221b703b811064afdf44e0ff67800c056fc28e))
+* correct stamp unit_type and dashboard members count ([1116857](https://github.com/pikogi/Mockup-repeat/commit/1116857d1d35210203f234dafbccf88b5264d30d))
+* custom date picker in dashboard and branch name in profile ([08f22cb](https://github.com/pikogi/Mockup-repeat/commit/08f22cb8772c17396af53831daddfbc7008fc352))
+* fetch brand data per program and pre-load logo in CreateClub ([b435c4c](https://github.com/pikogi/Mockup-repeat/commit/b435c4c59ac0710089e08793c8b3e5f48457e8c2))
+* guarantee text-before-url order in share by using text field only ([b830324](https://github.com/pikogi/Mockup-repeat/commit/b830324887d75df1b65e4ef18580adc94a4ae7a6))
+* hide lat/lng fields in store forms and align dashboard data ([fd33a26](https://github.com/pikogi/Mockup-repeat/commit/fd33a269e42f61c085f4187520504b1b377c9bd7))
+* improve dashboard custom date filter UX ([f241d18](https://github.com/pikogi/Mockup-repeat/commit/f241d1834476f3a1194285a1fa3090b2b822eac6))
+* invalidate programs cache after creating a new program ([1a7c3c6](https://github.com/pikogi/Mockup-repeat/commit/1a7c3c603385bd8365be88b439452d60857a0441))
+* match PublicCard loading state to global Suspense fallback ([3472371](https://github.com/pikogi/Mockup-repeat/commit/347237146ebcc472d5bfa34bfb9fac7b3427ee52))
+* merge React and UI libs into single vendor-core chunk to avoid forwardRef error ([f810b46](https://github.com/pikogi/Mockup-repeat/commit/f810b46df2c93c93afeadf95f85776e940912237))
+* move brandId declaration after useQuery to prevent production ReferenceError ([fe9b828](https://github.com/pikogi/Mockup-repeat/commit/fe9b82866a72856a462ecf8abcb6988e68572a04))
+* move constants after imports in ScanQR to fix parse error ([d9e8662](https://github.com/pikogi/Mockup-repeat/commit/d9e866203ba0e7ad6585610a67b6f82d4016a87f))
+* move LanguageProvider to root and fix login tab order ([54b93e6](https://github.com/pikogi/Mockup-repeat/commit/54b93e632a35ffb3371bfad257c2afd220133b8c))
+* paginate total members count query using cursor in DashboardHome ([ed00ae4](https://github.com/pikogi/Mockup-repeat/commit/ed00ae4dab88721f4d6bbbafd92536e0b6575261))
+* persist and normalize short_url across store fetches ([fa10337](https://github.com/pikogi/Mockup-repeat/commit/fa10337b8a18d700c1b3f37a52516164c3d786c7))
+* persist versioned logo URL after dashboard logo upload ([99786f8](https://github.com/pikogi/Mockup-repeat/commit/99786f83fc8e02431f177044c20793e6ad85869a))
+* prioritize backend base64 logo in PublicCard to bypass CDN caching ([83838d6](https://github.com/pikogi/Mockup-repeat/commit/83838d68b4313899e4582e3b0c3737dc17a28863))
+* reduce stamp icon size and skip redundant compression to lower payload size ([75cb699](https://github.com/pikogi/Mockup-repeat/commit/75cb6995b1d63deac4f49c50f004266fa8c42d77))
+* remove crossOrigin attribute from FlyerPreview logo images ([d45a3b8](https://github.com/pikogi/Mockup-repeat/commit/d45a3b8ef47efc6c0457aa6f76f9cddfb9930bc1))
+* remove manualChunks to prevent React init-time ReferenceErrors ([5254433](https://github.com/pikogi/Mockup-repeat/commit/5254433758959a3e4d527d2f0b5404651dde41e0))
+* remove ProtectedRoute for demo deployment ([88d3d83](https://github.com/pikogi/Mockup-repeat/commit/88d3d83c60226e9e203c3acb9a4722a7eabe64ad))
+* remove vendor-pdf chunk since pdf dependencies were removed ([c090744](https://github.com/pikogi/Mockup-repeat/commit/c09074433e2707d7ce848ca484a85dce89945547))
+* revert stamp icon to 300px and invalidate brandUsers cache on program update ([30f2e28](https://github.com/pikogi/Mockup-repeat/commit/30f2e28947f3635c552c2734714551085f3fafdc))
+* separate sidebar primary action and use store_id in StoreCard ([4107453](https://github.com/pikogi/Mockup-repeat/commit/410745318d10652719a949cb9c8ac25b9ec50b1c))
+* skip crossOrigin for data URIs and filter out remote URLs from stamp card compression ([828d424](https://github.com/pikogi/Mockup-repeat/commit/828d42431789505e86e733d85aee775470dc2d94))
+* treat 404 API responses as empty state and remove date filter from customers ([9d5767e](https://github.com/pikogi/Mockup-repeat/commit/9d5767e9d4f2d8d839462a2a7d4b89ce8d459e4b))
+* use short_url in PublicCard share button and fix share text order ([2d2f0ae](https://github.com/pikogi/Mockup-repeat/commit/2d2f0ae93345376b33fca5bf17a79e2573ab4d3f))
+* use store_id fallback in StoreFilterSelect to prevent duplicate checked items ([e24245b](https://github.com/pikogi/Mockup-repeat/commit/e24245bd540ab040766abddebc96a8ff46a2a600))
+* use UTC dates for date filters to prevent timezone offset errors ([95c039e](https://github.com/pikogi/Mockup-repeat/commit/95c039ec1723a5e8a7127d3e7524e3b427410ad0))
+* validate image payload size before sending to prevent Lambda 6MB limit errors ([b240e2e](https://github.com/pikogi/Mockup-repeat/commit/b240e2ed3436602df31f12b8b83d0c1b9fc541aa))
+* validate localStorage store id and use correct unit_type for stamps ([9408b8c](https://github.com/pikogi/Mockup-repeat/commit/9408b8cf2baad66e8c47d702d7e889d58107d7ac))
+
+
+### Performance Improvements
+
+* reduce stamp icon crop size from 300px to 150px ([e20f754](https://github.com/pikogi/Mockup-repeat/commit/e20f754a2c85691a69dcb5977bb7911d298082ad))
