@@ -41,6 +41,7 @@ const Onboarding = lazy(() => import('./Onboarding'))
 const Survey = lazy(() => import('./Survey'))
 const Menu = lazy(() => import('./Menu'))
 const ShortUrlRedirect = lazy(() => import('./ShortUrlRedirect'))
+const Preview = lazy(() => import('./Preview'))
 
 function LayoutWrapper({ children }) {
   const location = useLocation()
@@ -71,6 +72,7 @@ export default function Pages() {
             <Route path="/membership/:programId" element={<PublicMembership />} />
             <Route path="/cashback/:programId" element={<PublicCashback />} />
             <Route path="/demo" element={<Demo />} />
+            <Route path="/preview" element={<Preview />} />
             <Route path="/s/:code" element={<ShortUrlRedirect />} />
             <Route path="/login" element={<Login />} />
             <Route path="/verify-email" element={<VerifyEmail />} />

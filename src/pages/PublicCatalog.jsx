@@ -21,6 +21,8 @@ import {
   Share2,
   Check,
   Users,
+  CreditCard,
+  Send,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -411,6 +413,129 @@ const MOCK_ACTIVITY_CAFE = [
   },
 ]
 
+const MOCK_PROGRAM_HELADERIA = {
+  name: 'Heladería Freddo',
+  logo_url: 'https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?w=80&h=80&fit=crop&q=80',
+  brand_color: '#e11d48',
+  money_per_point: 500,
+  money_per_point_redeem: 50,
+}
+
+const MOCK_ITEMS_HELADERIA = [
+  {
+    id: 1,
+    name: '1 kilo de helado',
+    points_cost: 80,
+    image_url: 'https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Un kilo de helado artesanal a elección de sabores.',
+  },
+  {
+    id: 2,
+    name: 'Cucurucho doble',
+    points_cost: 30,
+    image_url: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Cucurucho con dos bochas a elección.',
+  },
+  {
+    id: 3,
+    name: 'Sundae especial',
+    points_cost: 50,
+    image_url: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&h=400&fit=crop&q=80',
+    stock_enabled: true,
+    stock: 6,
+    description: 'Helado con toppings de chocolate, caramelo y crema chantilly.',
+  },
+  {
+    id: 4,
+    name: 'Torta helada',
+    points_cost: 250,
+    image_url: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400&h=400&fit=crop&q=80',
+    stock_enabled: true,
+    stock: 2,
+    description: 'Torta helada de 1 kg a elección. Ideal para cumpleaños.',
+  },
+  {
+    id: 5,
+    name: 'Descuento 20%',
+    points_cost: 100,
+    image_url: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Aplicable a cualquier compra en una sola visita.',
+  },
+  {
+    id: 6,
+    name: '500g de helado gratis',
+    points_cost: 45,
+    image_url: 'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Medio kilo de helado artesanal a elección.',
+  },
+]
+
+const MOCK_POSTS_HELADERIA = [
+  {
+    id: 1,
+    type: 'promo',
+    title: '2x1 en cucuruchos los miércoles',
+    body: 'Todos los miércoles presentá tu tarjeta y pagá un cucurucho, llevate dos. Válido todo el día.',
+    image_url: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=600&h=400&fit=crop&q=80',
+    date: '20 abr',
+  },
+  {
+    id: 2,
+    type: 'novedad',
+    title: 'Nuevos sabores de temporada',
+    body: 'Incorporamos frutilla con albahaca, maracuyá y dulce de leche con brownie. ¡Venite a probarlos!',
+    image_url: 'https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?w=600&h=400&fit=crop&q=80',
+    date: '15 abr',
+  },
+  {
+    id: 3,
+    type: 'evento',
+    title: 'Noche de helado — sábado 26',
+    body: 'El sábado 26 de 20 a 24hs: música, helado ilimitado y sorteos para clientes del club.',
+    image_url: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=600&h=400&fit=crop&q=80',
+    date: '10 abr',
+  },
+  {
+    id: 4,
+    type: 'promo',
+    title: 'Torta helada -15% en mayo',
+    body: 'Durante todo mayo las tortas heladas tienen un 15% de descuento para miembros del club.',
+    image_url: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&h=400&fit=crop&q=80',
+    date: '5 abr',
+  },
+]
+
+const MOCK_ACTIVITY_HELADERIA = [
+  { id: 1, type: 'earned', label: 'Visita', points: 90, date: '20 abr 2026' },
+  { id: 7, type: 'referral', label: 'Referido — Lucía Torres', points: 150, date: '17 abr 2026' },
+  {
+    id: 2,
+    type: 'redeemed',
+    label: 'Cucurucho doble',
+    points: 30,
+    date: '20 abr 2026',
+    image_url: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=80&h=80&fit=crop&q=80',
+  },
+  { id: 3, type: 'earned', label: 'Visita', points: 60, date: '12 abr 2026' },
+  {
+    id: 4,
+    type: 'redeemed',
+    label: '500g de helado gratis',
+    points: 45,
+    date: '5 abr 2026',
+    image_url: 'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=80&h=80&fit=crop&q=80',
+  },
+  { id: 5, type: 'earned', label: 'Visita', points: 80, date: '28 mar 2026' },
+]
+
 const BADGE_STYLES = {
   promo: { label: 'Promo', bg: 'bg-rose-500', icon: Tag },
   novedad: { label: 'Novedad', bg: 'bg-violet-500', icon: Megaphone },
@@ -635,6 +760,168 @@ function PostsCarousel({ posts, color }) {
 // ─── Grid responsive según cantidad de ítems ─────────────────────────────────
 // Mobile: ≤4 → 1 col, >4 → 2 cols
 // Desktop (sm): ≤6 → 2 cols, 7-8 → 3 cols, >8 → 4 cols
+// ─── Gift Cards ───────────────────────────────────────────────────────────────
+const GIFT_CARD_OPTIONS = [
+  { id: 1, label: 'Starter', points: 200, price: '$2.000' },
+  { id: 2, label: 'Regular', points: 500, price: '$5.000' },
+  { id: 3, label: 'Premium', points: 1000, price: '$10.000' },
+  { id: 4, label: 'VIP', points: 2000, price: '$20.000' },
+]
+
+function GiftCardModal({ card, color, onClose }) {
+  const [email, setEmail] = useState('')
+  const [sent, setSent] = useState(false)
+
+  const handleSend = (e) => {
+    e.preventDefault()
+    if (!email.trim()) return
+    setSent(true)
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
+      style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: 60, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 60, opacity: 0 }}
+        transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+        className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <AnimatePresence mode="wait">
+          {!sent ? (
+            <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              {/* Mini gift card visual */}
+              <div className="p-6 pb-4" style={{ background: `linear-gradient(135deg, ${color} 0%, ${color}cc 100%)` }}>
+                <button
+                  onClick={onClose}
+                  className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center"
+                >
+                  <X className="w-4 h-4 text-white" />
+                </button>
+                <CreditCard className="w-8 h-8 text-white/80 mb-3" />
+                <p className="text-white/70 text-xs font-medium uppercase tracking-wider">
+                  Gift Card · Pack {card.label}
+                </p>
+                <p className="text-white text-3xl font-black mt-1">{card.price}</p>
+                <p className="text-white/70 text-sm mt-1">{card.points.toLocaleString()} puntos al canjear</p>
+              </div>
+
+              <div className="p-5 space-y-4">
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">¿A quién se la regalás?</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Le enviamos la gift card por email.</p>
+                </div>
+                <form onSubmit={handleSend} className="space-y-3">
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="email@ejemplo.com"
+                      className="w-full h-11 pl-9 pr-4 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:border-transparent"
+                      style={{ '--tw-ring-color': color }}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={!email.trim()}
+                    className="w-full h-11 rounded-xl text-white text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-40 transition-opacity"
+                    style={{ backgroundColor: color }}
+                  >
+                    <Send className="w-4 h-4" />
+                    Continuar al pago · {card.price}
+                  </button>
+                </form>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="success"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="p-8 text-center space-y-3"
+            >
+              <div
+                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto"
+                style={{ backgroundColor: `${color}20` }}
+              >
+                <CheckCircle2 className="w-8 h-8" style={{ color }} />
+              </div>
+              <p className="text-lg font-bold text-gray-900">¡Gift card enviada!</p>
+              <p className="text-sm text-gray-500">
+                Le enviamos la gift card a <strong>{email}</strong>. Puede canjearla en cualquier visita.
+              </p>
+              <button
+                onClick={onClose}
+                className="w-full h-11 rounded-xl text-white text-sm font-bold mt-2"
+                style={{ backgroundColor: color }}
+              >
+                Listo
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </motion.div>
+  )
+}
+
+function GiftCardSection({ color }) {
+  const [selected, setSelected] = useState(null)
+
+  return (
+    <>
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Gift className="w-4 h-4 text-gray-400" />
+          <p className="text-sm font-semibold text-gray-700">Regalale el Club a alguien</p>
+        </div>
+
+        {/* Cards en scroll horizontal */}
+        <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory" style={{ scrollbarWidth: 'none' }}>
+          {GIFT_CARD_OPTIONS.map((card) => (
+            <button
+              key={card.id}
+              onClick={() => setSelected(card)}
+              className="flex-shrink-0 snap-start rounded-2xl overflow-hidden shadow-md active:scale-95 transition-transform text-left"
+              style={{ width: 156, background: `linear-gradient(135deg, ${color} 0%, ${color}bb 100%)` }}
+            >
+              <div className="p-4 pb-3 space-y-4">
+                <div className="flex items-center justify-between">
+                  <CreditCard className="w-5 h-5 text-white/60" />
+                  <span className="text-white/60 text-xs font-semibold tracking-wide uppercase">{card.label}</span>
+                </div>
+                <div>
+                  <p className="text-white text-2xl font-black leading-none">{card.price}</p>
+                  <p className="text-white/60 text-xs mt-1">{card.points.toLocaleString()} puntos</p>
+                </div>
+              </div>
+              <div className="px-4 py-2.5 bg-black/20 flex items-center justify-between">
+                <span className="text-white text-xs font-bold">Comprar</span>
+                <ChevronRight className="w-3.5 h-3.5 text-white/70" />
+              </div>
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-gray-400">El destinatario recibe los puntos al activar la tarjeta.</p>
+      </div>
+
+      <AnimatePresence>
+        {selected && <GiftCardModal card={selected} color={color} onClose={() => setSelected(null)} />}
+      </AnimatePresence>
+    </>
+  )
+}
+
 function getGridClass(count) {
   const mobile = count > 4 ? 'grid-cols-2' : 'grid-cols-1'
   const desktop = count <= 4 ? 'sm:grid-cols-2' : count <= 6 ? 'sm:grid-cols-3' : 'sm:grid-cols-4'
@@ -1169,11 +1456,36 @@ export default function PublicCatalog() {
 
   const isBeauty = programId === 'beauty-demo'
   const isBarber = programId === 'barber-demo'
+  const isHeladeria = programId === 'heladeria-demo'
 
-  const program = isBarber ? MOCK_PROGRAM_BARBER : isBeauty ? MOCK_PROGRAM_BEAUTY : MOCK_PROGRAM
-  const items = isBarber ? MOCK_ITEMS_BARBER : isBeauty ? MOCK_ITEMS_BEAUTY : MOCK_ITEMS
-  const posts = isBarber ? MOCK_POSTS_BARBER : isBeauty ? MOCK_POSTS_BEAUTY : MOCK_POSTS
-  const activity = isBarber ? MOCK_ACTIVITY_BARBER : isBeauty ? MOCK_ACTIVITY_BEAUTY : MOCK_ACTIVITY_CAFE
+  const program = isBarber
+    ? MOCK_PROGRAM_BARBER
+    : isBeauty
+      ? MOCK_PROGRAM_BEAUTY
+      : isHeladeria
+        ? MOCK_PROGRAM_HELADERIA
+        : MOCK_PROGRAM
+  const items = isBarber
+    ? MOCK_ITEMS_BARBER
+    : isBeauty
+      ? MOCK_ITEMS_BEAUTY
+      : isHeladeria
+        ? MOCK_ITEMS_HELADERIA
+        : MOCK_ITEMS
+  const posts = isBarber
+    ? MOCK_POSTS_BARBER
+    : isBeauty
+      ? MOCK_POSTS_BEAUTY
+      : isHeladeria
+        ? MOCK_POSTS_HELADERIA
+        : MOCK_POSTS
+  const activity = isBarber
+    ? MOCK_ACTIVITY_BARBER
+    : isBeauty
+      ? MOCK_ACTIVITY_BEAUTY
+      : isHeladeria
+        ? MOCK_ACTIVITY_HELADERIA
+        : MOCK_ACTIVITY_CAFE
 
   const [selectedItem, setSelectedItem] = useState(null)
   const [showSurvey, setShowSurvey] = useState(false)
@@ -1216,8 +1528,8 @@ export default function PublicCatalog() {
   const outOfStockItems = useMemo(() => items.filter((i) => i.stock_enabled && i.stock === 0), [items])
   const availableGridClass = getGridClass(availableItems.length)
   const outOfStockGridClass = getGridClass(outOfStockItems.length)
-  const availableCompact = availableItems.length > 6
-  const outOfStockCompact = outOfStockItems.length > 6
+  const availableCompact = availableItems.length > 4
+  const outOfStockCompact = outOfStockItems.length > 4
 
   return (
     <div
@@ -1585,6 +1897,9 @@ export default function PublicCatalog() {
             )}
           </AnimatePresence>
         </div>
+
+        {/* Gift Cards */}
+        <GiftCardSection color={color} />
 
         {/* Lista de ítems */}
         <div>

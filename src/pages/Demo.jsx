@@ -1,4 +1,4 @@
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, Smartphone } from 'lucide-react'
 
 const COL_LEFT = [
   {
@@ -10,6 +10,7 @@ const COL_LEFT = [
         url: '/createclub',
         desc: 'Formulario para crear o editar un programa de fidelización.',
         single: true,
+        mobile: false,
       },
     ],
   },
@@ -61,6 +62,7 @@ const COL_RIGHT = [
         url: '/myprograms',
         desc: 'Lista de programas activos con acciones de gestión.',
         single: true,
+        mobile: false,
       },
     ],
   },
@@ -84,6 +86,12 @@ const COL_RIGHT = [
         label: 'Barbería',
         url: '/catalog/barber-demo',
         desc: 'Catálogo de premios. Barbería clásica.',
+        single: true,
+      },
+      {
+        label: 'Heladería Freddo',
+        url: '/catalog/heladeria-demo',
+        desc: 'Catálogo de premios. Heladería artesanal.',
         single: true,
       },
     ],
@@ -135,15 +143,27 @@ function LinkCard({ link }) {
       </div>
       <div className="flex items-center gap-1.5 flex-shrink-0">
         {link.single ? (
-          <a
-            href={link.url}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-gray-900 text-white text-xs font-medium hover:bg-gray-700 transition-colors"
-          >
-            <ExternalLink className="w-3 h-3" />
-            Abrir
-          </a>
+          <>
+            <a
+              href={link.url}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-gray-900 text-white text-xs font-medium hover:bg-gray-700 transition-colors"
+            >
+              <ExternalLink className="w-3 h-3" />
+              Abrir
+            </a>
+            {link.mobile !== false && (
+              <a
+                href={`/preview?url=${encodeURIComponent(link.url)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-500 hover:bg-gray-50 transition-colors"
+              >
+                <Smartphone className="w-3 h-3" />
+              </a>
+            )}
+          </>
         ) : (
           <>
             <a
@@ -163,6 +183,14 @@ function LinkCard({ link }) {
             >
               <ExternalLink className="w-3 h-3" />
               Miembro
+            </a>
+            <a
+              href={`/preview?url=${encodeURIComponent(link.url)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-500 hover:bg-gray-50 transition-colors"
+            >
+              <Smartphone className="w-3 h-3" />
             </a>
           </>
         )}

@@ -16,6 +16,9 @@ export default defineConfig({
   ].filter(Boolean),
   server: {
     allowedHosts: true,
+    headers: {
+      'X-Frame-Options': 'SAMEORIGIN',
+    },
     // Configuración para manejar rutas del SPA correctamente
     // Vite sirve index.html automáticamente para rutas que no sean archivos estáticos
     // Esta configuración asegura que funcione correctamente con React Router
