@@ -772,22 +772,124 @@ function PromoteBanner() {
   )
 }
 
+// ─── Promo card (feed) ───────────────────────────────────────────────────────
+function PromoCard({ business, promo, onSelect, index }) {
+  const catStyle = getCategoryColor(business.category)
+  const orig = parseInt(promo.original.replace(/\D/g, ''))
+  const curr = parseInt(promo.title.match(/\d[\d.]*$/)?.[0]?.replace('.', '') ?? orig)
+  const disc = orig > 0 && curr < orig ? Math.round((1 - curr / orig) * 100) : 0
+
+  return (
+    <motion.button
+      onClick={() => onSelect(business)}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.97 }}
+      transition={{ duration: 0.2, delay: index * 0.04 }}
+      layout
+      className="w-full text-left bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-orange-200 hover:shadow-md transition-all duration-200 cursor-pointer"
+    >
+      {/* Business image strip */}
+      <div className="relative" style={{ height: 120 }}>
+        <img src={business.cover_url} alt={business.name} className="w-full h-full object-cover" loading="lazy" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ backgroundColor: business.color }} />
+
+        {/* Discount badge */}
+        {disc > 0 && (
+          <div className="absolute top-2.5 left-2.5 bg-orange-500 text-white text-xs font-black px-2.5 py-1 rounded-full">
+            -{disc}%
+          </div>
+        )}
+
+        {/* Business name overlay */}
+        <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 min-w-0">
+            <span
+              className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full flex-shrink-0"
+              style={{ backgroundColor: catStyle.bg, color: catStyle.text }}
+            >
+              {business.category}
+            </span>
+            <span className="text-white text-xs font-bold truncate">{business.name}</span>
+          </div>
+          <div className="flex items-center gap-0.5 flex-shrink-0 ml-2">
+            <Star className="w-3 h-3 text-yellow-400" fill="currentColor" />
+            <span className="text-white text-xs font-bold">{business.rating}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Promo info */}
+      <div className="px-4 py-3.5">
+        <p className="font-black text-gray-900 text-sm leading-snug mb-1">{promo.title}</p>
+        <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">{promo.desc}</p>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 text-xs text-gray-400">
+              <MapPin className="w-3 h-3 flex-shrink-0" />
+              <span>{business.distance}</span>
+            </div>
+            <span className="text-gray-200">·</span>
+            <div className="flex items-center gap-1">
+              <div
+                className="w-1.5 h-1.5 rounded-full"
+                style={{ backgroundColor: business.hours.open ? '#16a34a' : '#9ca3af' }}
+              />
+              <span className="text-xs" style={{ color: business.hours.open ? '#16a34a' : '#9ca3af' }}>
+                {business.hours.open ? 'Abierto' : 'Cerrado'}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-gray-400 line-through">{promo.original}</span>
+            <span className="text-xs font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">
+              Vence {promo.expiry}
+            </span>
+          </div>
+        </div>
+      </div>
+    </motion.button>
+  )
+}
+
 // ─── Página principal ─────────────────────────────────────────────────────────
 export default function PublicNetwork() {
+  const [mainTab, setMainTab] = useState('promos') // 'promos' | 'negocios'
   const [activeCategory, setActiveCategory] = useState('Todos')
   const [selectedBusiness, setSelectedBusiness] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
   const searchRef = useRef(null)
 
-  const countFor = (id) => (id === 'Todos' ? BUSINESSES.length : BUSINESSES.filter((b) => b.category === id).length)
+  // Flat list of all promos with business attached
+  const allPromos = BUSINESSES.flatMap((b) => b.promos.map((p) => ({ business: b, promo: p })))
 
-  const filtered = BUSINESSES.filter((b) => {
+  const filteredPromos = allPromos.filter(({ business, promo }) => {
+    const matchCat = activeCategory === 'Todos' || business.category === activeCategory
+    const q = searchQuery.trim().toLowerCase()
+    const matchQ =
+      !q ||
+      business.name.toLowerCase().includes(q) ||
+      promo.title.toLowerCase().includes(q) ||
+      promo.desc.toLowerCase().includes(q)
+    return matchCat && matchQ
+  })
+
+  const filteredBusinesses = BUSINESSES.filter((b) => {
     const matchCat = activeCategory === 'Todos' || b.category === activeCategory
     const q = searchQuery.trim().toLowerCase()
     const matchQ = !q || b.name.toLowerCase().includes(q) || b.tags.some((t) => t.toLowerCase().includes(q))
     return matchCat && matchQ
   })
+
+  const countFor = (id) => {
+    if (mainTab === 'promos') {
+      return id === 'Todos' ? allPromos.length : allPromos.filter(({ business }) => business.category === id).length
+    }
+    return id === 'Todos' ? BUSINESSES.length : BUSINESSES.filter((b) => b.category === id).length
+  }
 
   const openSearch = () => {
     setSearchOpen(true)
@@ -798,6 +900,15 @@ export default function PublicNetwork() {
     setSearchOpen(false)
     setSearchQuery('')
   }
+
+  const switchTab = (tab) => {
+    setMainTab(tab)
+    setActiveCategory('Todos')
+    closeSearch()
+  }
+
+  const resultCount = mainTab === 'promos' ? filteredPromos.length : filteredBusinesses.length
+  const resultLabel = mainTab === 'promos' ? 'promos' : 'negocios'
 
   return (
     <div className="min-h-dvh" style={{ backgroundColor: '#f8fafc' }}>
@@ -824,7 +935,7 @@ export default function PublicNetwork() {
                     ref={searchRef}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Buscá un negocio o servicio…"
+                    placeholder={mainTab === 'promos' ? 'Buscá una promo…' : 'Buscá un negocio…'}
                     className="flex-1 bg-transparent text-sm text-white placeholder:text-white/30 outline-none"
                     style={{ minWidth: 0 }}
                   />
@@ -874,7 +985,35 @@ export default function PublicNetwork() {
           </AnimatePresence>
         </div>
 
-        {/* Category tabs */}
+        {/* Main tabs: Promos | Negocios */}
+        <div className="px-4 pb-3">
+          <div className="flex gap-1 p-1 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.07)' }}>
+            {[
+              { id: 'promos', label: 'Promos', Icon: Percent },
+              { id: 'negocios', label: 'Negocios', Icon: Tag },
+            ].map(({ id, label, Icon }) => (
+              <button
+                key={id}
+                onClick={() => switchTab(id)}
+                className="relative flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition-colors duration-150"
+                style={{ color: mainTab === id ? '#000' : 'rgba(255,255,255,0.4)' }}
+              >
+                {mainTab === id && (
+                  <motion.div
+                    layoutId="main-tab-bg"
+                    className="absolute inset-0 rounded-lg"
+                    style={{ backgroundColor: '#facc15' }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 40 }}
+                  />
+                )}
+                <Icon className="w-3 h-3 relative z-10" />
+                <span className="relative z-10">{label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Category filter */}
         <div className="flex overflow-x-auto px-4 pb-0" style={{ scrollbarWidth: 'none', gap: 0 }}>
           {CATEGORIES.map(({ id, label, Icon }) => {
             const active = activeCategory === id
@@ -888,7 +1027,7 @@ export default function PublicNetwork() {
               >
                 <Icon className="w-3 h-3" />
                 <span>{label}</span>
-                {!active && (
+                {!active && count > 0 && (
                   <span
                     className="text-[9px] font-bold leading-none rounded-full px-1 py-px"
                     style={{ backgroundColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.3)' }}
@@ -898,7 +1037,7 @@ export default function PublicNetwork() {
                 )}
                 {active && (
                   <motion.div
-                    layoutId="tab-indicator"
+                    layoutId="cat-indicator"
                     className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full"
                     style={{ backgroundColor: '#facc15' }}
                     transition={{ type: 'spring', stiffness: 500, damping: 40 }}
@@ -913,95 +1052,138 @@ export default function PublicNetwork() {
 
       {/* ── Content ── */}
       <div className="max-w-2xl mx-auto px-4 pt-5 pb-10">
-        {/* Promoted strip — only on Todos, no search */}
-        <AnimatePresence>
-          {activeCategory === 'Todos' && !searchQuery && (
+        <AnimatePresence mode="wait" initial={false}>
+          {/* ── PROMOS tab ── */}
+          {mainTab === 'promos' && (
             <motion.div
-              key="promoted"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.25 }}
-              style={{ overflow: 'hidden', marginLeft: '-1rem', marginRight: '-1rem' }}
+              key="promos"
+              initial={{ opacity: 0, x: -16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -16 }}
+              transition={{ duration: 0.2 }}
             >
-              <PromotedStrip businesses={BUSINESSES} onSelect={setSelectedBusiness} />
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-bold text-gray-900">
+                  {searchQuery
+                    ? `"${searchQuery}"`
+                    : activeCategory === 'Todos'
+                      ? 'Ofertas cerca tuyo'
+                      : activeCategory}
+                </h2>
+                <span className="text-xs text-gray-400 font-medium tabular-nums">
+                  {resultCount} {resultLabel}
+                </span>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <AnimatePresence mode="popLayout">
+                  {filteredPromos.map(({ business, promo }, i) => (
+                    <PromoCard
+                      key={promo.id}
+                      business={business}
+                      promo={promo}
+                      onSelect={setSelectedBusiness}
+                      index={i}
+                    />
+                  ))}
+                </AnimatePresence>
+              </div>
+
+              {filteredPromos.length === 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex flex-col items-center justify-center py-16 text-center"
+                >
+                  <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+                    <Percent className="w-6 h-6 text-gray-400" />
+                  </div>
+                  <p className="text-sm font-bold text-gray-800 mb-1">Sin promos</p>
+                  <p className="text-xs text-gray-400 max-w-xs leading-relaxed">
+                    {searchQuery ? `Sin resultados para "${searchQuery}".` : 'No hay promos en esta categoría.'}
+                  </p>
+                  {searchQuery && (
+                    <button
+                      onClick={closeSearch}
+                      className="mt-4 text-xs font-bold px-4 py-2 rounded-full text-white"
+                      style={{ backgroundColor: '#0f172a' }}
+                    >
+                      Limpiar búsqueda
+                    </button>
+                  )}
+                </motion.div>
+              )}
+
+              {!searchQuery && <PromoteBanner />}
+            </motion.div>
+          )}
+
+          {/* ── NEGOCIOS tab ── */}
+          {mainTab === 'negocios' && (
+            <motion.div
+              key="negocios"
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 16 }}
+              transition={{ duration: 0.2 }}
+            >
+              {/* Promoted strip */}
+              {activeCategory === 'Todos' && !searchQuery && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  style={{ overflow: 'hidden', marginLeft: '-1rem', marginRight: '-1rem' }}
+                >
+                  <PromotedStrip businesses={BUSINESSES} onSelect={setSelectedBusiness} />
+                </motion.div>
+              )}
+
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-bold text-gray-900">
+                  {searchQuery ? `"${searchQuery}"` : activeCategory === 'Todos' ? 'Cerca tuyo' : activeCategory}
+                </h2>
+                <span className="text-xs text-gray-400 font-medium tabular-nums">
+                  {resultCount} {resultLabel}
+                </span>
+              </div>
+
+              <div className="flex flex-col gap-2.5">
+                <AnimatePresence mode="popLayout">
+                  {filteredBusinesses.map((b, i) => (
+                    <BusinessCard key={b.id} business={b} onSelect={setSelectedBusiness} index={i} />
+                  ))}
+                </AnimatePresence>
+              </div>
+
+              {filteredBusinesses.length === 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex flex-col items-center justify-center py-16 text-center"
+                >
+                  <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+                    <Tag className="w-6 h-6 text-gray-400" />
+                  </div>
+                  <p className="text-sm font-bold text-gray-800 mb-1">Sin resultados</p>
+                  <p className="text-xs text-gray-400 max-w-xs leading-relaxed">
+                    {searchQuery ? `Sin negocios para "${searchQuery}".` : 'No hay negocios en esta categoría.'}
+                  </p>
+                  {searchQuery && (
+                    <button
+                      onClick={closeSearch}
+                      className="mt-4 text-xs font-bold px-4 py-2 rounded-full text-white"
+                      style={{ backgroundColor: '#0f172a' }}
+                    >
+                      Limpiar búsqueda
+                    </button>
+                  )}
+                </motion.div>
+              )}
+
+              {!searchQuery && <PromoteBanner />}
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Section label */}
-        <div className="flex items-center justify-between mb-3">
-          <AnimatePresence mode="wait" initial={false}>
-            {searchQuery ? (
-              <motion.div
-                key="search-label"
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                className="flex items-center gap-2"
-              >
-                <Search className="w-3.5 h-3.5 text-gray-400" />
-                <span className="text-sm font-bold text-gray-900">&ldquo;{searchQuery}&rdquo;</span>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="cat-label"
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                className="flex items-center gap-2"
-              >
-                {activeCategory !== 'Todos' && (
-                  <div className="w-1 h-4 rounded-full" style={{ backgroundColor: '#0f172a' }} />
-                )}
-                <h2 className="text-sm font-bold text-gray-900">
-                  {activeCategory === 'Todos' ? 'Cerca tuyo' : activeCategory}
-                </h2>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <span className="text-xs text-gray-400 font-medium tabular-nums">{filtered.length} negocios</span>
-        </div>
-
-        {/* Business list */}
-        <div className="flex flex-col gap-2.5">
-          <AnimatePresence mode="popLayout">
-            {filtered.map((b, i) => (
-              <BusinessCard key={b.id} business={b} onSelect={setSelectedBusiness} index={i} />
-            ))}
-          </AnimatePresence>
-        </div>
-
-        {/* Empty state */}
-        {filtered.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center justify-center py-16 text-center"
-          >
-            <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-              {searchQuery ? <Search className="w-6 h-6 text-gray-400" /> : <Tag className="w-6 h-6 text-gray-400" />}
-            </div>
-            <p className="text-sm font-bold text-gray-800 mb-1">Sin resultados</p>
-            <p className="text-xs text-gray-400 max-w-xs leading-relaxed">
-              {searchQuery ? `No encontramos negocios para "${searchQuery}".` : 'No hay negocios en esta categoría.'}
-            </p>
-            {searchQuery && (
-              <button
-                onClick={closeSearch}
-                className="mt-4 text-xs font-bold px-4 py-2 rounded-full text-white"
-                style={{ backgroundColor: '#0f172a' }}
-              >
-                Limpiar búsqueda
-              </button>
-            )}
-          </motion.div>
-        )}
-
-        {/* Promote banner */}
-        {!searchQuery && <PromoteBanner />}
       </div>
 
       {/* ── Sheet ── */}
