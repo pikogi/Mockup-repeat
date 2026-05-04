@@ -20,6 +20,7 @@ import {
   Zap,
   ChevronDown,
   Instagram,
+  Percent,
 } from 'lucide-react'
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
@@ -42,6 +43,15 @@ const BUSINESSES = [
     cover_url: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=800&h=400&fit=crop&q=80',
     color: '#1c1917',
     promoted: true,
+    promos: [
+      {
+        id: 'p1',
+        title: 'Corte + barba a $9.000',
+        original: '$14.000',
+        desc: 'Primera visita. Incluye lavado y tratamiento.',
+        expiry: '31 may',
+      },
+    ],
     services: [
       { name: 'Corte clásico', price: '$8.500' },
       { name: 'Corte + barba', price: '$13.000' },
@@ -67,6 +77,22 @@ const BUSINESSES = [
     cover_url: 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=800&h=400&fit=crop&q=80',
     color: '#7c3aed',
     promoted: true,
+    promos: [
+      {
+        id: 'p2',
+        title: 'Masaje 60 min a $18.000',
+        original: '$26.000',
+        desc: 'Masaje relajante de cuerpo completo con aceites esenciales.',
+        expiry: '15 jun',
+      },
+      {
+        id: 'p3',
+        title: 'Facial + masaje 90 min a $28.000',
+        original: '$42.000',
+        desc: 'Combo exclusivo para nuevos clientes. Con cita previa.',
+        expiry: '15 jun',
+      },
+    ],
     services: [
       { name: 'Masaje relajante 60min', price: '$22.000' },
       { name: 'Masaje piedras calientes', price: '$28.000' },
@@ -92,6 +118,15 @@ const BUSINESSES = [
     cover_url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&h=400&fit=crop&q=80',
     color: '#dc2626',
     promoted: false,
+    promos: [
+      {
+        id: 'p4',
+        title: 'Menú mediodía a $8.500',
+        original: '$12.000',
+        desc: 'Entrada + plato + postre + bebida. Lunes a viernes de 12 a 15hs.',
+        expiry: 'todos los días',
+      },
+    ],
     services: [
       { name: 'Menú mediodía', price: '$8.500' },
       { name: 'Parrillada para 2', price: '$34.000' },
@@ -117,6 +152,7 @@ const BUSINESSES = [
     cover_url: 'https://images.unsplash.com/photo-1617196034183-421b4040ed20?w=800&h=400&fit=crop&q=80',
     color: '#0f172a',
     promoted: false,
+    promos: [],
     services: [
       { name: 'Combo 20 piezas', price: '$11.000' },
       { name: 'Combo 40 piezas', price: '$20.000' },
@@ -142,6 +178,15 @@ const BUSINESSES = [
     cover_url: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&h=400&fit=crop&q=80',
     color: '#0f766e',
     promoted: false,
+    promos: [
+      {
+        id: 'p5',
+        title: 'Semana de prueba a $3.000',
+        original: '$12.000',
+        desc: '7 días de acceso ilimitado + clase de prueba con personal trainer.',
+        expiry: '30 jun',
+      },
+    ],
     services: [
       { name: 'Membresía mensual', price: '$28.000' },
       { name: 'Semana de prueba', price: '$3.000' },
@@ -167,6 +212,7 @@ const BUSINESSES = [
     cover_url: 'https://images.unsplash.com/photo-1501443762994-82bd5dace89a?w=800&h=400&fit=crop&q=80',
     color: '#111111',
     promoted: false,
+    promos: [],
     services: [
       { name: '1/4 kg a elección', price: '$3.500' },
       { name: '1/2 kg a elección', price: '$6.500' },
@@ -192,6 +238,15 @@ const BUSINESSES = [
     cover_url: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&h=400&fit=crop&q=80',
     color: '#065f46',
     promoted: false,
+    promos: [
+      {
+        id: 'p6',
+        title: '3 clases por $7.500',
+        original: '$13.500',
+        desc: 'Cualquier estilo a elección. Todos los niveles. Válido 30 días.',
+        expiry: '30 jun',
+      },
+    ],
     services: [
       { name: 'Clase suelta', price: '$4.500' },
       { name: 'Pack 4 clases', price: '$16.000' },
@@ -217,6 +272,15 @@ const BUSINESSES = [
     cover_url: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=800&h=400&fit=crop&q=80',
     color: '#1d4ed8',
     promoted: false,
+    promos: [
+      {
+        id: 'p7',
+        title: 'Remera + jean a $22.000',
+        original: '$34.000',
+        desc: 'Combo de temporada. Tallas S a XL. Colores limitados.',
+        expiry: '20 jun',
+      },
+    ],
     services: [
       { name: 'Remeras', price: 'desde $12.000' },
       { name: 'Pantalones', price: 'desde $22.000' },
@@ -242,6 +306,7 @@ const BUSINESSES = [
     cover_url: 'https://images.unsplash.com/photo-1507136566006-cfc505b114fc?w=800&h=400&fit=crop&q=80',
     color: '#1e3a8a',
     promoted: false,
+    promos: [],
     services: [
       { name: 'Lavado exterior', price: '$8.000' },
       { name: 'Lavado completo', price: '$14.000' },
@@ -338,6 +403,18 @@ function BusinessCard({ business, onSelect, index }) {
           </span>
           <span className="text-[10px] text-gray-400">· {business.hours.label}</span>
         </div>
+
+        {/* Promo badge */}
+        {business.promos?.length > 0 && (
+          <div className="flex items-center gap-1 mt-1.5">
+            <div className="flex items-center gap-1 bg-orange-50 border border-orange-100 rounded-md px-1.5 py-0.5">
+              <Percent className="w-2.5 h-2.5 text-orange-500" />
+              <span className="text-[10px] font-bold text-orange-600">
+                {business.promos.length === 1 ? '1 promo activa' : `${business.promos.length} promos activas`}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center pr-3 flex-shrink-0">
@@ -542,6 +619,56 @@ function BusinessSheet({ business, onClose }) {
                 </span>
               ))}
             </div>
+
+            {/* Promos */}
+            {business.promos?.length > 0 && (
+              <div className="mb-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Percent className="w-3.5 h-3.5 text-orange-500" />
+                  <h3 className="text-sm font-bold text-gray-900">Promociones activas</h3>
+                  <span className="text-[10px] font-bold text-orange-500 bg-orange-50 border border-orange-100 px-1.5 py-0.5 rounded-full">
+                    {business.promos.length}
+                  </span>
+                </div>
+                <div className="space-y-2.5">
+                  {business.promos.map((promo) => {
+                    const orig = parseInt(promo.original.replace(/\D/g, ''))
+                    const curr = parseInt(
+                      promo.title
+                        .match(/[\d.]+/g)
+                        ?.join('')
+                        .replace('.', '') ?? orig,
+                    )
+                    const disc = orig > 0 ? Math.round((1 - curr / orig) * 100) : 0
+                    return (
+                      <div key={promo.id} className="rounded-2xl overflow-hidden border border-orange-100">
+                        <div
+                          className="px-4 py-2.5 flex items-center justify-between"
+                          style={{ backgroundColor: '#fff7ed' }}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Percent className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" />
+                            <span className="text-xs font-black text-orange-700">{promo.title}</span>
+                          </div>
+                          {disc > 0 && (
+                            <span className="text-[10px] font-black text-white bg-orange-500 px-2 py-0.5 rounded-full flex-shrink-0">
+                              -{disc}%
+                            </span>
+                          )}
+                        </div>
+                        <div className="px-4 py-3 bg-white flex items-end justify-between gap-3">
+                          <p className="text-xs text-gray-500 leading-relaxed flex-1">{promo.desc}</p>
+                          <div className="text-right flex-shrink-0">
+                            <p className="text-[10px] text-gray-400 line-through">{promo.original}</p>
+                            <p className="text-[10px] text-gray-400">Vence: {promo.expiry}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Services */}
             <div className="mb-5">
