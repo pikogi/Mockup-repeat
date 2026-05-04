@@ -825,26 +825,26 @@ function PromoCard({ business, promo, onSelect, index }) {
         <p className="font-black text-gray-900 text-sm leading-snug mb-1">{promo.title}</p>
         <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">{promo.desc}</p>
 
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 text-xs text-gray-400">
-              <MapPin className="w-3 h-3 flex-shrink-0" />
-              <span>{business.distance}</span>
-            </div>
-            <span className="text-gray-200">·</span>
             <div className="flex items-center gap-1">
               <div
-                className="w-1.5 h-1.5 rounded-full"
+                className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                 style={{ backgroundColor: business.hours.open ? '#16a34a' : '#9ca3af' }}
               />
-              <span className="text-xs" style={{ color: business.hours.open ? '#16a34a' : '#9ca3af' }}>
+              <span className="text-xs font-medium" style={{ color: business.hours.open ? '#16a34a' : '#9ca3af' }}>
                 {business.hours.open ? 'Abierto' : 'Cerrado'}
               </span>
             </div>
+            <span className="text-gray-300">·</span>
+            <div className="flex items-center gap-1 text-xs text-gray-400">
+              <MapPin className="w-3 h-3 flex-shrink-0" />
+              <span>{business.distance}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-xs text-gray-400 line-through">{promo.original}</span>
-            <span className="text-xs font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold text-orange-500 bg-orange-50 border border-orange-100 px-1.5 py-0.5 rounded-full">
               Vence {promo.expiry}
             </span>
           </div>
