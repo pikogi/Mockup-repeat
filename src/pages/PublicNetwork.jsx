@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   MapPin,
@@ -17,6 +17,7 @@ import {
   Star,
   Zap,
   CreditCard,
+  Search,
 } from 'lucide-react'
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
@@ -801,10 +802,28 @@ function MerchantSheet({ merchant, onClose }) {
 export default function PublicNetwork() {
   const [activeCategory, setActiveCategory] = useState('Todos')
   const [selectedMerchant, setSelectedMerchant] = useState(null)
-
-  const filtered = activeCategory === 'Todos' ? MERCHANTS : MERCHANTS.filter((m) => m.category === activeCategory)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
+  const searchRef = useRef(null)
 
   const countFor = (id) => (id === 'Todos' ? MERCHANTS.length : MERCHANTS.filter((m) => m.category === id).length)
+
+  const filtered = MERCHANTS.filter((m) => {
+    const matchCat = activeCategory === 'Todos' || m.category === activeCategory
+    const q = searchQuery.trim().toLowerCase()
+    const matchQ = !q || m.name.toLowerCase().includes(q) || m.promo.toLowerCase().includes(q)
+    return matchCat && matchQ
+  })
+
+  const openSearch = () => {
+    setSearchOpen(true)
+    setTimeout(() => searchRef.current?.focus(), 60)
+  }
+
+  const closeSearch = () => {
+    setSearchOpen(false)
+    setSearchQuery('')
+  }
 
   return (
     <div className="min-h-dvh" style={{ backgroundColor: '#f8fafc' }}>
@@ -812,22 +831,85 @@ export default function PublicNetwork() {
       <div className="sticky top-0 z-10" style={{ backgroundColor: '#0f172a' }}>
         {/* Top bar */}
         <div className="px-4 pt-4 pb-3 flex items-center gap-3">
-          <img src="/logo.png" alt="Repeat" className="w-9 h-9 rounded-xl flex-shrink-0" />
-          <div className="flex-1 min-w-0">
-            <h1 className="text-white font-black text-lg leading-none tracking-tight">Red Repeat</h1>
-            <p className="text-white/40 text-xs mt-0.5">Ofertas exclusivas para miembros</p>
-          </div>
-          <div
-            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 flex-shrink-0"
-            style={{ backgroundColor: '#facc15' }}
-          >
-            <Sparkles className="w-3 h-3 text-black" />
-            <span className="text-black text-xs font-black">{MERCHANTS.length} ofertas</span>
-          </div>
+          <AnimatePresence mode="wait" initial={false}>
+            {searchOpen ? (
+              /* ── Search mode ── */
+              <motion.div
+                key="search"
+                className="flex-1 flex items-center gap-2"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                <div
+                  className="flex-1 flex items-center gap-2 rounded-2xl px-3.5 py-2.5"
+                  style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
+                >
+                  <Search className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.4)' }} />
+                  <input
+                    ref={searchRef}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Buscar comercios u ofertas…"
+                    className="flex-1 bg-transparent text-sm text-white placeholder:text-white/30 outline-none"
+                    style={{ minWidth: 0 }}
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="text-white/40 hover:text-white/70 transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+                <button
+                  onClick={closeSearch}
+                  className="text-white/50 hover:text-white transition-colors text-xs font-semibold flex-shrink-0 ml-1"
+                >
+                  Cancelar
+                </button>
+              </motion.div>
+            ) : (
+              /* ── Default mode ── */
+              <motion.div
+                key="default"
+                className="flex items-center gap-3 flex-1 min-w-0"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                <img src="/logo.png" alt="Repeat" className="w-9 h-9 rounded-xl flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-white font-black text-lg leading-none tracking-tight">Red Repeat</h1>
+                  <p className="text-white/35 text-xs mt-0.5 leading-none">Ofertas exclusivas</p>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <button
+                    onClick={openSearch}
+                    className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
+                    aria-label="Buscar"
+                  >
+                    <Search className="w-4 h-4 text-white/70" />
+                  </button>
+                  <div
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5"
+                    style={{ backgroundColor: '#facc15' }}
+                  >
+                    <Sparkles className="w-3 h-3 text-black" />
+                    <span className="text-black text-xs font-black">{MERCHANTS.length}</span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Category chips */}
-        <div className="flex gap-2 overflow-x-auto px-4 pb-3.5" style={{ scrollbarWidth: 'none' }}>
+        {/* Category tabs */}
+        <div className="flex overflow-x-auto px-4 pb-0" style={{ scrollbarWidth: 'none', gap: 0 }}>
           {CATEGORIES.map(({ id, label, Icon }) => {
             const active = activeCategory === id
             const count = countFor(id)
@@ -835,34 +917,41 @@ export default function PublicNetwork() {
               <button
                 key={id}
                 onClick={() => setActiveCategory(id)}
-                className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold transition-all duration-200"
-                style={
-                  active
-                    ? { backgroundColor: '#facc15', color: '#000' }
-                    : { backgroundColor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.55)' }
-                }
+                className="relative flex-shrink-0 flex items-center gap-1.5 px-3.5 pb-3 pt-1 text-xs font-bold transition-colors duration-150"
+                style={{ color: active ? '#facc15' : 'rgba(255,255,255,0.4)' }}
               >
                 <Icon className="w-3 h-3" />
                 <span>{label}</span>
-                {active && (
+                {count > 0 && !active && (
                   <span
-                    className="ml-0.5 text-[10px] font-black rounded-full px-1.5 py-0.5"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.12)' }}
+                    className="text-[9px] font-bold leading-none rounded-full px-1 py-px"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.3)' }}
                   >
                     {count}
                   </span>
+                )}
+                {/* Sliding underline */}
+                {active && (
+                  <motion.div
+                    layoutId="tab-indicator"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full"
+                    style={{ backgroundColor: '#facc15' }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 40 }}
+                  />
                 )}
               </button>
             )
           })}
         </div>
+        {/* Tab bottom border */}
+        <div className="h-px mx-0" style={{ backgroundColor: 'rgba(255,255,255,0.07)' }} />
       </div>
 
       {/* ── Content ── */}
       <div className="max-w-2xl mx-auto px-4 pt-5 pb-10">
-        {/* Featured strip — only on "Todos" */}
+        {/* Featured strip — only on "Todos" without search */}
         <AnimatePresence>
-          {activeCategory === 'Todos' && (
+          {activeCategory === 'Todos' && !searchQuery && (
             <motion.div
               key="featured"
               initial={{ opacity: 0, height: 0 }}
@@ -876,17 +965,40 @@ export default function PublicNetwork() {
           )}
         </AnimatePresence>
 
-        {/* Section title */}
+        {/* Section title / search results label */}
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            {activeCategory !== 'Todos' && (
-              <div className="w-1 h-5 rounded-full" style={{ backgroundColor: '#0f172a' }} />
+          <AnimatePresence mode="wait" initial={false}>
+            {searchQuery ? (
+              <motion.div
+                key="search-label"
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 4 }}
+                transition={{ duration: 0.15 }}
+                className="flex items-center gap-2"
+              >
+                <Search className="w-3.5 h-3.5 text-gray-400" />
+                <span className="text-sm font-bold text-gray-900">Resultados para &ldquo;{searchQuery}&rdquo;</span>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="cat-label"
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 4 }}
+                transition={{ duration: 0.15 }}
+                className="flex items-center gap-2"
+              >
+                {activeCategory !== 'Todos' && (
+                  <div className="w-1 h-4 rounded-full" style={{ backgroundColor: '#0f172a' }} />
+                )}
+                <h2 className="text-sm font-bold text-gray-900">
+                  {activeCategory === 'Todos' ? 'Todos los comercios' : activeCategory}
+                </h2>
+              </motion.div>
             )}
-            <h2 className="text-sm font-bold text-gray-900">
-              {activeCategory === 'Todos' ? 'Todos los comercios' : activeCategory}
-            </h2>
-          </div>
-          <span className="text-xs text-gray-400 font-medium">{filtered.length} resultados</span>
+          </AnimatePresence>
+          <span className="text-xs text-gray-400 font-medium tabular-nums">{filtered.length} resultados</span>
         </div>
 
         {/* Grid */}
@@ -900,13 +1012,30 @@ export default function PublicNetwork() {
 
         {/* Empty state */}
         {filtered.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center justify-center py-16 text-center"
+          >
             <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-              <Tag className="w-6 h-6 text-gray-400" />
+              {searchQuery ? <Search className="w-6 h-6 text-gray-400" /> : <Tag className="w-6 h-6 text-gray-400" />}
             </div>
-            <p className="text-sm font-bold text-gray-800 mb-1">Sin resultados</p>
-            <p className="text-xs text-gray-400">No hay comercios en esta categoría todavía.</p>
-          </div>
+            <p className="text-sm font-bold text-gray-800 mb-1">{searchQuery ? 'Sin resultados' : 'Sin comercios'}</p>
+            <p className="text-xs text-gray-400 leading-relaxed max-w-xs">
+              {searchQuery
+                ? `No encontramos resultados para "${searchQuery}".`
+                : 'No hay comercios en esta categoría todavía.'}
+            </p>
+            {searchQuery && (
+              <button
+                onClick={closeSearch}
+                className="mt-4 text-xs font-bold px-4 py-2 rounded-full"
+                style={{ backgroundColor: '#0f172a', color: '#fff' }}
+              >
+                Limpiar búsqueda
+              </button>
+            )}
+          </motion.div>
         )}
       </div>
 
