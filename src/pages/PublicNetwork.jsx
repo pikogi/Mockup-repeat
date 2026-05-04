@@ -10,7 +10,6 @@ import {
   Tag,
   Utensils,
   Scissors,
-  Shirt,
   Dumbbell,
   Wrench,
   Search,
@@ -21,6 +20,10 @@ import {
   ChevronDown,
   Instagram,
   Percent,
+  CheckCircle,
+  Ticket,
+  Copy,
+  Check,
 } from 'lucide-react'
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
@@ -255,40 +258,6 @@ const BUSINESSES = [
     ],
   },
   {
-    id: 8,
-    name: 'Urbana Store',
-    category: 'Indumentaria',
-    description:
-      'Ropa y accesorios de diseño independiente. Apoyamos a diseñadores locales. Nueva colección cada temporada.',
-    tags: ['Moda', 'Local', 'Unisex'],
-    address: 'Honduras 5200, Palermo',
-    distance: '1.1km',
-    hours: { open: true, label: 'Cierra a las 20hs' },
-    phone: '+5491101234567',
-    instagram: 'urbana.store',
-    rating: 4.4,
-    reviews: 38,
-    image_url: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&h=400&fit=crop&q=80',
-    cover_url: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=800&h=400&fit=crop&q=80',
-    color: '#1d4ed8',
-    promoted: false,
-    promos: [
-      {
-        id: 'p7',
-        title: 'Remera + jean a $22.000',
-        original: '$34.000',
-        desc: 'Combo de temporada. Tallas S a XL. Colores limitados.',
-        expiry: '20 jun',
-      },
-    ],
-    services: [
-      { name: 'Remeras', price: 'desde $12.000' },
-      { name: 'Pantalones', price: 'desde $22.000' },
-      { name: 'Accesorios', price: 'desde $6.000' },
-      { name: 'Conjuntos', price: 'desde $35.000' },
-    ],
-  },
-  {
     id: 9,
     name: 'AutoSpa Wash',
     category: 'Servicios',
@@ -320,7 +289,6 @@ const CATEGORIES = [
   { id: 'Todos', label: 'Todos', Icon: Tag },
   { id: 'Gastronomía', label: 'Gastro', Icon: Utensils },
   { id: 'Belleza', label: 'Belleza', Icon: Scissors },
-  { id: 'Indumentaria', label: 'Ropa', Icon: Shirt },
   { id: 'Fitness', label: 'Fitness', Icon: Dumbbell },
   { id: 'Servicios', label: 'Servicios', Icon: Wrench },
 ]
@@ -772,85 +740,212 @@ function PromoteBanner() {
   )
 }
 
+// ─── Voucher sheet ────────────────────────────────────────────────────────────
+function VoucherSheet({ business, promo, disc, onClose }) {
+  const [copied, setCopied] = useState(false)
+  const code = promo.id.toUpperCase().padEnd(8, '0').slice(0, 8)
+
+  const handleCopy = () => {
+    navigator.clipboard?.writeText(code).catch(() => {})
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <>
+      <motion.div
+        className="fixed inset-0 z-50"
+        style={{ backgroundColor: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(2px)' }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+      />
+      <motion.div
+        className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-3xl"
+        initial={{ y: '100%' }}
+        animate={{ y: 0 }}
+        exit={{ y: '100%' }}
+        transition={{ type: 'spring', stiffness: 360, damping: 38 }}
+      >
+        <div className="flex justify-center pt-3 pb-0">
+          <div className="w-9 h-1 rounded-full bg-gray-200" />
+        </div>
+
+        {/* Header strip */}
+        <div className="mx-4 mt-4 rounded-2xl overflow-hidden relative" style={{ height: 110 }}>
+          <img src={business.cover_url} alt={business.name} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 h-1" style={{ backgroundColor: business.color }} />
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 w-7 h-7 rounded-full bg-black/40 flex items-center justify-center"
+          >
+            <X className="w-3.5 h-3.5 text-white" />
+          </button>
+          <div className="absolute bottom-3 left-4">
+            <p className="text-white font-black text-base leading-tight">{business.name}</p>
+            <p className="text-white/60 text-xs">{business.address}</p>
+          </div>
+        </div>
+
+        <div className="px-5 pt-5 pb-8">
+          {/* Promo detail */}
+          <div className="flex items-start justify-between gap-3 mb-5">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-orange-500 uppercase tracking-wider mb-1">Descuento exclusivo</p>
+              <p className="text-lg font-black text-gray-900 leading-snug">{promo.title}</p>
+              <p className="text-xs text-gray-500 mt-1 leading-relaxed">{promo.desc}</p>
+            </div>
+            {disc > 0 && (
+              <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-orange-500 flex flex-col items-center justify-center">
+                <span className="text-white text-lg font-black leading-none">-{disc}%</span>
+              </div>
+            )}
+          </div>
+
+          {/* Voucher code */}
+          <div className="rounded-2xl border-2 border-dashed border-orange-200 bg-orange-50 px-4 py-4 mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1.5">
+                <Ticket className="w-3.5 h-3.5 text-orange-500" />
+                <span className="text-[10px] font-bold text-orange-500 uppercase tracking-widest">
+                  Código de descuento
+                </span>
+              </div>
+              <span className="text-[10px] font-bold text-orange-400 bg-orange-100 px-2 py-0.5 rounded-full">
+                1 uso · válido hasta {promo.expiry}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-2xl font-black text-gray-900 tracking-widest">{code}</span>
+              <button
+                onClick={handleCopy}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+                style={{ backgroundColor: copied ? '#dcfce7' : '#fff7ed', color: copied ? '#15803d' : '#ea580c' }}
+              >
+                {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? 'Copiado' : 'Copiar'}
+              </button>
+            </div>
+          </div>
+
+          {/* Single-use notice */}
+          <div className="flex items-start gap-2.5 bg-gray-50 rounded-xl px-3.5 py-3 mb-5">
+            <CheckCircle className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-gray-500 leading-relaxed">
+              Este descuento es exclusivo para miembros de Red Repeat.{' '}
+              <span className="font-bold text-gray-700">Válido para 1 canje por usuario.</span> Mostrá el código al
+              cajero antes de pagar.
+            </p>
+          </div>
+
+          {/* CTA */}
+          <a
+            href={`https://wa.me/${business.phone.replace(/\D/g, '')}?text=Hola%2C%20quiero%20usar%20el%20descuento%20${code}`}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-black text-sm text-black transition-all active:scale-[0.98]"
+            style={{ backgroundColor: '#facc15' }}
+          >
+            <MessageCircle className="w-4 h-4" />
+            Avisar al negocio por WhatsApp
+          </a>
+        </div>
+      </motion.div>
+    </>
+  )
+}
+
 // ─── Promo card (feed) ───────────────────────────────────────────────────────
-function PromoCard({ business, promo, onSelect, index }) {
+function PromoCard({ business, promo, claimed, onClaim, onSelect, index }) {
   const catStyle = getCategoryColor(business.category)
   const orig = parseInt(promo.original.replace(/\D/g, ''))
   const curr = parseInt(promo.title.match(/\d[\d.]*$/)?.[0]?.replace('.', '') ?? orig)
   const disc = orig > 0 && curr < orig ? Math.round((1 - curr / orig) * 100) : 0
 
   return (
-    <motion.button
-      onClick={() => onSelect(business)}
+    <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.97 }}
       transition={{ duration: 0.2, delay: index * 0.04 }}
       layout
-      className="w-full text-left bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-orange-200 hover:shadow-md transition-all duration-200 cursor-pointer"
+      className="bg-white rounded-2xl overflow-hidden border transition-all duration-200"
+      style={{ borderColor: claimed ? '#bbf7d0' : '#f3f4f6' }}
     >
       {/* Business image strip */}
-      <div className="relative" style={{ height: 120 }}>
+      <button onClick={() => onSelect(business)} className="relative w-full block" style={{ height: 110 }}>
         <img src={business.cover_url} alt={business.name} className="w-full h-full object-cover" loading="lazy" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ backgroundColor: business.color }} />
 
-        {/* Discount badge */}
-        {disc > 0 && (
+        {claimed ? (
+          <div className="absolute top-2.5 left-2.5 bg-green-500 text-white text-[10px] font-black px-2.5 py-1 rounded-full flex items-center gap-1">
+            <CheckCircle className="w-2.5 h-2.5" />
+            Reclamado
+          </div>
+        ) : disc > 0 ? (
           <div className="absolute top-2.5 left-2.5 bg-orange-500 text-white text-xs font-black px-2.5 py-1 rounded-full">
             -{disc}%
           </div>
-        )}
+        ) : null}
 
-        {/* Business name overlay */}
         <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between">
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0">
             <span
               className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full flex-shrink-0"
               style={{ backgroundColor: catStyle.bg, color: catStyle.text }}
             >
               {business.category}
             </span>
-            <span className="text-white text-xs font-bold truncate">{business.name}</span>
+            <span className="text-white text-[11px] font-bold truncate">{business.name}</span>
           </div>
-          <div className="flex items-center gap-0.5 flex-shrink-0 ml-2">
+          <div className="flex items-center gap-0.5 flex-shrink-0 ml-1">
             <Star className="w-3 h-3 text-yellow-400" fill="currentColor" />
             <span className="text-white text-xs font-bold">{business.rating}</span>
           </div>
         </div>
-      </div>
+      </button>
 
       {/* Promo info */}
-      <div className="px-4 py-3.5">
-        <p className="font-black text-gray-900 text-sm leading-snug mb-1">{promo.title}</p>
-        <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">{promo.desc}</p>
+      <div className="px-3.5 pt-3 pb-3.5">
+        <p className="font-black text-gray-900 text-sm leading-snug mb-1 line-clamp-2">{promo.title}</p>
 
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              <div
-                className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                style={{ backgroundColor: business.hours.open ? '#16a34a' : '#9ca3af' }}
-              />
-              <span className="text-xs font-medium" style={{ color: business.hours.open ? '#16a34a' : '#9ca3af' }}>
-                {business.hours.open ? 'Abierto' : 'Cerrado'}
-              </span>
-            </div>
-            <span className="text-gray-300">·</span>
-            <div className="flex items-center gap-1 text-xs text-gray-400">
-              <MapPin className="w-3 h-3 flex-shrink-0" />
-              <span>{business.distance}</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs text-gray-400 line-through">{promo.original}</span>
-            <span className="text-[10px] font-bold text-orange-500 bg-orange-50 border border-orange-100 px-1.5 py-0.5 rounded-full">
-              Vence {promo.expiry}
-            </span>
-          </div>
+        <div className="flex items-center gap-1.5 mb-3">
+          <div
+            className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+            style={{ backgroundColor: business.hours.open ? '#16a34a' : '#9ca3af' }}
+          />
+          <span className="text-[11px] font-medium" style={{ color: business.hours.open ? '#16a34a' : '#9ca3af' }}>
+            {business.hours.open ? 'Abierto' : 'Cerrado'}
+          </span>
+          <span className="text-gray-300 text-[10px]">·</span>
+          <span className="text-[11px] text-gray-400">{business.distance}</span>
         </div>
+
+        {/* Claim button */}
+        {claimed ? (
+          <button
+            onClick={() => onClaim(business, promo, disc)}
+            className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all"
+            style={{ backgroundColor: '#dcfce7', color: '#15803d' }}
+          >
+            <CheckCircle className="w-3.5 h-3.5" />
+            Ver mi código
+          </button>
+        ) : (
+          <button
+            onClick={() => onClaim(business, promo, disc)}
+            className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-[0.98]"
+            style={{ backgroundColor: '#0f172a', color: '#fff' }}
+          >
+            <Ticket className="w-3.5 h-3.5" />
+            Reclamar descuento
+          </button>
+        )}
       </div>
-    </motion.button>
+    </motion.div>
   )
 }
 
@@ -861,6 +956,8 @@ export default function PublicNetwork() {
   const [selectedBusiness, setSelectedBusiness] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
+  const [claimedPromos, setClaimedPromos] = useState(new Set())
+  const [activeVoucher, setActiveVoucher] = useState(null) // { business, promo, disc }
   const searchRef = useRef(null)
 
   // Flat list of all promos with business attached
@@ -905,6 +1002,11 @@ export default function PublicNetwork() {
     setMainTab(tab)
     setActiveCategory('Todos')
     closeSearch()
+  }
+
+  const handleClaim = (business, promo, disc) => {
+    setClaimedPromos((prev) => new Set([...prev, promo.id]))
+    setActiveVoucher({ business, promo, disc })
   }
 
   const resultCount = mainTab === 'promos' ? filteredPromos.length : filteredBusinesses.length
@@ -1082,6 +1184,8 @@ export default function PublicNetwork() {
                       key={promo.id}
                       business={business}
                       promo={promo}
+                      claimed={claimedPromos.has(promo.id)}
+                      onClaim={handleClaim}
                       onSelect={setSelectedBusiness}
                       index={i}
                     />
@@ -1186,13 +1290,26 @@ export default function PublicNetwork() {
         </AnimatePresence>
       </div>
 
-      {/* ── Sheet ── */}
+      {/* ── Business sheet ── */}
       <AnimatePresence>
         {selectedBusiness && (
           <BusinessSheet
             key={selectedBusiness.id}
             business={selectedBusiness}
             onClose={() => setSelectedBusiness(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── Voucher sheet ── */}
+      <AnimatePresence>
+        {activeVoucher && (
+          <VoucherSheet
+            key={activeVoucher.promo.id}
+            business={activeVoucher.business}
+            promo={activeVoucher.promo}
+            disc={activeVoucher.disc}
+            onClose={() => setActiveVoucher(null)}
           />
         )}
       </AnimatePresence>
