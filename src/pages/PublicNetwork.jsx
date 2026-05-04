@@ -3,216 +3,251 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   MapPin,
   X,
-  Sparkles,
   ChevronRight,
-  Check,
-  Calendar,
+  Star,
   Clock,
+  Phone,
   Tag,
   Utensils,
   Scissors,
   Shirt,
   Dumbbell,
   Wrench,
-  Star,
-  Zap,
-  CreditCard,
   Search,
+  MessageCircle,
+  Navigation,
+  BadgeCheck,
+  Zap,
+  ChevronDown,
+  Instagram,
 } from 'lucide-react'
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
-const MERCHANTS = [
+const BUSINESSES = [
   {
     id: 1,
-    name: 'La Rueda',
-    category: 'Gastronomía',
-    promo: 'Menú de mediodía',
-    promo_original: '$12.000',
-    promo_price: 8500,
-    promo_desc: 'Entrada + plato principal + postre + bebida. De lunes a viernes de 12 a 15hs.',
-    color: '#dc2626',
-    image_url: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&h=400&fit=crop&q=80',
-    address: 'Av. Corrientes 1234, CABA',
+    name: 'Barber Club Palermo',
+    category: 'Belleza',
+    description:
+      'Barbería clásica con un toque moderno. Especializados en cortes de autor y tratamientos capilares para hombres.',
+    tags: ['Corte', 'Barba', 'Tratamiento'],
+    address: 'Serrano 1450, Palermo',
+    distance: '280m',
+    hours: { open: true, label: 'Cierra a las 20hs' },
+    phone: '+5491134567890',
+    instagram: 'barberclubpalermo',
     rating: 4.8,
-    reviews: 124,
-    slots: ['12:00', '12:30', '13:00', '13:30', '14:00', '14:30'],
-    featured: true,
+    reviews: 156,
+    image_url: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=400&h=400&fit=crop&q=80',
+    cover_url: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=800&h=400&fit=crop&q=80',
+    color: '#1c1917',
+    promoted: true,
+    services: [
+      { name: 'Corte clásico', price: '$8.500' },
+      { name: 'Corte + barba', price: '$13.000' },
+      { name: 'Arreglo de barba', price: '$5.500' },
+      { name: 'Tratamiento capilar', price: '$11.000' },
+    ],
   },
   {
     id: 2,
-    name: 'El Grano Café',
-    category: 'Gastronomía',
-    promo: 'Brunch completo',
-    promo_original: '$9.500',
-    promo_price: 6000,
-    promo_desc: 'Tostadas, huevos revueltos, jugo y café. Sábados y domingos de 9 a 13hs.',
-    color: '#92400e',
-    image_url: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&h=400&fit=crop&q=80',
-    address: 'Thames 880, Palermo',
-    rating: 4.6,
-    reviews: 89,
-    slots: ['09:00', '09:30', '10:00', '10:30', '11:00'],
-    featured: false,
+    name: 'Spa Alma',
+    category: 'Belleza',
+    description:
+      'Centro de bienestar y relajación. Masajes, tratamientos faciales y terapias holísticas en un espacio de calma total.',
+    tags: ['Masajes', 'Facial', 'Aromaterapia'],
+    address: 'Arenales 2100, Recoleta',
+    distance: '1.2km',
+    hours: { open: true, label: 'Cierra a las 19hs' },
+    phone: '+5491145678901',
+    instagram: 'spaalma.ba',
+    rating: 4.7,
+    reviews: 67,
+    image_url: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=400&h=400&fit=crop&q=80',
+    cover_url: 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=800&h=400&fit=crop&q=80',
+    color: '#7c3aed',
+    promoted: true,
+    services: [
+      { name: 'Masaje relajante 60min', price: '$22.000' },
+      { name: 'Masaje piedras calientes', price: '$28.000' },
+      { name: 'Facial hidratante', price: '$18.500' },
+      { name: 'Aromaterapia 90min', price: '$32.000' },
+    ],
   },
   {
     id: 3,
-    name: 'Misushi',
+    name: 'La Rueda',
     category: 'Gastronomía',
-    promo: 'Combo 20 piezas',
-    promo_original: '$16.000',
-    promo_price: 11000,
-    promo_desc: '20 piezas a elección + edamame + 2 bebidas. Válido cualquier día.',
-    color: '#0f172a',
-    image_url: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=600&h=400&fit=crop&q=80',
-    address: 'Gurruchaga 1540, Palermo',
-    rating: 4.9,
-    reviews: 210,
-    slots: ['19:00', '19:30', '20:00', '20:30', '21:00', '21:30'],
-    featured: true,
+    description:
+      'Restaurante familiar con más de 20 años en el barrio. Cocina tradicional argentina, amplio salón y estacionamiento.',
+    tags: ['Almuerzo', 'Cena', 'Delivery'],
+    address: 'Av. Corrientes 1234, CABA',
+    distance: '450m',
+    hours: { open: true, label: 'Cierra a las 24hs' },
+    phone: '+5491156789012',
+    instagram: 'larueda.resto',
+    rating: 4.8,
+    reviews: 124,
+    image_url: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=400&fit=crop&q=80',
+    cover_url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&h=400&fit=crop&q=80',
+    color: '#dc2626',
+    promoted: false,
+    services: [
+      { name: 'Menú mediodía', price: '$8.500' },
+      { name: 'Parrillada para 2', price: '$34.000' },
+      { name: 'Empanadas (6u)', price: '$6.000' },
+      { name: 'Milanesa napolitana', price: '$12.500' },
+    ],
   },
   {
     id: 4,
-    name: 'Spa Alma',
-    category: 'Belleza',
-    promo: 'Masaje 60 min',
-    promo_original: '$26.000',
-    promo_price: 18000,
-    promo_desc: 'Masaje relajante de cuerpo completo con aceites esenciales. Primera visita.',
-    color: '#7c3aed',
-    image_url: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=600&h=400&fit=crop&q=80',
-    address: 'Arenales 2100, Recoleta',
-    rating: 4.7,
-    reviews: 67,
-    slots: ['10:00', '11:00', '12:00', '15:00', '16:00', '17:00'],
-    featured: false,
+    name: 'Misushi',
+    category: 'Gastronomía',
+    description:
+      'El mejor sushi de Palermo. Rolls creativos, sashimi fresco del día y combos para compartir. También hacemos delivery.',
+    tags: ['Sushi', 'Japonesa', 'Delivery'],
+    address: 'Gurruchaga 1540, Palermo',
+    distance: '600m',
+    hours: { open: false, label: 'Abre a las 19hs' },
+    phone: '+5491167890123',
+    instagram: 'misushi.arg',
+    rating: 4.9,
+    reviews: 210,
+    image_url: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=400&h=400&fit=crop&q=80',
+    cover_url: 'https://images.unsplash.com/photo-1617196034183-421b4040ed20?w=800&h=400&fit=crop&q=80',
+    color: '#0f172a',
+    promoted: false,
+    services: [
+      { name: 'Combo 20 piezas', price: '$11.000' },
+      { name: 'Combo 40 piezas', price: '$20.000' },
+      { name: 'Sashimi 12u', price: '$14.000' },
+      { name: 'Ramen especial', price: '$9.500' },
+    ],
   },
   {
     id: 5,
-    name: 'Leroma Gelato',
-    category: 'Gastronomía',
-    promo: 'Box degustación',
-    promo_original: '$8.000',
-    promo_price: 5000,
-    promo_desc: '500g de helado artesanal en 4 sabores a elección + cucurucho de regalo.',
-    color: '#111111',
-    image_url: 'https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?w=600&h=400&fit=crop&q=80',
-    address: 'Santa Fe 3200, Palermo',
-    rating: 4.5,
-    reviews: 43,
-    slots: ['14:00', '15:00', '16:00', '17:00', '18:00', '19:00'],
-    featured: false,
+    name: 'FitZone',
+    category: 'Fitness',
+    description:
+      'Gimnasio equipado con las últimas máquinas, clases grupales, área de pesas libre y personal trainers certificados.',
+    tags: ['Musculación', 'Clases', 'Personal trainer'],
+    address: 'Av. del Libertador 4500, Palermo',
+    distance: '850m',
+    hours: { open: true, label: 'Cierra a las 22hs' },
+    phone: '+5491178901234',
+    instagram: 'fitzone.palermo',
+    rating: 4.6,
+    reviews: 92,
+    image_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=400&fit=crop&q=80',
+    cover_url: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&h=400&fit=crop&q=80',
+    color: '#0f766e',
+    promoted: false,
+    services: [
+      { name: 'Membresía mensual', price: '$28.000' },
+      { name: 'Semana de prueba', price: '$3.000' },
+      { name: 'Personal trainer (1hs)', price: '$15.000' },
+      { name: 'Clase grupal suelta', price: '$4.500' },
+    ],
   },
   {
     id: 6,
-    name: 'Barber Club',
-    category: 'Belleza',
-    promo: 'Corte + barba',
-    promo_original: '$14.000',
-    promo_price: 9000,
-    promo_desc: 'Corte de autor + arreglo de barba + lavado con tratamiento. Primera visita.',
-    color: '#1c1917',
-    image_url: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600&h=400&fit=crop&q=80',
-    address: 'Serrano 1450, Palermo',
-    rating: 4.8,
-    reviews: 156,
-    slots: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'],
-    featured: true,
+    name: 'Leroma Gelato',
+    category: 'Gastronomía',
+    description:
+      'Heladería artesanal. Elaboramos con leche de tambo y frutas de estación. Sin conservantes, sin colorantes artificiales.',
+    tags: ['Helados', 'Vegano', 'Sin TACC'],
+    address: 'Santa Fe 3200, Palermo',
+    distance: '320m',
+    hours: { open: true, label: 'Cierra a las 23hs' },
+    phone: '+5491189012345',
+    instagram: 'leroma.gelato',
+    rating: 4.5,
+    reviews: 43,
+    image_url: 'https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?w=400&h=400&fit=crop&q=80',
+    cover_url: 'https://images.unsplash.com/photo-1501443762994-82bd5dace89a?w=800&h=400&fit=crop&q=80',
+    color: '#111111',
+    promoted: false,
+    services: [
+      { name: '1/4 kg a elección', price: '$3.500' },
+      { name: '1/2 kg a elección', price: '$6.500' },
+      { name: 'Box degustación', price: '$8.000' },
+      { name: 'Milkshake especial', price: '$5.500' },
+    ],
   },
   {
     id: 7,
-    name: 'Urbana Store',
-    category: 'Indumentaria',
-    promo: 'Remera + jean',
-    promo_original: '$34.000',
-    promo_price: 22000,
-    promo_desc: 'Combo remera premium + jean slim de temporada. Tallas S a XL disponibles.',
-    color: '#1d4ed8',
-    image_url: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&h=400&fit=crop&q=80',
-    address: 'Honduras 5200, Palermo',
-    rating: 4.4,
-    reviews: 38,
-    slots: ['11:00', '12:00', '13:00', '16:00', '17:00', '18:00'],
-    featured: false,
+    name: 'Yoga Studio Zen',
+    category: 'Fitness',
+    description:
+      'Espacio de yoga y meditación para todos los niveles. Clases reducidas para atención personalizada y ambiente tranquilo.',
+    tags: ['Yoga', 'Meditación', 'Pilates'],
+    address: 'Uriarte 2340, Palermo',
+    distance: '700m',
+    hours: { open: false, label: 'Abre mañana 8hs' },
+    phone: '+5491190123456',
+    instagram: 'yogazenpalermo',
+    rating: 4.9,
+    reviews: 71,
+    image_url: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=400&fit=crop&q=80',
+    cover_url: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&h=400&fit=crop&q=80',
+    color: '#065f46',
+    promoted: false,
+    services: [
+      { name: 'Clase suelta', price: '$4.500' },
+      { name: 'Pack 4 clases', price: '$16.000' },
+      { name: 'Pack 8 clases', price: '$28.000' },
+      { name: 'Retiro de un día', price: '$18.000' },
+    ],
   },
   {
     id: 8,
-    name: 'FitZone',
-    category: 'Fitness',
-    promo: 'Semana de prueba',
-    promo_original: '$12.000',
-    promo_price: 3000,
-    promo_desc: '7 días de acceso ilimitado al gimnasio + una clase de prueba con personal trainer.',
-    color: '#0f766e',
-    image_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&h=400&fit=crop&q=80',
-    address: 'Av. del Libertador 4500, Palermo',
-    rating: 4.6,
-    reviews: 92,
-    slots: ['07:00', '08:00', '09:00', '17:00', '18:00', '19:00'],
-    featured: false,
+    name: 'Urbana Store',
+    category: 'Indumentaria',
+    description:
+      'Ropa y accesorios de diseño independiente. Apoyamos a diseñadores locales. Nueva colección cada temporada.',
+    tags: ['Moda', 'Local', 'Unisex'],
+    address: 'Honduras 5200, Palermo',
+    distance: '1.1km',
+    hours: { open: true, label: 'Cierra a las 20hs' },
+    phone: '+5491101234567',
+    instagram: 'urbana.store',
+    rating: 4.4,
+    reviews: 38,
+    image_url: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&h=400&fit=crop&q=80',
+    cover_url: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=800&h=400&fit=crop&q=80',
+    color: '#1d4ed8',
+    promoted: false,
+    services: [
+      { name: 'Remeras', price: 'desde $12.000' },
+      { name: 'Pantalones', price: 'desde $22.000' },
+      { name: 'Accesorios', price: 'desde $6.000' },
+      { name: 'Conjuntos', price: 'desde $35.000' },
+    ],
   },
   {
     id: 9,
-    name: 'Yoga Studio Zen',
-    category: 'Fitness',
-    promo: '3 clases de yoga',
-    promo_original: '$13.500',
-    promo_price: 7500,
-    promo_desc: '3 clases de yoga a elección de estilo. Todos los niveles. Válido 30 días.',
-    color: '#065f46',
-    image_url: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&h=400&fit=crop&q=80',
-    address: 'Uriarte 2340, Palermo',
-    rating: 4.9,
-    reviews: 71,
-    slots: ['08:00', '09:00', '10:00', '18:00', '19:00', '20:00'],
-    featured: false,
-  },
-  {
-    id: 10,
     name: 'AutoSpa Wash',
     category: 'Servicios',
-    promo: 'Detailing completo',
-    promo_original: '$40.000',
-    promo_price: 25000,
-    promo_desc: 'Lavado interior + exterior + encerado + limpieza de tapizados. Solo con turno.',
-    color: '#1e3a8a',
-    image_url: 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=600&h=400&fit=crop&q=80',
+    description:
+      'Lavado y detailing profesional de autos. Trabajamos solo con cita previa para garantizar calidad y tiempo de entrega.',
+    tags: ['Lavado', 'Detailing', 'Con turno'],
     address: 'Av. Cabildo 2800, Belgrano',
+    distance: '2.3km',
+    hours: { open: true, label: 'Cierra a las 18hs' },
+    phone: '+5491112345678',
+    instagram: 'autospawash',
     rating: 4.5,
     reviews: 29,
-    slots: ['09:00', '10:00', '11:00', '14:00', '15:00'],
-    featured: false,
-  },
-  {
-    id: 11,
-    name: 'Centro Relax',
-    category: 'Servicios',
-    promo: 'Masaje 90 min',
-    promo_original: '$35.000',
-    promo_price: 22000,
-    promo_desc: 'Masaje descontracturante + piedras calientes + aromaterapia. Primera visita.',
-    color: '#4c1d95',
-    image_url: 'https://images.unsplash.com/photo-1552693673-1bf958298935?w=600&h=400&fit=crop&q=80',
-    address: 'Av. Santa Fe 1800, Recoleta',
-    rating: 4.7,
-    reviews: 54,
-    slots: ['10:00', '11:00', '12:00', '15:00', '16:00', '17:00'],
-    featured: false,
-  },
-  {
-    id: 12,
-    name: 'Zapatería Roots',
-    category: 'Indumentaria',
-    promo: 'Zapatillas de temporada',
-    promo_original: '$52.000',
-    promo_price: 35000,
-    promo_desc: 'Modelos seleccionados de la nueva colección con descuento exclusivo Repeat.',
-    color: '#854d0e',
-    image_url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop&q=80',
-    address: 'Florida 456, Centro',
-    rating: 4.3,
-    reviews: 22,
-    slots: ['11:00', '12:00', '13:00', '16:00', '17:00', '18:00'],
-    featured: false,
+    image_url: 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=400&h=400&fit=crop&q=80',
+    cover_url: 'https://images.unsplash.com/photo-1507136566006-cfc505b114fc?w=800&h=400&fit=crop&q=80',
+    color: '#1e3a8a',
+    promoted: false,
+    services: [
+      { name: 'Lavado exterior', price: '$8.000' },
+      { name: 'Lavado completo', price: '$14.000' },
+      { name: 'Detailing básico', price: '$25.000' },
+      { name: 'Detailing full', price: '$45.000' },
+    ],
   },
 ]
 
@@ -225,17 +260,6 @@ const CATEGORIES = [
   { id: 'Servicios', label: 'Servicios', Icon: Wrench },
 ]
 
-const DATES = ['Hoy', 'Mañana', 'Mié 7', 'Jue 8', 'Vie 9', 'Sáb 10']
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function getDiscount(m) {
-  return Math.round((1 - m.promo_price / parseInt(m.promo_original.replace(/\D/g, ''))) * 100)
-}
-
-function formatPrice(n) {
-  return '$' + n.toLocaleString('es-AR')
-}
-
 function getCategoryColor(category) {
   const map = {
     Gastronomía: { bg: '#fef3c7', text: '#92400e' },
@@ -247,197 +271,183 @@ function getCategoryColor(category) {
   return map[category] || { bg: '#f3f4f6', text: '#374151' }
 }
 
-// ─── Featured strip (horizontal scroll) ──────────────────────────────────────
-function FeaturedStrip({ merchants, onSelect }) {
-  const featured = merchants.filter((m) => m.featured)
-  if (!featured.length) return null
-
-  return (
-    <div className="mb-5">
-      <div className="flex items-center gap-2 px-4 mb-3">
-        <Zap className="w-3.5 h-3.5 text-yellow-500" fill="currentColor" />
-        <span className="text-xs font-bold text-gray-900 uppercase tracking-widest">Destacados</span>
-      </div>
-      <div className="flex gap-3 overflow-x-auto px-4 pb-1" style={{ scrollbarWidth: 'none' }}>
-        {featured.map((m, i) => {
-          const discount = getDiscount(m)
-          return (
-            <motion.button
-              key={m.id}
-              onClick={() => onSelect(m)}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.07, duration: 0.3 }}
-              whileTap={{ scale: 0.97 }}
-              className="flex-shrink-0 rounded-2xl overflow-hidden text-left relative cursor-pointer"
-              style={{ width: 220 }}
-            >
-              <div className="relative" style={{ height: 120 }}>
-                <img src={m.image_url} alt={m.name} className="w-full h-full object-cover" loading="lazy" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                <div
-                  className="absolute top-2 right-2 text-white text-xs font-black px-2 py-0.5 rounded-full"
-                  style={{ backgroundColor: '#facc15', color: '#000' }}
-                >
-                  -{discount}%
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 p-3">
-                  <p className="text-white font-bold text-sm leading-tight">{m.name}</p>
-                  <p className="text-white/70 text-xs mt-0.5 leading-tight line-clamp-1">{m.promo}</p>
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ backgroundColor: m.color }} />
-              </div>
-              <div className="bg-white px-3 py-2.5 flex items-center justify-between border border-t-0 border-gray-100 rounded-b-2xl">
-                <div>
-                  <span className="font-black text-gray-900 text-sm">{formatPrice(m.promo_price)}</span>
-                  <span className="text-gray-400 text-xs line-through ml-1.5">{m.promo_original}</span>
-                </div>
-                <div className="flex items-center gap-1 text-xs text-gray-400">
-                  <Star className="w-3 h-3 text-yellow-400" fill="currentColor" />
-                  <span className="font-semibold text-gray-600">{m.rating}</span>
-                </div>
-              </div>
-            </motion.button>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
-// ─── Merchant card (grid) ─────────────────────────────────────────────────────
-function MerchantCard({ merchant, onSelect, index }) {
-  const discount = getDiscount(merchant)
-  const catStyle = getCategoryColor(merchant.category)
+// ─── Business card (horizontal) ───────────────────────────────────────────────
+function BusinessCard({ business, onSelect, index }) {
+  const catStyle = getCategoryColor(business.category)
 
   return (
     <motion.button
-      onClick={() => onSelect(merchant)}
-      initial={{ opacity: 0, y: 12 }}
+      onClick={() => onSelect(business)}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.22, delay: index * 0.04 }}
-      whileTap={{ scale: 0.97 }}
+      exit={{ opacity: 0, scale: 0.97 }}
+      transition={{ duration: 0.2, delay: index * 0.04 }}
       layout
-      className="w-full text-left bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-200 cursor-pointer"
+      className="w-full text-left bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-200 cursor-pointer flex gap-0"
     >
       {/* Image */}
-      <div className="relative" style={{ aspectRatio: '16/10' }}>
-        <img src={merchant.image_url} alt={merchant.name} className="w-full h-full object-cover" loading="lazy" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-
-        {/* Discount badge */}
-        <div
-          className="absolute top-2.5 left-2.5 text-black text-xs font-black px-2 py-0.5 rounded-full"
-          style={{ backgroundColor: '#facc15' }}
-        >
-          -{discount}%
-        </div>
-
-        {/* Rating */}
-        <div className="absolute top-2.5 right-2.5 bg-black/50 backdrop-blur-sm rounded-full px-2 py-0.5 flex items-center gap-1">
-          <Star className="w-2.5 h-2.5 text-yellow-400" fill="currentColor" />
-          <span className="text-white text-xs font-semibold">{merchant.rating}</span>
-        </div>
-
-        {/* Color accent bar */}
-        <div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ backgroundColor: merchant.color }} />
+      <div className="relative flex-shrink-0" style={{ width: 96, height: 96 }}>
+        <img src={business.image_url} alt={business.name} className="w-full h-full object-cover" loading="lazy" />
+        {business.promoted && (
+          <div className="absolute top-1.5 left-1.5 bg-yellow-400 rounded-md px-1 py-0.5">
+            <Zap className="w-2.5 h-2.5 text-black" fill="currentColor" />
+          </div>
+        )}
       </div>
 
       {/* Info */}
-      <div className="p-3">
-        {/* Category chip */}
-        <span
-          className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-1.5"
-          style={{ backgroundColor: catStyle.bg, color: catStyle.text }}
-        >
-          {merchant.category}
-        </span>
-
-        <p className="font-bold text-gray-900 text-sm leading-snug mb-0.5">{merchant.name}</p>
-        <p className="text-xs text-gray-500 leading-snug line-clamp-1 mb-2.5">{merchant.promo}</p>
-
-        {/* Price row */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <span className="font-black text-gray-900 text-base">{formatPrice(merchant.promo_price)}</span>
-            <span className="text-xs text-gray-400 line-through">{merchant.promo_original}</span>
+      <div className="flex-1 min-w-0 px-3 py-2.5 flex flex-col justify-between">
+        <div>
+          <div className="flex items-start justify-between gap-1 mb-0.5">
+            <p className="font-bold text-gray-900 text-sm leading-snug line-clamp-1">{business.name}</p>
+            <div className="flex items-center gap-0.5 flex-shrink-0">
+              <Star className="w-3 h-3 text-yellow-400" fill="currentColor" />
+              <span className="text-xs font-bold text-gray-700">{business.rating}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-0.5 text-xs font-bold" style={{ color: merchant.color }}>
-            <span>Reservar</span>
-            <ChevronRight className="w-3 h-3" />
+
+          <div className="flex items-center gap-1 mb-1.5">
+            <span
+              className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md"
+              style={{ backgroundColor: catStyle.bg, color: catStyle.text }}
+            >
+              {business.category}
+            </span>
+            <span className="text-[10px] text-gray-400">·</span>
+            <span className="text-[10px] text-gray-400">{business.distance}</span>
+          </div>
+
+          {/* Tags */}
+          <div className="flex gap-1 flex-wrap">
+            {business.tags.slice(0, 3).map((t) => (
+              <span key={t} className="text-[10px] text-gray-500 bg-gray-100 rounded-md px-1.5 py-0.5 leading-none">
+                {t}
+              </span>
+            ))}
           </div>
         </div>
+
+        {/* Hours */}
+        <div className="flex items-center gap-1 mt-1.5">
+          <div
+            className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+            style={{ backgroundColor: business.hours.open ? '#16a34a' : '#9ca3af' }}
+          />
+          <span className="text-[10px] font-medium" style={{ color: business.hours.open ? '#16a34a' : '#9ca3af' }}>
+            {business.hours.open ? 'Abierto' : 'Cerrado'}
+          </span>
+          <span className="text-[10px] text-gray-400">· {business.hours.label}</span>
+        </div>
+      </div>
+
+      <div className="flex items-center pr-3 flex-shrink-0">
+        <ChevronRight className="w-4 h-4 text-gray-300" />
       </div>
     </motion.button>
   )
 }
 
-// ─── Step indicator ───────────────────────────────────────────────────────────
-const STEPS = ['Oferta', 'Fecha y hora', 'Pago']
-function StepBar({ current }) {
-  const idx = ['detail', 'booking', 'checkout'].indexOf(current)
-  if (idx < 0) return null
+// ─── Promoted strip ───────────────────────────────────────────────────────────
+function PromotedStrip({ businesses, onSelect }) {
+  const promoted = businesses.filter((b) => b.promoted)
+  if (!promoted.length) return null
+
   return (
-    <div className="flex items-center gap-2 px-5 pt-2 pb-4">
-      {STEPS.map((label, i) => (
-        <div key={label} className="flex items-center gap-2 flex-1 last:flex-none">
-          <div className="flex items-center gap-1.5">
-            <div
-              className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 transition-all duration-300"
-              style={
-                i < idx
-                  ? { backgroundColor: '#16a34a', color: '#fff' }
-                  : i === idx
-                    ? { backgroundColor: '#0f172a', color: '#fff' }
-                    : { backgroundColor: '#f3f4f6', color: '#9ca3af' }
-              }
+    <div className="mb-5">
+      <div className="flex items-center gap-1.5 px-4 mb-2.5">
+        <Zap className="w-3 h-3 text-yellow-500" fill="currentColor" />
+        <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Promocionados</span>
+      </div>
+      <div className="flex gap-3 overflow-x-auto px-4 pb-1" style={{ scrollbarWidth: 'none' }}>
+        {promoted.map((b, i) => {
+          const catStyle = getCategoryColor(b.category)
+          return (
+            <motion.button
+              key={b.id}
+              onClick={() => onSelect(b)}
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.08, duration: 0.25 }}
+              whileTap={{ scale: 0.97 }}
+              className="flex-shrink-0 bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-md transition-all text-left cursor-pointer"
+              style={{ width: 200 }}
             >
-              {i < idx ? <Check className="w-3 h-3" strokeWidth={3} /> : i + 1}
-            </div>
-            <span className="text-xs font-semibold hidden sm:block" style={{ color: i <= idx ? '#111827' : '#9ca3af' }}>
-              {label}
-            </span>
+              <div className="relative" style={{ height: 110 }}>
+                <img src={b.cover_url} alt={b.name} className="w-full h-full object-cover" loading="lazy" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute top-2 left-2 bg-yellow-400 rounded-full px-2 py-0.5 flex items-center gap-1">
+                  <Zap className="w-2.5 h-2.5 text-black" fill="currentColor" />
+                  <span className="text-black text-[10px] font-black">Destacado</span>
+                </div>
+                <div className="absolute bottom-2 left-3 right-3">
+                  <p className="text-white font-black text-sm leading-tight line-clamp-1">{b.name}</p>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ backgroundColor: b.color }} />
+              </div>
+              <div className="px-3 py-2.5 flex items-center justify-between">
+                <div>
+                  <span
+                    className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md"
+                    style={{ backgroundColor: catStyle.bg, color: catStyle.text }}
+                  >
+                    {b.category}
+                  </span>
+                  <div className="flex items-center gap-1 mt-1">
+                    <div
+                      className="w-1.5 h-1.5 rounded-full"
+                      style={{ backgroundColor: b.hours.open ? '#16a34a' : '#9ca3af' }}
+                    />
+                    <span className="text-[10px] text-gray-400">{b.hours.label}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-0.5">
+                  <Star className="w-3 h-3 text-yellow-400" fill="currentColor" />
+                  <span className="text-xs font-bold text-gray-700">{b.rating}</span>
+                </div>
+              </div>
+            </motion.button>
+          )
+        })}
+
+        {/* CTA card: "Promocioná tu negocio" */}
+        <motion.div
+          initial={{ opacity: 0, x: 16 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: promoted.length * 0.08, duration: 0.25 }}
+          className="flex-shrink-0 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-center p-4 cursor-pointer hover:border-gray-300 transition-colors"
+          style={{ width: 160 }}
+        >
+          <div className="w-8 h-8 rounded-full bg-yellow-50 flex items-center justify-center mb-2">
+            <Zap className="w-4 h-4 text-yellow-500" />
           </div>
-          {i < STEPS.length - 1 && (
-            <div
-              className="flex-1 h-px transition-all duration-500"
-              style={{ backgroundColor: i < idx ? '#16a34a' : '#e5e7eb' }}
-            />
-          )}
-        </div>
-      ))}
+          <p className="text-xs font-bold text-gray-800 leading-snug mb-0.5">¿Tenés un negocio?</p>
+          <p className="text-[10px] text-gray-400 leading-snug">Mostralo en la red</p>
+        </motion.div>
+      </div>
     </div>
   )
 }
 
-// ─── Bottom sheet ─────────────────────────────────────────────────────────────
-function MerchantSheet({ merchant, onClose }) {
-  const [step, setStep] = useState('detail')
-  const [selectedDate, setSelectedDate] = useState(0)
-  const [selectedSlot, setSelectedSlot] = useState(null)
-  const catStyle = getCategoryColor(merchant.category)
-
-  const repeatFee = Math.round(merchant.promo_price * 0.1)
-  const merchantReceives = merchant.promo_price - repeatFee
-  const discount = getDiscount(merchant)
+// ─── Business detail sheet ────────────────────────────────────────────────────
+function BusinessSheet({ business, onClose }) {
+  const [servicesExpanded, setServicesExpanded] = useState(false)
+  const catStyle = getCategoryColor(business.category)
+  const visibleServices = servicesExpanded ? business.services : business.services.slice(0, 3)
 
   return (
     <>
-      {/* Backdrop */}
       <motion.div
         className="fixed inset-0 z-50"
-        style={{ backgroundColor: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(2px)' }}
+        style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(2px)' }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
       />
 
-      {/* Sheet */}
       <motion.div
         className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-3xl flex flex-col"
-        style={{ maxHeight: '93dvh' }}
+        style={{ maxHeight: '92dvh' }}
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
@@ -448,370 +458,207 @@ function MerchantSheet({ merchant, onClose }) {
           <div className="w-9 h-1 rounded-full bg-gray-200" />
         </div>
 
-        {/* Step bar */}
-        {step !== 'confirmed' && <StepBar current={step} />}
-
-        {/* Scrollable content */}
         <div className="overflow-y-auto flex-1 overscroll-contain">
-          <AnimatePresence mode="wait">
-            {/* ── STEP 1: Detalle ── */}
-            {step === 'detail' && (
-              <motion.div
-                key="detail"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-              >
-                {/* Hero */}
-                <div className="relative mx-4 rounded-2xl overflow-hidden" style={{ aspectRatio: '16/7' }}>
-                  <img src={merchant.image_url} alt={merchant.name} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 h-1" style={{ backgroundColor: merchant.color }} />
-                  <button
-                    onClick={onClose}
-                    className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center"
-                    aria-label="Cerrar"
-                  >
-                    <X className="w-4 h-4 text-white" />
-                  </button>
-                </div>
-
-                <div className="px-5 pt-4 pb-8">
-                  {/* Header */}
-                  <div className="flex items-start justify-between gap-3 mb-1">
-                    <div className="flex-1 min-w-0">
-                      <span
-                        className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-1"
-                        style={{ backgroundColor: catStyle.bg, color: catStyle.text }}
-                      >
-                        {merchant.category}
-                      </span>
-                      <h2 className="text-xl font-black text-gray-900 leading-tight">{merchant.name}</h2>
-                    </div>
-                    <div className="flex items-center gap-1 flex-shrink-0 bg-gray-50 rounded-xl px-2.5 py-1.5">
-                      <Star className="w-3.5 h-3.5 text-yellow-400" fill="currentColor" />
-                      <span className="text-sm font-bold text-gray-900">{merchant.rating}</span>
-                      <span className="text-xs text-gray-400">({merchant.reviews})</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-5">
-                    <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" />
-                    <span>{merchant.address}</span>
-                  </div>
-
-                  {/* Promo card */}
-                  <div className="rounded-2xl overflow-hidden border border-gray-100 mb-5 shadow-sm">
-                    <div className="px-4 py-2.5 flex items-center gap-2" style={{ backgroundColor: catStyle.bg }}>
-                      <Sparkles className="w-3.5 h-3.5 flex-shrink-0" style={{ color: catStyle.text }} />
-                      <span className="text-xs font-bold uppercase tracking-wider" style={{ color: catStyle.text }}>
-                        Oferta exclusiva Repeat
-                      </span>
-                    </div>
-                    <div className="px-4 py-4 bg-white">
-                      <p className="font-bold text-gray-900 text-base mb-1">{merchant.promo}</p>
-                      <p className="text-sm text-gray-500 leading-relaxed mb-4">{merchant.promo_desc}</p>
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl font-black text-gray-900">{formatPrice(merchant.promo_price)}</span>
-                        <span className="text-sm text-gray-400 line-through">{merchant.promo_original}</span>
-                        <span className="bg-yellow-100 text-yellow-800 text-xs font-bold px-2.5 py-1 rounded-full">
-                          {discount}% OFF
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => setStep('booking')}
-                    className="w-full py-4 rounded-2xl font-black text-base text-black transition-all active:scale-[0.98]"
-                    style={{ backgroundColor: '#facc15' }}
-                  >
-                    Reservar y pagar →
-                  </button>
-                </div>
-              </motion.div>
+          {/* Cover */}
+          <div className="relative mx-4 mt-3 rounded-2xl overflow-hidden" style={{ aspectRatio: '16/7' }}>
+            <img src={business.cover_url} alt={business.name} className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 h-1" style={{ backgroundColor: business.color }} />
+            <button
+              onClick={onClose}
+              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center"
+              aria-label="Cerrar"
+            >
+              <X className="w-4 h-4 text-white" />
+            </button>
+            {business.promoted && (
+              <div className="absolute top-3 left-3 bg-yellow-400 rounded-full px-2.5 py-1 flex items-center gap-1">
+                <Zap className="w-3 h-3 text-black" fill="currentColor" />
+                <span className="text-black text-[10px] font-black">Destacado</span>
+              </div>
             )}
+          </div>
 
-            {/* ── STEP 2: Fecha y hora ── */}
-            {step === 'booking' && (
-              <motion.div
-                key="booking"
-                initial={{ opacity: 0, x: 40 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -40 }}
-                transition={{ duration: 0.22 }}
-              >
-                <div className="px-5 pb-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <button
-                      onClick={() => setStep('detail')}
-                      className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0"
-                      aria-label="Volver"
+          <div className="px-5 pt-4 pb-8">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-3 mb-1">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span
+                    className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                    style={{ backgroundColor: catStyle.bg, color: catStyle.text }}
+                  >
+                    {business.category}
+                  </span>
+                  {business.promoted && <BadgeCheck className="w-4 h-4 text-yellow-500" fill="#fef9c3" />}
+                </div>
+                <h2 className="text-xl font-black text-gray-900 leading-tight">{business.name}</h2>
+              </div>
+              <div className="flex items-center gap-1 bg-gray-50 rounded-xl px-2.5 py-1.5 flex-shrink-0">
+                <Star className="w-3.5 h-3.5 text-yellow-400" fill="currentColor" />
+                <span className="text-sm font-bold text-gray-900">{business.rating}</span>
+                <span className="text-xs text-gray-400">({business.reviews})</span>
+              </div>
+            </div>
+
+            {/* Meta row */}
+            <div className="flex items-center gap-3 mb-4 flex-wrap">
+              <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                <span className="text-xs">{business.address}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Navigation className="w-3 h-3 text-gray-400" />
+                <span className="text-xs font-semibold text-gray-500">{business.distance}</span>
+              </div>
+            </div>
+
+            {/* Hours */}
+            <div
+              className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl mb-4"
+              style={{ backgroundColor: business.hours.open ? '#f0fdf4' : '#f9fafb' }}
+            >
+              <Clock
+                className="w-3.5 h-3.5 flex-shrink-0"
+                style={{ color: business.hours.open ? '#16a34a' : '#9ca3af' }}
+              />
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold" style={{ color: business.hours.open ? '#15803d' : '#6b7280' }}>
+                  {business.hours.open ? 'Abierto ahora' : 'Cerrado ahora'}
+                </span>
+                <span className="text-xs text-gray-400">·</span>
+                <span className="text-xs text-gray-500">{business.hours.label}</span>
+              </div>
+            </div>
+
+            {/* Description */}
+            <p className="text-sm text-gray-600 leading-relaxed mb-5">{business.description}</p>
+
+            {/* Tags */}
+            <div className="flex flex-wrap gap-1.5 mb-5">
+              {business.tags.map((t) => (
+                <span key={t} className="text-xs font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+                  {t}
+                </span>
+              ))}
+            </div>
+
+            {/* Services */}
+            <div className="mb-5">
+              <h3 className="text-sm font-bold text-gray-900 mb-3">Servicios y precios</h3>
+              <div className="rounded-2xl border border-gray-100 overflow-hidden">
+                <AnimatePresence initial={false}>
+                  {visibleServices.map((s, i) => (
+                    <motion.div
+                      key={s.name}
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.18 }}
+                      className="flex items-center justify-between px-4 py-3 border-b border-gray-50 last:border-0"
+                      style={{ backgroundColor: i % 2 === 0 ? '#fff' : '#fafafa' }}
                     >
-                      <ChevronRight className="w-4 h-4 text-gray-600 rotate-180" />
-                    </button>
-                    <div>
-                      <p className="text-xs text-gray-400 font-medium">Reserva en</p>
-                      <h2 className="font-black text-gray-900 text-base">{merchant.name}</h2>
-                    </div>
-                  </div>
-
-                  {/* Fecha */}
-                  <div className="mb-6">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Calendar className="w-4 h-4" style={{ color: merchant.color }} />
-                      <p className="text-sm font-bold text-gray-800">Elegí el día</p>
-                    </div>
-                    <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
-                      {DATES.map((d, i) => (
-                        <button
-                          key={i}
-                          onClick={() => {
-                            setSelectedDate(i)
-                            setSelectedSlot(null)
-                          }}
-                          className="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150"
-                          style={
-                            selectedDate === i
-                              ? { backgroundColor: merchant.color, color: '#fff' }
-                              : { backgroundColor: '#f3f4f6', color: '#374151' }
-                          }
-                        >
-                          {d}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Horario */}
-                  <div className="mb-8">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Clock className="w-4 h-4" style={{ color: merchant.color }} />
-                      <p className="text-sm font-bold text-gray-800">Elegí el horario</p>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      {merchant.slots.map((slot) => (
-                        <button
-                          key={slot}
-                          onClick={() => setSelectedSlot(slot)}
-                          className="py-3 rounded-xl text-sm font-semibold transition-all duration-150"
-                          style={
-                            selectedSlot === slot
-                              ? { backgroundColor: merchant.color, color: '#fff' }
-                              : { backgroundColor: '#f3f4f6', color: '#374151' }
-                          }
-                        >
-                          {slot}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
+                      <span className="text-sm text-gray-700">{s.name}</span>
+                      <span className="text-sm font-bold text-gray-900">{s.price}</span>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+                {business.services.length > 3 && (
                   <button
-                    disabled={!selectedSlot}
-                    onClick={() => setStep('checkout')}
-                    className="w-full py-4 rounded-2xl font-black text-base text-black transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
-                    style={{ backgroundColor: '#facc15' }}
+                    onClick={() => setServicesExpanded((e) => !e)}
+                    className="w-full flex items-center justify-center gap-1.5 py-3 text-xs font-bold text-gray-500 hover:text-gray-800 transition-colors"
+                    style={{ backgroundColor: '#f9fafb' }}
                   >
-                    {selectedSlot ? `Continuar · ${DATES[selectedDate]} ${selectedSlot}hs` : 'Elegí un horario'}
+                    {servicesExpanded ? 'Ver menos' : `Ver ${business.services.length - 3} más`}
+                    <motion.div animate={{ rotate: servicesExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    </motion.div>
                   </button>
-                </div>
-              </motion.div>
-            )}
+                )}
+              </div>
+            </div>
 
-            {/* ── STEP 3: Checkout ── */}
-            {step === 'checkout' && (
-              <motion.div
-                key="checkout"
-                initial={{ opacity: 0, x: 40 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -40 }}
-                transition={{ duration: 0.22 }}
+            {/* CTA buttons */}
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <a
+                href={`https://wa.me/${business.phone.replace(/\D/g, '')}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm text-black transition-all active:scale-[0.98]"
+                style={{ backgroundColor: '#facc15' }}
               >
-                <div className="px-5 pb-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <button
-                      onClick={() => setStep('booking')}
-                      className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0"
-                      aria-label="Volver"
-                    >
-                      <ChevronRight className="w-4 h-4 text-gray-600 rotate-180" />
-                    </button>
-                    <h2 className="font-black text-gray-900 text-base">Confirmá tu reserva</h2>
-                  </div>
-
-                  {/* Resumen */}
-                  <div className="bg-gray-50 rounded-2xl p-4 mb-4">
-                    <div className="flex items-center gap-3 pb-3 mb-3 border-b border-gray-200">
-                      <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: merchant.color }}
-                      >
-                        <span className="text-white font-black text-base">{merchant.name[0]}</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-gray-900 text-sm">{merchant.name}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          {DATES[selectedDate]} · {selectedSlot}hs
-                        </p>
-                      </div>
-                      <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-                        -{discount}%
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-3 font-medium">{merchant.promo}</p>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Precio promo</span>
-                      <span className="font-bold text-gray-900">{formatPrice(merchant.promo_price)}</span>
-                    </div>
-                  </div>
-
-                  {/* Split Repeat */}
-                  <div className="rounded-2xl border border-gray-200 overflow-hidden mb-4">
-                    <div className="px-4 py-3 flex items-center gap-2.5" style={{ backgroundColor: '#0f172a' }}>
-                      <img src="/logo.png" alt="Repeat" className="w-5 h-5 rounded-md flex-shrink-0" />
-                      <span className="text-xs font-bold text-white">Procesado por Repeat</span>
-                    </div>
-                    <div className="px-4 py-3 space-y-2 bg-white">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-500">Para {merchant.name} (90%)</span>
-                        <span className="font-semibold text-gray-900">{formatPrice(merchantReceives)}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-500">Fee Repeat (10%)</span>
-                        <span className="font-semibold text-gray-400">{formatPrice(repeatFee)}</span>
-                      </div>
-                      <div className="h-px bg-gray-100" />
-                      <div className="flex justify-between">
-                        <span className="font-bold text-gray-900">Total</span>
-                        <span className="font-black text-gray-900 text-base">{formatPrice(merchant.promo_price)}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Método de pago */}
-                  <div className="rounded-2xl border border-gray-200 px-4 py-3 flex items-center gap-3 mb-6 bg-white">
-                    <div className="w-10 h-7 rounded-lg bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center flex-shrink-0">
-                      <CreditCard className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-bold text-gray-900">•••• •••• •••• 4242</p>
-                      <p className="text-xs text-gray-400 mt-0.5">Visa · vence 09/28</p>
-                    </div>
-                    <span className="text-xs font-bold text-blue-600 cursor-pointer">Cambiar</span>
-                  </div>
-
-                  <button
-                    onClick={() => setStep('confirmed')}
-                    className="w-full py-4 rounded-2xl font-black text-base text-black transition-all active:scale-[0.98]"
-                    style={{ backgroundColor: '#facc15' }}
-                  >
-                    Pagar {formatPrice(merchant.promo_price)}
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {/* ── STEP 4: Confirmación ── */}
-            {step === 'confirmed' && (
-              <motion.div
-                key="confirmed"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
+                <MessageCircle className="w-4 h-4" />
+                WhatsApp
+              </a>
+              <a
+                href={`tel:${business.phone}`}
+                className="flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all active:scale-[0.98] border border-gray-200 text-gray-700 hover:bg-gray-50"
               >
-                <div className="px-5 pt-4 pb-10 flex flex-col items-center text-center">
-                  {/* Check animation */}
-                  <motion.div
-                    initial={{ scale: 0, rotate: -20 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ type: 'spring', stiffness: 280, damping: 18, delay: 0.1 }}
-                    className="w-20 h-20 rounded-full flex items-center justify-center mb-5 shadow-lg"
-                    style={{ backgroundColor: '#facc15' }}
-                  >
-                    <Check className="w-10 h-10 text-black" strokeWidth={3} />
-                  </motion.div>
+                <Phone className="w-4 h-4" />
+                Llamar
+              </a>
+            </div>
 
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.25 }}
-                  >
-                    <h2 className="text-2xl font-black text-gray-900 mb-1">¡Reserva confirmada!</h2>
-                    <p className="text-sm text-gray-500 mb-6">
-                      {merchant.name} · {DATES[selectedDate]} a las {selectedSlot}hs
-                    </p>
-                  </motion.div>
-
-                  {/* QR mock */}
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.35 }}
-                    className="bg-white rounded-3xl border-2 border-gray-100 p-5 mb-5 w-full max-w-xs shadow-sm"
-                  >
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">
-                      Mostrá este QR al llegar
-                    </p>
-                    <div className="mx-auto" style={{ width: 156, height: 156 }}>
-                      <img
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=156x156&data=repeat-booking-${merchant.id}-${Date.now()}`}
-                        alt="QR de reserva"
-                        className="w-full h-full"
-                      />
-                    </div>
-                    <p className="text-xs text-gray-400 mt-4 font-mono">#{Math.floor(Math.random() * 90000) + 10000}</p>
-                  </motion.div>
-
-                  {/* Split recap */}
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.45 }}
-                    className="w-full bg-gray-50 rounded-2xl px-4 py-3 mb-6 border border-gray-100"
-                  >
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-500">Pagaste</span>
-                      <span className="font-bold text-gray-900">{formatPrice(merchant.promo_price)}</span>
-                    </div>
-                    <div className="flex justify-between text-xs text-gray-400">
-                      <span>{merchant.name} recibe</span>
-                      <span>{formatPrice(merchantReceives)}</span>
-                    </div>
-                  </motion.div>
-
-                  <button
-                    onClick={onClose}
-                    className="w-full py-4 rounded-2xl font-black text-base bg-gray-900 text-white transition-all active:scale-[0.98]"
-                  >
-                    Volver a la red
-                  </button>
-                </div>
-              </motion.div>
+            {/* Instagram */}
+            {business.instagram && (
+              <a
+                href={`https://instagram.com/${business.instagram}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl text-xs font-bold text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <Instagram className="w-3.5 h-3.5" />@{business.instagram}
+              </a>
             )}
-          </AnimatePresence>
+          </div>
         </div>
       </motion.div>
     </>
   )
 }
 
+// ─── Promote your business banner ─────────────────────────────────────────────
+function PromoteBanner() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.3, duration: 0.3 }}
+      className="mx-0 mt-6 rounded-2xl overflow-hidden border border-yellow-200"
+      style={{ background: 'linear-gradient(135deg, #fefce8 0%, #fef9c3 100%)' }}
+    >
+      <div className="px-4 py-4 flex items-center gap-4">
+        <div className="w-10 h-10 rounded-xl bg-yellow-400 flex items-center justify-center flex-shrink-0 shadow-sm">
+          <Zap className="w-5 h-5 text-black" fill="currentColor" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-black text-gray-900 leading-tight">¿Tenés un negocio?</p>
+          <p className="text-xs text-gray-600 mt-0.5 leading-snug">
+            Sumalo a la red y llegá a miles de clientes cerca tuyo.
+          </p>
+        </div>
+        <button className="flex-shrink-0 text-xs font-bold text-black bg-yellow-400 hover:bg-yellow-300 transition-colors px-3 py-2 rounded-xl">
+          Sumarme
+        </button>
+      </div>
+    </motion.div>
+  )
+}
+
 // ─── Página principal ─────────────────────────────────────────────────────────
 export default function PublicNetwork() {
   const [activeCategory, setActiveCategory] = useState('Todos')
-  const [selectedMerchant, setSelectedMerchant] = useState(null)
+  const [selectedBusiness, setSelectedBusiness] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
   const searchRef = useRef(null)
 
-  const countFor = (id) => (id === 'Todos' ? MERCHANTS.length : MERCHANTS.filter((m) => m.category === id).length)
+  const countFor = (id) => (id === 'Todos' ? BUSINESSES.length : BUSINESSES.filter((b) => b.category === id).length)
 
-  const filtered = MERCHANTS.filter((m) => {
-    const matchCat = activeCategory === 'Todos' || m.category === activeCategory
+  const filtered = BUSINESSES.filter((b) => {
+    const matchCat = activeCategory === 'Todos' || b.category === activeCategory
     const q = searchQuery.trim().toLowerCase()
-    const matchQ = !q || m.name.toLowerCase().includes(q) || m.promo.toLowerCase().includes(q)
+    const matchQ = !q || b.name.toLowerCase().includes(q) || b.tags.some((t) => t.toLowerCase().includes(q))
     return matchCat && matchQ
   })
 
@@ -833,7 +680,6 @@ export default function PublicNetwork() {
         <div className="px-4 pt-4 pb-3 flex items-center gap-3">
           <AnimatePresence mode="wait" initial={false}>
             {searchOpen ? (
-              /* ── Search mode ── */
               <motion.div
                 key="search"
                 className="flex-1 flex items-center gap-2"
@@ -851,7 +697,7 @@ export default function PublicNetwork() {
                     ref={searchRef}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Buscar comercios u ofertas…"
+                    placeholder="Buscá un negocio o servicio…"
                     className="flex-1 bg-transparent text-sm text-white placeholder:text-white/30 outline-none"
                     style={{ minWidth: 0 }}
                   />
@@ -872,7 +718,6 @@ export default function PublicNetwork() {
                 </button>
               </motion.div>
             ) : (
-              /* ── Default mode ── */
               <motion.div
                 key="default"
                 className="flex items-center gap-3 flex-1 min-w-0"
@@ -884,18 +729,19 @@ export default function PublicNetwork() {
                 <img src="/logo.png" alt="Repeat" className="w-9 h-9 rounded-xl flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <h1 className="text-white font-black text-lg leading-none tracking-tight">Red Repeat</h1>
-                  <p className="text-white/35 text-xs mt-0.5 leading-none">Ofertas exclusivas</p>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <Navigation className="w-2.5 h-2.5 text-white/40" />
+                    <p className="text-white/35 text-xs leading-none">Palermo, Buenos Aires</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <button
-                    onClick={openSearch}
-                    className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
-                    style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
-                    aria-label="Buscar"
-                  >
-                    <Search className="w-4 h-4 text-white/70" />
-                  </button>
-                </div>
+                <button
+                  onClick={openSearch}
+                  className="w-8 h-8 rounded-full flex items-center justify-center transition-colors flex-shrink-0"
+                  style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
+                  aria-label="Buscar"
+                >
+                  <Search className="w-4 h-4 text-white/70" />
+                </button>
               </motion.div>
             )}
           </AnimatePresence>
@@ -915,7 +761,7 @@ export default function PublicNetwork() {
               >
                 <Icon className="w-3 h-3" />
                 <span>{label}</span>
-                {count > 0 && !active && (
+                {!active && (
                   <span
                     className="text-[9px] font-bold leading-none rounded-full px-1 py-px"
                     style={{ backgroundColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.3)' }}
@@ -923,7 +769,6 @@ export default function PublicNetwork() {
                     {count}
                   </span>
                 )}
-                {/* Sliding underline */}
                 {active && (
                   <motion.div
                     layoutId="tab-indicator"
@@ -936,29 +781,28 @@ export default function PublicNetwork() {
             )
           })}
         </div>
-        {/* Tab bottom border */}
-        <div className="h-px mx-0" style={{ backgroundColor: 'rgba(255,255,255,0.07)' }} />
+        <div className="h-px" style={{ backgroundColor: 'rgba(255,255,255,0.07)' }} />
       </div>
 
       {/* ── Content ── */}
       <div className="max-w-2xl mx-auto px-4 pt-5 pb-10">
-        {/* Featured strip — only on "Todos" without search */}
+        {/* Promoted strip — only on Todos, no search */}
         <AnimatePresence>
           {activeCategory === 'Todos' && !searchQuery && (
             <motion.div
-              key="featured"
+              key="promoted"
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.25 }}
               style={{ overflow: 'hidden', marginLeft: '-1rem', marginRight: '-1rem' }}
             >
-              <FeaturedStrip merchants={MERCHANTS} onSelect={setSelectedMerchant} />
+              <PromotedStrip businesses={BUSINESSES} onSelect={setSelectedBusiness} />
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Section title / search results label */}
+        {/* Section label */}
         <div className="flex items-center justify-between mb-3">
           <AnimatePresence mode="wait" initial={false}>
             {searchQuery ? (
@@ -966,19 +810,19 @@ export default function PublicNetwork() {
                 key="search-label"
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 4 }}
+                exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
                 className="flex items-center gap-2"
               >
                 <Search className="w-3.5 h-3.5 text-gray-400" />
-                <span className="text-sm font-bold text-gray-900">Resultados para &ldquo;{searchQuery}&rdquo;</span>
+                <span className="text-sm font-bold text-gray-900">&ldquo;{searchQuery}&rdquo;</span>
               </motion.div>
             ) : (
               <motion.div
                 key="cat-label"
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 4 }}
+                exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
                 className="flex items-center gap-2"
               >
@@ -986,19 +830,19 @@ export default function PublicNetwork() {
                   <div className="w-1 h-4 rounded-full" style={{ backgroundColor: '#0f172a' }} />
                 )}
                 <h2 className="text-sm font-bold text-gray-900">
-                  {activeCategory === 'Todos' ? 'Todos los comercios' : activeCategory}
+                  {activeCategory === 'Todos' ? 'Cerca tuyo' : activeCategory}
                 </h2>
               </motion.div>
             )}
           </AnimatePresence>
-          <span className="text-xs text-gray-400 font-medium tabular-nums">{filtered.length} resultados</span>
+          <span className="text-xs text-gray-400 font-medium tabular-nums">{filtered.length} negocios</span>
         </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-2 gap-3">
+        {/* Business list */}
+        <div className="flex flex-col gap-2.5">
           <AnimatePresence mode="popLayout">
-            {filtered.map((m, i) => (
-              <MerchantCard key={m.id} merchant={m} onSelect={setSelectedMerchant} index={i} />
+            {filtered.map((b, i) => (
+              <BusinessCard key={b.id} business={b} onSelect={setSelectedBusiness} index={i} />
             ))}
           </AnimatePresence>
         </div>
@@ -1013,32 +857,33 @@ export default function PublicNetwork() {
             <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
               {searchQuery ? <Search className="w-6 h-6 text-gray-400" /> : <Tag className="w-6 h-6 text-gray-400" />}
             </div>
-            <p className="text-sm font-bold text-gray-800 mb-1">{searchQuery ? 'Sin resultados' : 'Sin comercios'}</p>
-            <p className="text-xs text-gray-400 leading-relaxed max-w-xs">
-              {searchQuery
-                ? `No encontramos resultados para "${searchQuery}".`
-                : 'No hay comercios en esta categoría todavía.'}
+            <p className="text-sm font-bold text-gray-800 mb-1">Sin resultados</p>
+            <p className="text-xs text-gray-400 max-w-xs leading-relaxed">
+              {searchQuery ? `No encontramos negocios para "${searchQuery}".` : 'No hay negocios en esta categoría.'}
             </p>
             {searchQuery && (
               <button
                 onClick={closeSearch}
-                className="mt-4 text-xs font-bold px-4 py-2 rounded-full"
-                style={{ backgroundColor: '#0f172a', color: '#fff' }}
+                className="mt-4 text-xs font-bold px-4 py-2 rounded-full text-white"
+                style={{ backgroundColor: '#0f172a' }}
               >
                 Limpiar búsqueda
               </button>
             )}
           </motion.div>
         )}
+
+        {/* Promote banner */}
+        {!searchQuery && <PromoteBanner />}
       </div>
 
       {/* ── Sheet ── */}
       <AnimatePresence>
-        {selectedMerchant && (
-          <MerchantSheet
-            key={selectedMerchant.id}
-            merchant={selectedMerchant}
-            onClose={() => setSelectedMerchant(null)}
+        {selectedBusiness && (
+          <BusinessSheet
+            key={selectedBusiness.id}
+            business={selectedBusiness}
+            onClose={() => setSelectedBusiness(null)}
           />
         )}
       </AnimatePresence>
