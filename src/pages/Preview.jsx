@@ -1,6 +1,6 @@
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, RotateCcw } from 'lucide-react'
-import { useRef } from 'react'
+import { ArrowLeft, Monitor, RotateCcw, Smartphone } from 'lucide-react'
+import { useRef, useState } from 'react'
 
 function IPhone({ url }) {
   const iframeRef = useRef(null)
@@ -165,7 +165,7 @@ function IPhone({ url }) {
 
 function Laptop({ url }) {
   return (
-    <div style={{ width: 860, flexShrink: 0 }}>
+    <div style={{ width: 1100, flexShrink: 0 }}>
       {/* Browser chrome */}
       <div
         style={{
@@ -208,36 +208,13 @@ function Laptop({ url }) {
           borderTop: 'none',
           borderRadius: '0 0 8px 8px',
           overflow: 'hidden',
-          height: 580,
+          height: 720,
         }}
       >
         <iframe
           src={url}
           style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
           title="Desktop preview"
-        />
-      </div>
-      {/* Base */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <div
-          style={{
-            width: 180,
-            height: 16,
-            background: '#2a2a2a',
-            borderRadius: '0 0 4px 4px',
-            border: '1.5px solid #3a3a3a',
-            borderTop: 'none',
-          }}
-        />
-        <div
-          style={{
-            width: 280,
-            height: 8,
-            background: '#222',
-            borderRadius: '0 0 8px 8px',
-            border: '1.5px solid #333',
-            borderTop: 'none',
-          }}
         />
       </div>
     </div>
@@ -248,19 +225,32 @@ export default function Preview() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const url = searchParams.get('url') || '/catalog/beauty-demo'
+  const [view, setView] = useState('both') // 'both' | 'phone' | 'laptop'
+
+  const showPhone = view === 'both' || view === 'phone'
+  const showLaptop = view === 'both' || view === 'laptop'
+  const both = view === 'both'
 
   const phoneScale = Math.min(1, (window.innerHeight - 120) / 852)
   const laptopScale = Math.min(1, (window.innerHeight - 120) / 620)
-  const totalWidth = 393 * phoneScale + 860 * laptopScale + 80
+  const totalWidth = both ? 393 * phoneScale + 1100 * laptopScale + 80 : showPhone ? 393 : 1100
   const globalScale = totalWidth > window.innerWidth - 40 ? (window.innerWidth - 40) / totalWidth : 1
+  const frameScale = both
+    ? globalScale * Math.min(phoneScale, laptopScale)
+    : showPhone
+      ? globalScale * phoneScale
+      : globalScale * laptopScale
 
   return (
     <div
-      className="fixed inset-0 flex flex-col"
+      className="min-h-screen flex flex-col"
       style={{ background: 'radial-gradient(ellipse at center, #1e293b 0%, #0f172a 100%)' }}
     >
       {/* Top bar */}
-      <div className="flex items-center justify-between px-5 py-4 flex-shrink-0">
+      <div
+        className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 flex-shrink-0"
+        style={{ background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(8px)' }}
+      >
         <button
           onClick={() => navigate('/demo')}
           className="flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm"
@@ -268,55 +258,45 @@ export default function Preview() {
           <ArrowLeft className="w-4 h-4" />
           Volver
         </button>
-        <p className="text-white/30 text-xs truncate max-w-sm">{url}</p>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setView(view === 'phone' ? 'both' : 'phone')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${view === 'phone' ? 'bg-white/15 text-white' : 'text-white/30 hover:text-white/60'}`}
+          >
+            <Smartphone className="w-3.5 h-3.5" />
+            Mobile
+          </button>
+          <button
+            onClick={() => setView(view === 'laptop' ? 'both' : 'laptop')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${view === 'laptop' ? 'bg-white/15 text-white' : 'text-white/30 hover:text-white/60'}`}
+          >
+            <Monitor className="w-3.5 h-3.5" />
+            Desktop
+          </button>
+        </div>
         <button onClick={() => window.location.reload()} className="text-white/60 hover:text-white transition-colors">
           <RotateCcw className="w-4 h-4" />
         </button>
       </div>
 
       {/* Frames */}
-      <div className="flex-1 flex items-center justify-center">
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: 48,
-            transform: `scale(${globalScale * Math.min(phoneScale, laptopScale)})`,
-            transformOrigin: 'center center',
-          }}
-        >
-          {/* Label + iPhone */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-            <span
-              style={{
-                color: 'rgba(255,255,255,0.35)',
-                fontSize: 11,
-                fontFamily: 'system-ui',
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-              }}
-            >
-              Mobile
-            </span>
-            <IPhone url={url} />
+      <div className="flex-1 flex items-start justify-center pt-4">
+        {!showPhone && !showLaptop ? (
+          <p className="text-white/30 text-sm mt-20">Seleccioná al menos una pantalla</p>
+        ) : (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 48,
+              transform: `scale(${frameScale})`,
+              transformOrigin: 'top center',
+            }}
+          >
+            {showPhone && <IPhone url={url} />}
+            {showLaptop && <Laptop url={url} />}
           </div>
-
-          {/* Label + Laptop */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-            <span
-              style={{
-                color: 'rgba(255,255,255,0.35)',
-                fontSize: 11,
-                fontFamily: 'system-ui',
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-              }}
-            >
-              Desktop
-            </span>
-            <Laptop url={url} />
-          </div>
-        </div>
+        )}
       </div>
     </div>
   )

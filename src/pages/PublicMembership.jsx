@@ -207,6 +207,129 @@ const MEMBER_DEFAULT = {
   redeemed_onetime: new Set([]),
 }
 
+const MOCK_BARBER = {
+  name: 'Barber Club',
+  logo_url: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=80&h=80&fit=crop&q=80',
+  brand_color: '#1c1917',
+  activation: 'tiers',
+  referral_reward_type: 'benefit',
+  referral_reward_benefit: 'Un corte gratis para vos y tu amigo',
+}
+
+const TIERS_BARBER = [
+  { id: 't1', name: 'Regular', min_spend: 0, color: '#78716c' },
+  { id: 't2', name: 'VIP', min_spend: 20000, color: '#f59e0b' },
+  { id: 't3', name: 'Black', min_spend: 60000, color: '#111' },
+]
+
+const CATALOG_BARBER = [
+  {
+    id: 1,
+    name: '10% off en cada corte',
+    description: 'Descuento permanente en todos tus servicios en la barbería.',
+    use_type: 'unlimited',
+    tier_required: 't1',
+    image_url: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=400&h=400&fit=crop&q=80',
+  },
+  {
+    id: 2,
+    name: 'Arreglo de barba gratis',
+    description: 'Un arreglo de barba sin costo adicional en tu visita mensual.',
+    use_type: 'monthly',
+    tier_required: 't1',
+    image_url: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=400&h=400&fit=crop&q=80',
+  },
+  {
+    id: 3,
+    name: '20% off en Restaurante La Rueda',
+    description: 'Comercio amigo. Presentá tu tarjeta Barber Club y obtené el descuento.',
+    use_type: 'unlimited',
+    tier_required: 't1',
+    image_url: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=400&fit=crop&q=80',
+  },
+  {
+    id: 4,
+    name: '15% off en Indumentaria Urbana',
+    description: 'Ropa y accesorios con descuento exclusivo para miembros del club.',
+    use_type: 'unlimited',
+    tier_required: 't1',
+    image_url: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&h=400&fit=crop&q=80',
+  },
+  {
+    id: 5,
+    name: 'Café gratis en El Grano',
+    description: 'Un café por visita a nuestro comercio amigo. Mostrá la app.',
+    use_type: 'monthly',
+    tier_required: 't2',
+    image_url: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&h=400&fit=crop&q=80',
+  },
+  {
+    id: 6,
+    name: 'Sesión de masajes 30 min',
+    description: '30% off en Centro de Masajes Relax. Reserva por la app.',
+    use_type: 'monthly',
+    tier_required: 't2',
+    image_url: 'https://images.unsplash.com/photo-1552693673-1bf958298935?w=400&h=400&fit=crop&q=80',
+  },
+  {
+    id: 7,
+    name: 'Corte + barba mensual gratis',
+    description: 'El servicio completo sin costo una vez al mes. Solo nivel Black.',
+    use_type: 'monthly',
+    tier_required: 't3',
+    image_url: null,
+  },
+  {
+    id: 8,
+    name: 'Kit grooming premium',
+    description: 'Shampoo, cera y aceite de barba de autor. Se entrega al alcanzar Black.',
+    use_type: 'onetime',
+    tier_required: 't3',
+    image_url: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=400&h=400&fit=crop&q=80',
+  },
+]
+
+const MEMBER_BARBER = {
+  total_spend: 35000,
+  redeemed_monthly: new Set([2]),
+  redeemed_onetime: new Set([]),
+}
+
+const MOCK_ACTIVITY_BARBER = [
+  { id: 1, type: 'spent', label: 'Corte + barba — abril', amount: '$8.500', date: '28 abr 2026' },
+  { id: 2, type: 'redeemed', label: 'Arreglo de barba gratis', date: '28 abr 2026' },
+  { id: 3, type: 'redeemed', label: '20% off en La Rueda', date: '20 abr 2026' },
+  { id: 4, type: 'referral', label: 'Referido — Martín López', date: '15 abr 2026' },
+  { id: 5, type: 'spent', label: 'Corte clásico — marzo', amount: '$7.000', date: '30 mar 2026' },
+]
+
+const POSTS_BARBER = [
+  {
+    id: 1,
+    type: 'novedad',
+    title: 'Nuevo servicio: tratamiento capilar',
+    body: 'Hidratación profunda con keratina. Disponible para todos los niveles.',
+    image_url: 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=600&h=400&fit=crop&q=80',
+    date: '1 may',
+  },
+  {
+    id: 2,
+    type: 'promo',
+    title: 'Mayo: combo corte + ceja gratis',
+    body: 'Durante mayo, todos los cortes incluyen diseño de ceja sin costo.',
+    image_url: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600&h=400&fit=crop&q=80',
+    date: '28 abr',
+  },
+  {
+    id: 3,
+    type: 'evento',
+    title: 'Noche de barbería — viernes 16',
+    body: 'Música en vivo, bebidas y descuentos. Solo para miembros del club.',
+    image_url: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=600&h=400&fit=crop&q=80',
+    date: '14 abr',
+  },
+]
+
 const MOCK_ACTIVITY_SPA = [
   { id: 1, type: 'spent', label: 'Visita · masaje + aromaterapia', amount: '$8.500', date: '16 abr 2026' },
   { id: 7, type: 'referral', label: 'Referido — Valentina Ríos', date: '13 abr 2026' },
@@ -769,13 +892,14 @@ export default function PublicMembership() {
 
   const isSpa = programId === 'spa-demo'
   const isGym = programId === 'gym-demo'
+  const isBarber = programId === 'barber-membership-demo'
 
-  const program = isSpa ? MOCK_SPA : isGym ? MOCK_GYM : MOCK_DEFAULT
-  const tiers = isSpa ? TIERS_SPA : isGym ? TIERS_GYM : TIERS_DEFAULT
-  const catalog = isSpa ? CATALOG_SPA : isGym ? CATALOG_GYM : CATALOG_DEFAULT
-  const memberData = isSpa ? MEMBER_SPA : isGym ? MEMBER_GYM : MEMBER_DEFAULT
-  const posts = isSpa ? POSTS_SPA : isGym ? POSTS_GYM : POSTS_SPA
-  const activity = isSpa ? MOCK_ACTIVITY_SPA : isGym ? MOCK_ACTIVITY_GYM : []
+  const program = isSpa ? MOCK_SPA : isGym ? MOCK_GYM : isBarber ? MOCK_BARBER : MOCK_DEFAULT
+  const tiers = isSpa ? TIERS_SPA : isGym ? TIERS_GYM : isBarber ? TIERS_BARBER : TIERS_DEFAULT
+  const catalog = isSpa ? CATALOG_SPA : isGym ? CATALOG_GYM : isBarber ? CATALOG_BARBER : CATALOG_DEFAULT
+  const memberData = isSpa ? MEMBER_SPA : isGym ? MEMBER_GYM : isBarber ? MEMBER_BARBER : MEMBER_DEFAULT
+  const posts = isSpa ? POSTS_SPA : isGym ? POSTS_GYM : isBarber ? POSTS_BARBER : POSTS_SPA
+  const activity = isSpa ? MOCK_ACTIVITY_SPA : isGym ? MOCK_ACTIVITY_GYM : isBarber ? MOCK_ACTIVITY_BARBER : []
 
   const color = program.brand_color
 

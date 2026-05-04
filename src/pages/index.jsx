@@ -42,6 +42,7 @@ const Survey = lazy(() => import('./Survey'))
 const Menu = lazy(() => import('./Menu'))
 const ShortUrlRedirect = lazy(() => import('./ShortUrlRedirect'))
 const Preview = lazy(() => import('./Preview'))
+const PublicNetwork = lazy(() => import('./PublicNetwork'))
 
 function LayoutWrapper({ children }) {
   const location = useLocation()
@@ -73,6 +74,7 @@ export default function Pages() {
             <Route path="/cashback/:programId" element={<PublicCashback />} />
             <Route path="/demo" element={<Demo />} />
             <Route path="/preview" element={<Preview />} />
+            <Route path="/network" element={<PublicNetwork />} />
             <Route path="/s/:code" element={<ShortUrlRedirect />} />
             <Route path="/login" element={<Login />} />
             <Route path="/verify-email" element={<VerifyEmail />} />

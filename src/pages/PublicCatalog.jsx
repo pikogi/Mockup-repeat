@@ -414,9 +414,9 @@ const MOCK_ACTIVITY_CAFE = [
 ]
 
 const MOCK_PROGRAM_HELADERIA = {
-  name: 'Heladería Freddo',
-  logo_url: 'https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?w=80&h=80&fit=crop&q=80',
-  brand_color: '#e11d48',
+  name: 'Leroma',
+  logo_url: '/leroma-logo.jpg',
+  brand_color: '#111111',
   money_per_point: 500,
   money_per_point_redeem: 50,
 }
@@ -475,6 +475,24 @@ const MOCK_ITEMS_HELADERIA = [
     stock_enabled: false,
     stock: null,
     description: 'Medio kilo de helado artesanal a elección.',
+  },
+  {
+    id: 7,
+    name: 'Milkshake especial',
+    points_cost: 60,
+    image_url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Milkshake artesanal con helado y toppings a elección.',
+  },
+  {
+    id: 8,
+    name: 'Tabla de degustación',
+    points_cost: 120,
+    image_url: 'https://images.unsplash.com/photo-1514361892635-6b07e31e75f9?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: '6 bochas de diferentes sabores para compartir.',
   },
 ]
 
@@ -625,9 +643,14 @@ function PostsCarousel({ posts, color }) {
 
   return (
     <>
-      <div className="space-y-3">
+      <div className="space-y-5">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold text-gray-700">Novedades</p>
+          <div className="flex items-center gap-3">
+            <div className="w-1 h-8 rounded-full flex-shrink-0 hidden sm:block" style={{ backgroundColor: color }} />
+            <h2 className="text-sm font-semibold text-gray-700 sm:text-2xl sm:font-black sm:text-gray-900 leading-none">
+              Novedades
+            </h2>
+          </div>
           <div className="flex gap-1">
             <button
               onClick={() => scroll(-1)}
@@ -669,10 +692,10 @@ function PostsCarousel({ posts, color }) {
               <button
                 key={i}
                 onClick={() => setSelectedPost(post)}
-                className="flex-shrink-0 w-56 sm:w-72 rounded-2xl overflow-hidden bg-white border border-gray-200 hover:shadow-md hover:border-gray-300 transition-all text-left"
+                className="flex-shrink-0 w-44 sm:w-60 rounded-2xl overflow-hidden bg-white border border-gray-200 hover:shadow-md hover:border-gray-300 transition-all text-left"
               >
                 {/* Imagen */}
-                <div className="relative h-32 sm:h-44 overflow-hidden">
+                <div className="relative h-28 sm:h-36 overflow-hidden">
                   <img src={post.image_url} alt={post.title} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                   <span
@@ -875,44 +898,100 @@ function GiftCardModal({ card, color, onClose }) {
   )
 }
 
-function GiftCardSection({ color }) {
+function GiftCardSection({ color, programName, logoUrl }) {
+  const [open, setOpen] = useState(false)
   const [selected, setSelected] = useState(null)
+  const scrollRef = useRef(null)
+  const CARD_W = 268
+
+  const scroll = (dir) => {
+    if (!scrollRef.current) return
+    scrollRef.current.scrollBy({ left: dir * CARD_W, behavior: 'smooth' })
+  }
 
   return (
     <>
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Gift className="w-4 h-4 text-gray-400" />
-          <p className="text-sm font-semibold text-gray-700">Regalale el Club a alguien</p>
-        </div>
-
-        {/* Cards en scroll horizontal */}
-        <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory" style={{ scrollbarWidth: 'none' }}>
-          {GIFT_CARD_OPTIONS.map((card) => (
-            <button
-              key={card.id}
-              onClick={() => setSelected(card)}
-              className="flex-shrink-0 snap-start rounded-2xl overflow-hidden shadow-md active:scale-95 transition-transform text-left"
-              style={{ width: 156, background: `linear-gradient(135deg, ${color} 0%, ${color}bb 100%)` }}
+      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+        <button
+          onClick={() => setOpen((o) => !o)}
+          className="w-full flex items-center justify-between px-4 py-3.5 text-left"
+        >
+          <div className="flex items-center gap-2">
+            <Gift className="w-4 h-4 text-gray-400" />
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Regala {programName}</p>
+          </div>
+          <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
+            <ChevronDown className="w-4 h-4 text-gray-400" />
+          </motion.div>
+        </button>
+        <AnimatePresence initial={false}>
+          {open && (
+            <motion.div
+              key="giftcard-content"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              className="overflow-hidden"
             >
-              <div className="p-4 pb-3 space-y-4">
-                <div className="flex items-center justify-between">
-                  <CreditCard className="w-5 h-5 text-white/60" />
-                  <span className="text-white/60 text-xs font-semibold tracking-wide uppercase">{card.label}</span>
+              <div className="px-4 pb-4 space-y-2.5">
+                <div className="hidden sm:flex items-center justify-end gap-1 mb-1">
+                  <button
+                    onClick={() => scroll(-1)}
+                    className="w-7 h-7 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5 text-gray-600" />
+                  </button>
+                  <button
+                    onClick={() => scroll(1)}
+                    className="w-7 h-7 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
+                  </button>
                 </div>
-                <div>
-                  <p className="text-white text-2xl font-black leading-none">{card.price}</p>
-                  <p className="text-white/60 text-xs mt-1">{card.points.toLocaleString()} puntos</p>
+                <div
+                  ref={scrollRef}
+                  className="sm:flex sm:gap-3 sm:overflow-x-auto sm:pb-2 sm:space-y-0 space-y-2.5"
+                  style={{ scrollbarWidth: 'none' }}
+                >
+                  {GIFT_CARD_OPTIONS.map((card) => (
+                    <button
+                      key={card.id}
+                      onClick={() => setSelected(card)}
+                      className="w-full sm:flex-shrink-0 sm:w-64 rounded-2xl overflow-hidden active:scale-[0.98] transition-transform text-left"
+                      style={{ background: `linear-gradient(135deg, ${color} 0%, ${color}dd 100%)` }}
+                    >
+                      {/* Top: logo + label */}
+                      <div className="flex items-center justify-between px-4 pt-4 pb-3">
+                        <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                          {logoUrl ? (
+                            <img src={logoUrl} alt={programName} className="w-full h-full object-cover" />
+                          ) : (
+                            <CreditCard className="w-4 h-4 text-white/70" />
+                          )}
+                        </div>
+                        <span className="text-white/50 text-xs font-bold uppercase tracking-widest">{card.label}</span>
+                      </div>
+
+                      {/* Middle: precio grande */}
+                      <div className="px-4 pb-4">
+                        <p className="text-white text-3xl font-black leading-none tracking-tight">{card.price}</p>
+                        <p className="text-white/50 text-xs mt-1">{card.points.toLocaleString()} puntos incluidos</p>
+                      </div>
+
+                      {/* Bottom: CTA */}
+                      <div className="px-4 py-3 bg-black/20 flex items-center justify-between">
+                        <span className="text-white text-xs font-bold">Comprar regalo</span>
+                        <ChevronRight className="w-3.5 h-3.5 text-white/70" />
+                      </div>
+                    </button>
+                  ))}
                 </div>
+                <p className="text-xs text-gray-400 pt-1">El destinatario recibe los puntos al activar la tarjeta.</p>
               </div>
-              <div className="px-4 py-2.5 bg-black/20 flex items-center justify-between">
-                <span className="text-white text-xs font-bold">Comprar</span>
-                <ChevronRight className="w-3.5 h-3.5 text-white/70" />
-              </div>
-            </button>
-          ))}
-        </div>
-        <p className="text-xs text-gray-400">El destinatario recibe los puntos al activar la tarjeta.</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <AnimatePresence>
@@ -924,7 +1003,7 @@ function GiftCardSection({ color }) {
 
 function getGridClass(count) {
   const mobile = count > 4 ? 'grid-cols-2' : 'grid-cols-1'
-  const desktop = count <= 4 ? 'sm:grid-cols-2' : count <= 6 ? 'sm:grid-cols-3' : 'sm:grid-cols-4'
+  const desktop = count >= 8 ? 'sm:grid-cols-4' : 'sm:grid-cols-2'
   return `grid ${mobile} ${desktop} gap-3`
 }
 
@@ -950,11 +1029,13 @@ function CatalogItem({ item, color, moneyPerPoint, onSelect, compact = false }) 
       {compact ? (
         /* Layout vertical para 3-4 columnas */
         <div className="flex flex-col h-full">
-          <div className="w-full h-28 flex items-center justify-center" style={{ backgroundColor: `${color}10` }}>
+          <div className="w-full overflow-hidden" style={{ aspectRatio: '16/9', backgroundColor: `${color}10` }}>
             {item.image_url ? (
-              <img src={item.image_url} alt={item.name} className="h-full w-full object-cover" />
+              <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
             ) : (
-              <Package className="w-10 h-10" style={{ color }} />
+              <div className="w-full h-full flex items-center justify-center">
+                <Package className="w-10 h-10" style={{ color }} />
+              </div>
             )}
           </div>
           <div className="p-3 flex flex-col flex-1 gap-1.5">
@@ -1453,6 +1534,7 @@ export default function PublicCatalog() {
   const cardId = searchParams.get('card')
   const isIdentified = !!cardId
   const MOCK_POINTS = 620
+  const MOCK_USER_NAME = 'Gianni'
 
   const isBeauty = programId === 'beauty-demo'
   const isBarber = programId === 'barber-demo'
@@ -1528,8 +1610,8 @@ export default function PublicCatalog() {
   const outOfStockItems = useMemo(() => items.filter((i) => i.stock_enabled && i.stock === 0), [items])
   const availableGridClass = getGridClass(availableItems.length)
   const outOfStockGridClass = getGridClass(outOfStockItems.length)
-  const availableCompact = availableItems.length > 4
-  const outOfStockCompact = outOfStockItems.length > 4
+  const availableCompact = availableItems.length >= 8
+  const outOfStockCompact = outOfStockItems.length >= 8
 
   return (
     <div
@@ -1541,7 +1623,10 @@ export default function PublicCatalog() {
       }}
     >
       {/* Header + Ticker sticky juntos */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-100 shadow-sm">
+      <div
+        className="sticky top-0 z-10 border-b shadow-sm"
+        style={{ background: isHeladeria ? '#111111' : 'white', borderColor: isHeladeria ? '#222' : '#f3f4f6' }}
+      >
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center gap-3">
           {program.logo_url ? (
             <img src={program.logo_url} alt={program.name} className="w-10 h-10 rounded-xl object-contain" />
@@ -1554,13 +1639,24 @@ export default function PublicCatalog() {
             </div>
           )}
           <div>
-            <h1 className="font-bold text-gray-900 leading-tight">{program.name}</h1>
-            <p className="text-xs text-gray-400">Catálogo de canje</p>
+            <h1 className="font-bold leading-tight" style={{ color: isHeladeria ? '#ffffff' : '#111827' }}>
+              {program.name}
+            </h1>
+            <p className="text-xs" style={{ color: isHeladeria ? 'rgba(255,255,255,0.5)' : '#9ca3af' }}>
+              Catálogo de canje
+            </p>
           </div>
         </div>
 
         {/* Ticker de anuncio */}
-        <div className="overflow-hidden py-1.5" style={{ backgroundColor: color }}>
+        <div
+          className="overflow-hidden py-1.5"
+          style={{
+            backgroundColor: color,
+            borderTop: '1px solid rgba(255,255,255,0.15)',
+            borderBottom: '1px solid rgba(255,255,255,0.15)',
+          }}
+        >
           <div className="flex whitespace-nowrap" style={{ animation: 'marquee 18s linear infinite' }}>
             {[...Array(6)].map((_, i) => (
               <span key={i} className="text-white text-xs font-medium px-8">
@@ -1599,7 +1695,7 @@ export default function PublicCatalog() {
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="rounded-2xl p-4 space-y-3"
+                  className="rounded-2xl p-4 space-y-3 sm:max-w-xl"
                   style={{ background: `linear-gradient(135deg, ${color} 0%, ${color}cc 100%)` }}
                 >
                   {/* Fila principal: ícono + puntos + ratio */}
@@ -1608,12 +1704,12 @@ export default function PublicCatalog() {
                       <Coins className="w-6 h-6 text-white" />
                     </div>
                     <div className="flex-1 text-white">
-                      <p className="text-xs opacity-80 uppercase tracking-wider">Tus puntos</p>
+                      <p className="text-xs opacity-80 uppercase tracking-wider mb-1">Puntos de {MOCK_USER_NAME}</p>
                       <p className="text-3xl font-black leading-none">{MOCK_POINTS.toLocaleString()}</p>
                     </div>
                     <div className="text-right text-white">
                       <p className="text-xs opacity-70">Acumulas</p>
-                      <p className="text-sm font-bold">{program.money_per_point.toLocaleString()} = 1 pt</p>
+                      <p className="text-sm font-bold">${program.money_per_point.toLocaleString()} = 1 pt</p>
                     </div>
                   </div>
 
@@ -1748,7 +1844,7 @@ export default function PublicCatalog() {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl p-4 border"
+            className="rounded-2xl p-4 border sm:max-w-lg sm:mx-auto"
             style={{ backgroundColor: `${color}12`, borderColor: `${color}30` }}
           >
             <AnimatePresence mode="wait">
@@ -1899,13 +1995,16 @@ export default function PublicCatalog() {
         </div>
 
         {/* Gift Cards */}
-        <GiftCardSection color={color} />
+        <GiftCardSection color={color} programName={program.name} logoUrl={program.logo_url} />
 
         {/* Lista de ítems */}
         <div>
-          <p className="text-sm font-semibold text-gray-700 mb-3">
-            {availableItems.length} {isBeauty || isBarber ? 'servicios disponibles' : 'premios disponibles'}
-          </p>
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-1 h-8 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+            <h2 className="text-2xl font-black text-gray-900 leading-none">
+              {isBeauty || isBarber ? 'Servicios' : 'Premios'}
+            </h2>
+          </div>
 
           <div className={availableGridClass}>
             {availableItems.map((item, i) => (

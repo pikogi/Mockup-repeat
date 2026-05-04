@@ -67,6 +67,18 @@ const COL_RIGHT = [
     ],
   },
   {
+    title: 'Red Repeat — Network',
+    badge: 'bg-yellow-100 text-yellow-800',
+    links: [
+      {
+        label: 'Red Repeat',
+        url: '/network',
+        desc: 'Descubrí comercios y beneficios de toda la red.',
+        single: true,
+      },
+    ],
+  },
+  {
     title: 'Catálogo de Puntos — Cliente',
     badge: 'bg-blue-100 text-blue-700',
     links: [
@@ -89,7 +101,7 @@ const COL_RIGHT = [
         single: true,
       },
       {
-        label: 'Heladería Freddo',
+        label: 'Leroma',
         url: '/catalog/heladeria-demo',
         desc: 'Catálogo de premios. Heladería artesanal.',
         single: true,
@@ -110,6 +122,12 @@ const COL_RIGHT = [
         label: 'Gimnasio',
         url: '/membership/gym-demo',
         desc: 'Beneficios exclusivos. Gimnasio y fitness.',
+        single: true,
+      },
+      {
+        label: 'Barbería',
+        url: '/membership/barber-membership-demo',
+        desc: 'Beneficios + red de comercios aliados.',
         single: true,
       },
     ],
