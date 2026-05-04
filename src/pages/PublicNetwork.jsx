@@ -895,13 +895,6 @@ export default function PublicNetwork() {
                   >
                     <Search className="w-4 h-4 text-white/70" />
                   </button>
-                  <div
-                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5"
-                    style={{ backgroundColor: '#facc15' }}
-                  >
-                    <Sparkles className="w-3 h-3 text-black" />
-                    <span className="text-black text-xs font-black">{MERCHANTS.length}</span>
-                  </div>
                 </div>
               </motion.div>
             )}
