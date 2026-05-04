@@ -1075,7 +1075,7 @@ export default function PublicNetwork() {
                 </span>
               </div>
 
-              <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <AnimatePresence mode="popLayout">
                   {filteredPromos.map(({ business, promo }, i) => (
                     <PromoCard
