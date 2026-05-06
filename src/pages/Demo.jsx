@@ -67,6 +67,19 @@ const COL_RIGHT = [
     ],
   },
   {
+    title: 'Dashboard — Demo',
+    badge: 'bg-yellow-100 text-yellow-800',
+    links: [
+      {
+        label: 'Leroma Gelato',
+        url: '/dashboard/leroma-demo',
+        desc: 'Dashboard con métricas y gráficos. Heladería artesanal.',
+        single: true,
+        mobile: false,
+      },
+    ],
+  },
+  {
     title: 'Red Repeat — Network',
     badge: 'bg-yellow-100 text-yellow-800',
     links: [

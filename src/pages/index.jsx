@@ -43,6 +43,7 @@ const Menu = lazy(() => import('./Menu'))
 const ShortUrlRedirect = lazy(() => import('./ShortUrlRedirect'))
 const Preview = lazy(() => import('./Preview'))
 const PublicNetwork = lazy(() => import('./PublicNetwork'))
+const DashboardLeroma = lazy(() => import('./DashboardLeroma'))
 
 function LayoutWrapper({ children }) {
   const location = useLocation()
@@ -75,6 +76,14 @@ export default function Pages() {
             <Route path="/demo" element={<Demo />} />
             <Route path="/preview" element={<Preview />} />
             <Route path="/network" element={<PublicNetwork />} />
+            <Route
+              path="/dashboard/leroma-demo"
+              element={
+                <LayoutWrapper>
+                  <DashboardLeroma />
+                </LayoutWrapper>
+              }
+            />
             <Route path="/s/:code" element={<ShortUrlRedirect />} />
             <Route path="/login" element={<Login />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
