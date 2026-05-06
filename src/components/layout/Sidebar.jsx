@@ -64,7 +64,7 @@ export default function Sidebar() {
 
   const DEMO_URLS = {
     Dashboard: '/dashboard/leroma-demo',
-    Customers: '/customers',
+    Customers: '/customers/leroma-demo',
     Notifications: '/notifications',
     MyPrograms: '/myprograms',
     Survey: '/survey',
@@ -76,7 +76,7 @@ export default function Sidebar() {
   }
 
   const currentPath = location.pathname
-  const isDemo = currentPath.includes('leroma-demo')
+  const isDemo = !user
 
   const resolveUrl = (page) => (isDemo ? (DEMO_URLS[page] ?? createPageUrl(page)) : createPageUrl(page))
 

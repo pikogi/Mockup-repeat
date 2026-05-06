@@ -71,9 +71,16 @@ const COL_RIGHT = [
     badge: 'bg-yellow-100 text-yellow-800',
     links: [
       {
-        label: 'Leroma Gelato',
+        label: 'Dashboard · Leroma',
         url: '/dashboard/leroma-demo',
         desc: 'Dashboard con métricas y gráficos. Heladería artesanal.',
+        single: true,
+        mobile: false,
+      },
+      {
+        label: 'Miembros · Leroma',
+        url: '/customers/leroma-demo',
+        desc: 'Lista de miembros con puntos, visitas y premios.',
         single: true,
         mobile: false,
       },
