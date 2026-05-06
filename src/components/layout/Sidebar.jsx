@@ -78,7 +78,7 @@ export default function Sidebar() {
       name: t('notifications'),
       icon: Bell,
       page: 'Notifications',
-      comingSoon: !flagsLoaded || !posthog.isFeatureEnabled('notifications'),
+      comingSoon: flagsLoaded && !posthog.isFeatureEnabled('notifications'),
     },
     { name: t('myPrograms'), icon: CreditCard, page: 'MyPrograms' },
     { name: t('survey'), icon: ClipboardList, page: 'Survey' },
@@ -183,7 +183,7 @@ export default function Sidebar() {
               </SheetTrigger>
               <SheetContent side="right">
                 <nav className="flex flex-col gap-4 mt-8">
-                  {posthog.isFeatureEnabled('notifications') ? (
+                  {!posthog.__loaded || posthog.isFeatureEnabled('notifications') ? (
                     <Link
                       to={createPageUrl('Notifications')}
                       className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
