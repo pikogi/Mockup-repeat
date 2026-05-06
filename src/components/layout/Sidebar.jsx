@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { createPageUrl } from '@/utils'
@@ -21,7 +21,6 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
 import { useLanguage } from '@/components/auth/LanguageContext'
-import posthog from 'posthog-js'
 import { api } from '@/api/client'
 import useProgramsStore from '@/stores/useProgramsStore'
 import useStoresStore from '@/stores/useStoresStore'
@@ -38,14 +37,6 @@ export default function Sidebar() {
   const whatsappUrl = `https://wa.me/5493517881653?text=${encodeURIComponent('Hola, necesito soporte con Repeat.')}`
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [flagsLoaded, setFlagsLoaded] = useState(false)
-
-  useEffect(() => {
-    if (posthog.__loaded) {
-      posthog.onFeatureFlags(() => setFlagsLoaded(true))
-    }
-  }, [])
-
   const handleLogout = async () => {
     try {
       // Eliminar token y claves de sesión del localStorage
@@ -74,12 +65,7 @@ export default function Sidebar() {
   const navItems = [
     { name: t('dashboard'), icon: LayoutDashboard, page: 'Dashboard' },
     { name: t('customers'), icon: User, page: 'Customers' },
-    {
-      name: t('notifications'),
-      icon: Bell,
-      page: 'Notifications',
-      comingSoon: flagsLoaded && !posthog.isFeatureEnabled('notifications'),
-    },
+    { name: t('notifications'), icon: Bell, page: 'Notifications' },
     { name: t('myPrograms'), icon: CreditCard, page: 'MyPrograms' },
     { name: t('survey'), icon: ClipboardList, page: 'Survey' },
     { name: t('menu'), icon: BookOpen, page: 'Menu' },
@@ -183,22 +169,14 @@ export default function Sidebar() {
               </SheetTrigger>
               <SheetContent side="right">
                 <nav className="flex flex-col gap-4 mt-8">
-                  {!posthog.__loaded || posthog.isFeatureEnabled('notifications') ? (
-                    <Link
-                      to={createPageUrl('Notifications')}
-                      className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <Bell className="w-5 h-5" />
-                      {t('notifications')}
-                    </Link>
-                  ) : (
-                    <div className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg text-gray-300 cursor-not-allowed select-none">
-                      <Bell className="w-5 h-5" />
-                      {t('notifications')}
-                      <span className="ml-auto text-xs font-medium">{t('comingSoon')}</span>
-                    </div>
-                  )}
+                  <Link
+                    to={createPageUrl('Notifications')}
+                    className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Bell className="w-5 h-5" />
+                    {t('notifications')}
+                  </Link>
                   <Link
                     to={createPageUrl('MyPrograms')}
                     className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
