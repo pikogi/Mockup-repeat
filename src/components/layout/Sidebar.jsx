@@ -62,6 +62,24 @@ export default function Sidebar() {
     }
   }
 
+  const DEMO_URLS = {
+    Dashboard: '/dashboard/leroma-demo',
+    Customers: '/customers',
+    Notifications: '/notifications',
+    MyPrograms: '/myprograms',
+    Survey: '/survey',
+    Menu: '/menu',
+    Stores: '/stores',
+    CreateClub: '/createclub',
+    Profile: '/profile',
+    ScanQR: '/scanqr?demo=points',
+  }
+
+  const currentPath = location.pathname
+  const isDemo = currentPath.includes('leroma-demo')
+
+  const resolveUrl = (page) => (isDemo ? (DEMO_URLS[page] ?? createPageUrl(page)) : createPageUrl(page))
+
   const navItems = [
     { name: t('dashboard'), icon: LayoutDashboard, page: 'Dashboard' },
     { name: t('customers'), icon: User, page: 'Customers' },
@@ -73,7 +91,6 @@ export default function Sidebar() {
   ]
 
   const primaryAction = { name: t('createProgram'), icon: Plus, page: 'CreateClub' }
-  const currentPath = location.pathname
 
   return (
     <>
@@ -108,7 +125,7 @@ export default function Sidebar() {
             return (
               <Link
                 key={item.name}
-                to={createPageUrl(item.page)}
+                to={resolveUrl(item.page)}
                 className={cn(
                   'flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200',
                   isActive
@@ -122,7 +139,7 @@ export default function Sidebar() {
             )
           })}
           <Link
-            to={createPageUrl(primaryAction.page)}
+            to={resolveUrl(primaryAction.page)}
             className="flex items-center gap-3 px-4 py-3 mt-4 rounded-xl transition-all duration-200 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg hover:shadow-xl hover:from-yellow-500 hover:to-yellow-600"
           >
             <primaryAction.icon className="w-5 h-5" />
@@ -133,7 +150,7 @@ export default function Sidebar() {
         {/* Profile + Soporte */}
         <div className="p-4 border-t border-gray-100 dark:border-gray-800 flex items-center gap-2">
           <Link
-            to={createPageUrl('Profile')}
+            to={resolveUrl('Profile')}
             className={cn(
               'flex flex-1 items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200',
               currentPath.includes('Profile')
@@ -170,7 +187,7 @@ export default function Sidebar() {
               <SheetContent side="right">
                 <nav className="flex flex-col gap-4 mt-8">
                   <Link
-                    to={createPageUrl('Notifications')}
+                    to={resolveUrl('Notifications')}
                     className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
@@ -178,7 +195,7 @@ export default function Sidebar() {
                     {t('notifications')}
                   </Link>
                   <Link
-                    to={createPageUrl('MyPrograms')}
+                    to={resolveUrl('MyPrograms')}
                     className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
@@ -186,7 +203,7 @@ export default function Sidebar() {
                     {t('myPrograms')}
                   </Link>
                   <Link
-                    to={createPageUrl('Survey')}
+                    to={resolveUrl('Survey')}
                     className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
@@ -194,7 +211,7 @@ export default function Sidebar() {
                     {t('survey')}
                   </Link>
                   <Link
-                    to={createPageUrl('Menu')}
+                    to={resolveUrl('Menu')}
                     className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
@@ -234,7 +251,7 @@ export default function Sidebar() {
           {/* Left side: Dashboard & Miembros */}
           <div className="flex items-center gap-4">
             <Link
-              to={createPageUrl('Dashboard')}
+              to={resolveUrl('Dashboard')}
               className={cn(
                 'flex flex-col items-center justify-center gap-0.5 py-2 min-w-[52px] rounded-xl transition-all',
                 currentPath.includes('Dashboard')
@@ -247,7 +264,7 @@ export default function Sidebar() {
             </Link>
 
             <Link
-              to={createPageUrl('Customers')}
+              to={resolveUrl('Customers')}
               className={cn(
                 'flex flex-col items-center justify-center gap-0.5 py-2 min-w-[52px] rounded-xl transition-all',
                 currentPath.includes('Customers')
@@ -262,7 +279,7 @@ export default function Sidebar() {
 
           {/* Center: Scan QR (Primary) */}
           <Link
-            to={createPageUrl('ScanQR')}
+            to={resolveUrl('ScanQR')}
             className="flex items-center justify-center w-14 h-14 -mt-6 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full shadow-lg"
           >
             <QrCode className="w-7 h-7 text-white" />
@@ -271,7 +288,7 @@ export default function Sidebar() {
           {/* Right side: Profile & Stores */}
           <div className="flex items-center gap-4">
             <Link
-              to={createPageUrl('Profile')}
+              to={resolveUrl('Profile')}
               className={cn(
                 'flex flex-col items-center justify-center gap-0.5 py-2 min-w-[52px] rounded-xl transition-all',
                 currentPath.includes('Profile')
@@ -284,7 +301,7 @@ export default function Sidebar() {
             </Link>
 
             <Link
-              to={createPageUrl('Stores')}
+              to={resolveUrl('Stores')}
               className={cn(
                 'flex flex-col items-center justify-center gap-0.5 py-2 min-w-[52px] rounded-xl transition-all',
                 currentPath.includes('Stores')
