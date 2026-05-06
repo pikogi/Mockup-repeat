@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CreditCard, Users, QrCode, Gift, Percent, IceCream } from 'lucide-react'
+import { CreditCard, Users, QrCode, Gift, Percent } from 'lucide-react'
 import { motion } from 'framer-motion'
 import MetricCard from '@/components/dashboard/MetricCard'
 import StatsChart from '@/components/dashboard/StatsChart'
@@ -55,9 +55,11 @@ export default function DashboardLeroma() {
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-yellow-300 to-amber-400 flex items-center justify-center shadow-md flex-shrink-0">
-                <IceCream className="w-6 h-6 md:w-8 md:h-8 text-white" />
-              </div>
+              <img
+                src="/leroma-logo.jpg"
+                alt="Leroma Gelato"
+                className="w-10 h-10 md:w-14 md:h-14 rounded-xl object-contain flex-shrink-0"
+              />
               <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-foreground">
                 Leroma Gelato
               </h1>
