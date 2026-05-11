@@ -253,80 +253,148 @@ function LeromaFlow() {
   const screen = LEROMA_FLOW[active]
 
   const LAPTOP_W = 1440
+  const isMobile = window.innerWidth < 768
+  const effectiveType = isMobile && screen.type === 'laptop' ? 'phone' : screen.type
   const availH = window.innerHeight - 120
   const phoneScale = Math.min(1, availH / 852)
   const laptopScale = Math.min(1, availH / 800)
   const scale =
-    screen.type === 'phone'
+    effectiveType === 'phone'
       ? Math.min(phoneScale, (window.innerWidth - 80) / 393)
       : Math.min(laptopScale, (window.innerWidth - 80) / LAPTOP_W)
-  const frameNaturalH = screen.type === 'phone' ? 852 : 800
+  const frameNaturalH = effectiveType === 'phone' ? 852 : 800
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: 32 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: 24 }}>
       {/* Step selector */}
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', padding: '0 20px' }}>
-        {LEROMA_FLOW.map((s, i) => (
-          <button
-            key={i}
-            onClick={() => setActive(i)}
-            style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: 12,
-              padding: '12px 16px',
-              borderRadius: 14,
-              border: `1.5px solid ${active === i ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.07)'}`,
-              background: active === i ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.03)',
-              cursor: 'pointer',
-              textAlign: 'left',
-              minWidth: 160,
-              maxWidth: 210,
-              transition: 'all 0.15s',
-            }}
-          >
-            <span
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: '50%',
-                flexShrink: 0,
-                background: active === i ? '#fff' : 'rgba(255,255,255,0.12)',
-                color: active === i ? '#0f172a' : 'rgba(255,255,255,0.4)',
-                fontSize: 13,
-                fontWeight: 700,
-                fontFamily: 'system-ui',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              {i + 1}
-            </span>
-            <div>
-              <p
+      {isMobile ? (
+        /* Mobile: number bubbles + active description card */
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 12,
+            width: '100%',
+            padding: '0 20px',
+          }}
+        >
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+            {LEROMA_FLOW.map((s, i) => (
+              <button
+                key={i}
+                onClick={() => setActive(i)}
                 style={{
-                  color: active === i ? '#fff' : 'rgba(255,255,255,0.45)',
-                  fontSize: 14,
+                  width: 44,
+                  height: 44,
+                  borderRadius: '50%',
+                  border: `1.5px solid ${active === i ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.1)'}`,
+                  background: active === i ? '#fff' : 'rgba(255,255,255,0.08)',
+                  color: active === i ? '#0f172a' : 'rgba(255,255,255,0.4)',
+                  fontSize: 15,
                   fontWeight: 700,
                   fontFamily: 'system-ui',
-                  marginBottom: 3,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                  flexShrink: 0,
                 }}
               >
-                {s.label}
-              </p>
-              <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, fontFamily: 'system-ui', lineHeight: 1.4 }}>
-                {s.desc}
-              </p>
-            </div>
-          </button>
-        ))}
-      </div>
+                {i + 1}
+              </button>
+            ))}
+          </div>
+          <div
+            style={{
+              padding: '10px 16px',
+              borderRadius: 12,
+              border: '1.5px solid rgba(255,255,255,0.12)',
+              background: 'rgba(255,255,255,0.06)',
+              textAlign: 'center',
+              width: '100%',
+              maxWidth: 360,
+            }}
+          >
+            <p style={{ color: '#fff', fontSize: 13, fontWeight: 700, fontFamily: 'system-ui', margin: '0 0 3px' }}>
+              {screen.label}
+            </p>
+            <p
+              style={{
+                color: 'rgba(255,255,255,0.4)',
+                fontSize: 12,
+                fontFamily: 'system-ui',
+                lineHeight: 1.4,
+                margin: 0,
+              }}
+            >
+              {screen.desc}
+            </p>
+          </div>
+        </div>
+      ) : (
+        /* Desktop: original full cards in a row */
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', padding: '0 20px' }}>
+          {LEROMA_FLOW.map((s, i) => (
+            <button
+              key={i}
+              onClick={() => setActive(i)}
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 12,
+                padding: '12px 16px',
+                borderRadius: 14,
+                border: `1.5px solid ${active === i ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.07)'}`,
+                background: active === i ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.03)',
+                cursor: 'pointer',
+                textAlign: 'left',
+                minWidth: 160,
+                maxWidth: 210,
+                transition: 'all 0.15s',
+              }}
+            >
+              <span
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: '50%',
+                  flexShrink: 0,
+                  background: active === i ? '#fff' : 'rgba(255,255,255,0.12)',
+                  color: active === i ? '#0f172a' : 'rgba(255,255,255,0.4)',
+                  fontSize: 13,
+                  fontWeight: 700,
+                  fontFamily: 'system-ui',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {i + 1}
+              </span>
+              <div>
+                <p
+                  style={{
+                    color: active === i ? '#fff' : 'rgba(255,255,255,0.45)',
+                    fontSize: 14,
+                    fontWeight: 700,
+                    fontFamily: 'system-ui',
+                    marginBottom: 3,
+                  }}
+                >
+                  {s.label}
+                </p>
+                <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, fontFamily: 'system-ui', lineHeight: 1.4 }}>
+                  {s.desc}
+                </p>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Frame */}
       <div style={{ height: frameNaturalH * scale, width: '100%', display: 'flex', justifyContent: 'center' }}>
         <div style={{ transform: `scale(${scale})`, transformOrigin: 'top center', flexShrink: 0 }}>
-          {screen.type === 'phone' ? <IPhone url={screen.url} /> : <Laptop url={screen.url} width={LAPTOP_W} />}
+          {effectiveType === 'phone' ? <IPhone url={screen.url} /> : <Laptop url={screen.url} width={LAPTOP_W} />}
         </div>
       </div>
     </div>
@@ -396,7 +464,7 @@ export default function Preview() {
       )}
 
       {/* Frames */}
-      <div className="flex-1 flex items-start justify-center pt-6 pb-2 overflow-x-auto">
+      <div className="flex-1 flex items-start justify-center pt-6 pb-10 overflow-x-auto">
         {isFlow ? (
           <LeromaFlow />
         ) : !showPhone && !showLaptop ? (
