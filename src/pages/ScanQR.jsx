@@ -560,7 +560,7 @@ export default function ScanQR() {
   const resetScanner = () => {
     const demo = searchParams.get('demo')
     if (demo) {
-      window.parent.postMessage({ type: 'demo-close' }, '*')
+      window.location.reload()
       return
     }
     setScanning(true)
