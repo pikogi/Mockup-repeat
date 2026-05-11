@@ -221,7 +221,7 @@ export default function Sidebar() {
       <header className="lg:hidden fixed top-0 left-0 right-0 bg-black z-40 px-4 py-3 flex items-center justify-between">
         <h1 className="text-xl font-bold text-white">repeat</h1>
         <div className="flex items-center gap-1">
-          {user?.type_user === 'brand_admin' && (
+          {(user?.type_user === 'brand_admin' || isMoonCafeDemo) && (
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
                 <button className="text-white p-4 -mr-4 -my-3">
