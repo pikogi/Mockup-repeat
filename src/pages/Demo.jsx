@@ -2,6 +2,19 @@ import { ExternalLink, Smartphone } from 'lucide-react'
 
 const COL_LEFT = [
   {
+    title: 'Café Moon — Demo Sellos',
+    badge: 'bg-green-100 text-green-800',
+    links: [
+      {
+        label: 'Café Moon · Flow completo',
+        url: '/demo-mooncafe',
+        desc: 'Registro, wallet, scan interactivo y dashboard de sellos.',
+        single: true,
+        mobile: false,
+      },
+    ],
+  },
+  {
     title: 'Crear programa',
     badge: 'bg-yellow-100 text-yellow-800',
     links: [

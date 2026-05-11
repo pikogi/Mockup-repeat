@@ -12,6 +12,25 @@ import { motion } from 'framer-motion'
 import { useDeviceDetection } from '@/hooks/useDeviceDetection'
 
 const DEMO_PROGRAMS = {
+  mooncafe: {
+    card_color: '#1a4a2e',
+    foreground_color: '#ffffff',
+    club_name: 'The Club',
+    card_title: 'The Club',
+    description: 'café moon',
+    logo_url: '/moon-cafe-logo.png',
+    reward_text: 'Cada 5 cafés, 1 GRATIS ☕',
+    stamps_required: 5,
+    collect_name: true,
+    collect_email: true,
+    collect_phone: false,
+    collect_birthday: false,
+    is_active: true,
+    terms: `The Club es el programa de fidelidad de Café Moon. Al registrarte aceptás los siguientes términos:\n\n• Por cada café comprado acumulás 1 sello.\n• Al completar 5 sellos obtenés 1 café gratis.\n• Los sellos no son transferibles ni canjeables por dinero.\n• Café Moon se reserva el derecho de modificar los beneficios con previo aviso.\n• La membresía es personal e intransferible.`,
+    contact_email: '',
+    contact_phone: '',
+    website: 'cafemoon.com.ar',
+  },
   leroma: {
     card_color: '#111111',
     foreground_color: '#ffffff',

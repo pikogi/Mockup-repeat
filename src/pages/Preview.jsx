@@ -1,4 +1,4 @@
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'
 import { ArrowLeft, Monitor, RotateCcw, Smartphone } from 'lucide-react'
 import { useRef, useState } from 'react'
 
@@ -221,6 +221,33 @@ function Laptop({ url, width = 1100 }) {
   )
 }
 
+const MOONCAFE_FLOW = [
+  {
+    type: 'phone',
+    url: '/publicprogram?demo=mooncafe',
+    label: 'Registro',
+    desc: 'El cliente escanea el QR y se une al programa de sellos.',
+  },
+  {
+    type: 'phone',
+    url: '/wallet/mooncafe',
+    label: 'Wallet',
+    desc: 'La tarjeta aparece en Apple Wallet con los sellos del cliente.',
+  },
+  {
+    type: 'phone',
+    url: '/scan-demo/mooncafe',
+    label: 'Scan',
+    desc: 'El operador escanea la tarjeta y agrega un sello.',
+  },
+  {
+    type: 'laptop',
+    url: '/dashboard/mooncafe-demo',
+    label: 'Dashboard',
+    desc: 'Panel de control con métricas del programa de sellos.',
+  },
+]
+
 const LEROMA_FLOW = [
   {
     type: 'phone',
@@ -248,9 +275,9 @@ const LEROMA_FLOW = [
   },
 ]
 
-function LeromaFlow() {
+function DemoFlow({ flow }) {
   const [active, setActive] = useState(0)
-  const screen = LEROMA_FLOW[active]
+  const screen = flow[active]
 
   const LAPTOP_W = 1440
   const isMobile = window.innerWidth < 768
@@ -280,7 +307,7 @@ function LeromaFlow() {
           }}
         >
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-            {LEROMA_FLOW.map((s, i) => (
+            {flow.map((s, i) => (
               <button
                 key={i}
                 onClick={() => setActive(i)}
@@ -404,9 +431,12 @@ function LeromaFlow() {
 export default function Preview() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const url = searchParams.get('url')
   const [view, setView] = useState('both')
 
+  const isMoonCafe = location.pathname === '/demo-mooncafe'
+  const activeFlow = isMoonCafe ? MOONCAFE_FLOW : LEROMA_FLOW
   const isFlow = !url
 
   const showPhone = view === 'both' || view === 'phone'
@@ -466,7 +496,7 @@ export default function Preview() {
       {/* Frames */}
       <div className="flex-1 flex items-start justify-center pt-6 pb-10 overflow-x-auto">
         {isFlow ? (
-          <LeromaFlow />
+          <DemoFlow flow={activeFlow} />
         ) : !showPhone && !showLaptop ? (
           <p className="text-white/30 text-sm mt-20">Seleccioná al menos una pantalla</p>
         ) : (
