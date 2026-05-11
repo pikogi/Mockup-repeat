@@ -253,13 +253,14 @@ function LeromaFlow() {
   const screen = LEROMA_FLOW[active]
 
   const LAPTOP_W = 1440
-  const availH = window.innerHeight - 200
+  const availH = window.innerHeight - 120
   const phoneScale = Math.min(1, availH / 852)
   const laptopScale = Math.min(1, availH / 800)
   const scale =
     screen.type === 'phone'
       ? Math.min(phoneScale, (window.innerWidth - 80) / 393)
       : Math.min(laptopScale, (window.innerWidth - 80) / LAPTOP_W)
+  const frameNaturalH = screen.type === 'phone' ? 852 : 800
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: 32 }}>
@@ -323,8 +324,10 @@ function LeromaFlow() {
       </div>
 
       {/* Frame */}
-      <div style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}>
-        {screen.type === 'phone' ? <IPhone url={screen.url} /> : <Laptop url={screen.url} width={LAPTOP_W} />}
+      <div style={{ height: frameNaturalH * scale, width: '100%', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ transform: `scale(${scale})`, transformOrigin: 'top center', flexShrink: 0 }}>
+          {screen.type === 'phone' ? <IPhone url={screen.url} /> : <Laptop url={screen.url} width={LAPTOP_W} />}
+        </div>
       </div>
     </div>
   )
@@ -393,7 +396,7 @@ export default function Preview() {
       )}
 
       {/* Frames */}
-      <div className="flex-1 flex items-start justify-center pt-6 pb-10 overflow-x-auto">
+      <div className="flex-1 flex items-start justify-center pt-6 pb-2 overflow-x-auto">
         {isFlow ? (
           <LeromaFlow />
         ) : !showPhone && !showLaptop ? (
