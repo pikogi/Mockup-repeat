@@ -6,7 +6,7 @@ const LanguageContext = createContext()
 export const translations = {
   es: {
     // Navigation & Layout
-    dashboard: 'Dashboard',
+    dashboard: 'Panel',
     myPrograms: 'Mis Clubes',
     customers: 'Miembros',
     stores: 'Sucursales',

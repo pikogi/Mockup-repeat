@@ -256,7 +256,7 @@ export default function Sidebar() {
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 z-40 px-4 py-2 safe-area-pb">
         <div className="flex items-center justify-between px-2">
           {/* Left side: Dashboard & Miembros */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-1 justify-start">
             <Link
               to={resolveUrl('Dashboard')}
               className={cn(
@@ -293,7 +293,7 @@ export default function Sidebar() {
           </Link>
 
           {/* Right side: Profile & Stores */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-1 justify-end">
             <Link
               to={resolveUrl('Profile')}
               className={cn(
