@@ -19,9 +19,7 @@ export default function DashboardHintMoonCafe() {
         />
 
         {/* Arrow pointing to the Miembros button in the bottom nav */}
-        <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 1, repeat: Infinity, ease: 'easeInOut' }}
+        <div
           style={{
             position: 'fixed',
             bottom: 100,
@@ -34,23 +32,29 @@ export default function DashboardHintMoonCafe() {
             pointerEvents: 'none',
           }}
         >
-          <span
-            style={{
-              fontSize: 17,
-              fontWeight: 800,
-              color: '#1c1c1e',
-              background: 'rgba(255,255,255,0.97)',
-              padding: '10px 20px',
-              borderRadius: 12,
-              whiteSpace: 'nowrap',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
-              border: '2.5px solid #eab308',
-            }}
+          <motion.div
+            animate={{ y: [0, 10, 0] }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'easeInOut' }}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}
           >
-            Ver miembros
-          </span>
-          <span style={{ fontSize: 42, lineHeight: 1, color: '#eab308' }}>↓</span>
-        </motion.div>
+            <span
+              style={{
+                fontSize: 17,
+                fontWeight: 800,
+                color: '#1c1c1e',
+                background: 'rgba(255,255,255,0.97)',
+                padding: '10px 20px',
+                borderRadius: 12,
+                whiteSpace: 'nowrap',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+                border: '2.5px solid #eab308',
+              }}
+            >
+              Ver miembros
+            </span>
+            <span style={{ fontSize: 42, lineHeight: 1, color: '#eab308' }}>↓</span>
+          </motion.div>
+        </div>
       </div>
     </div>
   )
