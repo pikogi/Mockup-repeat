@@ -163,9 +163,9 @@ function IPhone({ url }) {
   )
 }
 
-function Laptop({ url }) {
+function Laptop({ url, width = 1100 }) {
   return (
-    <div style={{ width: 1100, flexShrink: 0 }}>
+    <div style={{ width, flexShrink: 0 }}>
       {/* Browser chrome */}
       <div
         style={{
@@ -208,7 +208,7 @@ function Laptop({ url }) {
           borderTop: 'none',
           borderRadius: '0 0 8px 8px',
           overflow: 'hidden',
-          height: 720,
+          height: 800,
         }}
       >
         <iframe
@@ -221,11 +221,122 @@ function Laptop({ url }) {
   )
 }
 
+const LEROMA_FLOW = [
+  {
+    type: 'phone',
+    url: '/publicprogram?demo=leroma',
+    label: 'Registro',
+    desc: 'El cliente escanea el QR y se une al programa desde su celular.',
+  },
+  {
+    type: 'phone',
+    url: '/membership/leroma-membership-demo?card=mock',
+    label: 'Membresía',
+    desc: 'El socio ve sus puntos, nivel y experiencias disponibles.',
+  },
+  {
+    type: 'phone',
+    url: '/scanqr?demo=points',
+    label: 'Scan QR',
+    desc: 'El operador escanea el QR del cliente y suma puntos.',
+  },
+  {
+    type: 'laptop',
+    url: '/dashboard/leroma-demo',
+    label: 'Dashboard',
+    desc: 'Panel de control del negocio con métricas y miembros.',
+  },
+]
+
+function LeromaFlow() {
+  const [active, setActive] = useState(0)
+  const screen = LEROMA_FLOW[active]
+
+  const LAPTOP_W = 1440
+  const availH = window.innerHeight - 200
+  const phoneScale = Math.min(1, availH / 852)
+  const laptopScale = Math.min(1, availH / 800)
+  const scale =
+    screen.type === 'phone'
+      ? Math.min(phoneScale, (window.innerWidth - 80) / 393)
+      : Math.min(laptopScale, (window.innerWidth - 80) / LAPTOP_W)
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: 32 }}>
+      {/* Step selector */}
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', padding: '0 20px' }}>
+        {LEROMA_FLOW.map((s, i) => (
+          <button
+            key={i}
+            onClick={() => setActive(i)}
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 12,
+              padding: '12px 16px',
+              borderRadius: 14,
+              border: `1.5px solid ${active === i ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.07)'}`,
+              background: active === i ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.03)',
+              cursor: 'pointer',
+              textAlign: 'left',
+              minWidth: 160,
+              maxWidth: 210,
+              transition: 'all 0.15s',
+            }}
+          >
+            <span
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: '50%',
+                flexShrink: 0,
+                background: active === i ? '#fff' : 'rgba(255,255,255,0.12)',
+                color: active === i ? '#0f172a' : 'rgba(255,255,255,0.4)',
+                fontSize: 13,
+                fontWeight: 700,
+                fontFamily: 'system-ui',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {i + 1}
+            </span>
+            <div>
+              <p
+                style={{
+                  color: active === i ? '#fff' : 'rgba(255,255,255,0.45)',
+                  fontSize: 14,
+                  fontWeight: 700,
+                  fontFamily: 'system-ui',
+                  marginBottom: 3,
+                }}
+              >
+                {s.label}
+              </p>
+              <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, fontFamily: 'system-ui', lineHeight: 1.4 }}>
+                {s.desc}
+              </p>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* Frame */}
+      <div style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}>
+        {screen.type === 'phone' ? <IPhone url={screen.url} /> : <Laptop url={screen.url} width={LAPTOP_W} />}
+      </div>
+    </div>
+  )
+}
+
 export default function Preview() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const url = searchParams.get('url') || '/catalog/beauty-demo'
-  const [view, setView] = useState('both') // 'both' | 'phone' | 'laptop'
+  const url = searchParams.get('url')
+  const [view, setView] = useState('both')
+
+  const isFlow = !url
 
   const showPhone = view === 'both' || view === 'phone'
   const showLaptop = view === 'both' || view === 'laptop'
@@ -246,42 +357,46 @@ export default function Preview() {
       className="min-h-screen flex flex-col"
       style={{ background: 'radial-gradient(ellipse at center, #1e293b 0%, #0f172a 100%)' }}
     >
-      {/* Top bar */}
-      <div
-        className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 flex-shrink-0"
-        style={{ background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(8px)' }}
-      >
-        <button
-          onClick={() => navigate('/demo')}
-          className="flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm"
+      {/* Top bar — solo en modo single URL */}
+      {!isFlow && (
+        <div
+          className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 flex-shrink-0"
+          style={{ background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(8px)' }}
         >
-          <ArrowLeft className="w-4 h-4" />
-          Volver
-        </button>
-        <div className="flex items-center gap-2">
           <button
-            onClick={() => setView(view === 'phone' ? 'both' : 'phone')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${view === 'phone' ? 'bg-white/15 text-white' : 'text-white/30 hover:text-white/60'}`}
+            onClick={() => navigate('/demo')}
+            className="flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm"
           >
-            <Smartphone className="w-3.5 h-3.5" />
-            Mobile
+            <ArrowLeft className="w-4 h-4" />
+            Volver
           </button>
-          <button
-            onClick={() => setView(view === 'laptop' ? 'both' : 'laptop')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${view === 'laptop' ? 'bg-white/15 text-white' : 'text-white/30 hover:text-white/60'}`}
-          >
-            <Monitor className="w-3.5 h-3.5" />
-            Desktop
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setView(view === 'phone' ? 'both' : 'phone')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${view === 'phone' ? 'bg-white/15 text-white' : 'text-white/30 hover:text-white/60'}`}
+            >
+              <Smartphone className="w-3.5 h-3.5" />
+              Mobile
+            </button>
+            <button
+              onClick={() => setView(view === 'laptop' ? 'both' : 'laptop')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${view === 'laptop' ? 'bg-white/15 text-white' : 'text-white/30 hover:text-white/60'}`}
+            >
+              <Monitor className="w-3.5 h-3.5" />
+              Desktop
+            </button>
+          </div>
+          <button onClick={() => window.location.reload()} className="text-white/60 hover:text-white transition-colors">
+            <RotateCcw className="w-4 h-4" />
           </button>
         </div>
-        <button onClick={() => window.location.reload()} className="text-white/60 hover:text-white transition-colors">
-          <RotateCcw className="w-4 h-4" />
-        </button>
-      </div>
+      )}
 
       {/* Frames */}
-      <div className="flex-1 flex items-start justify-center pt-4">
-        {!showPhone && !showLaptop ? (
+      <div className="flex-1 flex items-start justify-center pt-6 pb-10 overflow-x-auto">
+        {isFlow ? (
+          <LeromaFlow />
+        ) : !showPhone && !showLaptop ? (
           <p className="text-white/30 text-sm mt-20">Seleccioná al menos una pantalla</p>
         ) : (
           <div

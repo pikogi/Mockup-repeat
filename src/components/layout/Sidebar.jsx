@@ -65,18 +65,14 @@ export default function Sidebar() {
   const DEMO_URLS = {
     Dashboard: '/dashboard/leroma-demo',
     Customers: '/customers/leroma-demo',
-    Notifications: '/notifications',
-    MyPrograms: '/myprograms',
-    Survey: '/survey',
-    Menu: '/menu',
-    Stores: '/stores',
-    CreateClub: '/createclub',
-    Profile: '/profile',
+    Notifications: '/notifications/leroma-demo',
+    MyPrograms: '/myprograms/leroma-demo',
     ScanQR: '/scanqr?demo=points',
   }
 
   const currentPath = location.pathname
-  const isDemo = !user
+  const DEMO_PATH_PREFIXES = Object.values(DEMO_URLS).map((u) => u.split('?')[0])
+  const isDemo = !user || DEMO_PATH_PREFIXES.some((p) => currentPath.startsWith(p))
 
   const resolveUrl = (page) => (isDemo ? (DEMO_URLS[page] ?? createPageUrl(page)) : createPageUrl(page))
 
@@ -85,8 +81,8 @@ export default function Sidebar() {
     { name: t('customers'), icon: User, page: 'Customers' },
     { name: t('notifications'), icon: Bell, page: 'Notifications' },
     { name: t('myPrograms'), icon: CreditCard, page: 'MyPrograms' },
-    { name: t('survey'), icon: ClipboardList, page: 'Survey' },
-    { name: t('menu'), icon: BookOpen, page: 'Menu' },
+    { name: 'Encuesta', icon: ClipboardList, noNav: true },
+    ...(!isDemo ? [{ name: t('menu'), icon: BookOpen, page: 'Menu' }] : []),
     ...(user?.type_user === 'brand_admin' ? [{ name: t('stores'), icon: Store, page: 'Stores' }] : []),
   ]
 
@@ -108,6 +104,17 @@ export default function Sidebar() {
         <nav className="flex-1 p-4 space-y-1">
           {navItems.map((item) => {
             const isActive = currentPath.includes(item.page)
+            if (item.noNav) {
+              return (
+                <div
+                  key={item.name}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-all duration-200 select-none"
+                >
+                  <item.icon className="w-5 h-5" />
+                  <span className="font-medium">{item.name}</span>
+                </div>
+              )
+            }
             if (item.comingSoon) {
               return (
                 <div

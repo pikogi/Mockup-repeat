@@ -207,6 +207,114 @@ const MEMBER_DEFAULT = {
   redeemed_onetime: new Set([]),
 }
 
+const MOCK_LEROMA = {
+  name: 'Leroma Gelato Club',
+  logo_url: '/leroma-logo.jpg',
+  brand_color: '#f59e0b',
+  activation: 'tiers',
+  referral_reward_type: 'benefit',
+  referral_reward_benefit: 'Una bola de helado gratis para vos y tu amigo',
+}
+
+const TIERS_LEROMA = [
+  { id: 't1', name: 'Palito', min_spend: 0, color: '#f97316' },
+  { id: 't2', name: 'Cucurucho', min_spend: 15000, color: '#a16207' },
+  { id: 't3', name: 'Sundae', min_spend: 40000, color: '#d97706' },
+]
+
+const CATALOG_LEROMA = [
+  {
+    id: 1,
+    name: '10% off en todos los helados',
+    description: 'Descuento permanente en cada visita. Sin mínimo de consumo.',
+    use_type: 'unlimited',
+    tier_required: 't1',
+    image_url: 'https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?w=400&h=400&fit=crop&q=80',
+  },
+  {
+    id: 2,
+    name: 'Degustación de gusto nuevo',
+    description: 'Probá gratis el gusto del mes antes de decidirte. Una muestra por visita.',
+    use_type: 'monthly',
+    tier_required: 't1',
+    image_url: 'https://images.unsplash.com/photo-1501443762994-82bd5dace89a?w=400&h=400&fit=crop&q=80',
+  },
+  {
+    id: 3,
+    name: 'Copa especial mensual gratis',
+    description: 'Una copa doble con los gustos de temporada, sin costo. Una vez por mes.',
+    use_type: 'monthly',
+    tier_required: 't2',
+    image_url: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400&h=400&fit=crop&q=80',
+  },
+  {
+    id: 4,
+    name: 'Acceso anticipado a gustos de edición limitada',
+    description: 'Los socios Cucurucho prueban los gustos nuevos 48hs antes del lanzamiento oficial.',
+    use_type: 'unlimited',
+    tier_required: 't2',
+    image_url: null,
+  },
+  {
+    id: 5,
+    name: 'Invitación a noches de helado artesanal',
+    description: 'Eventos privados con maridaje, degustación guiada y meet con el maestro heladero.',
+    use_type: 'unlimited',
+    tier_required: 't3',
+    image_url: 'https://images.unsplash.com/photo-1488900128323-21503983a07e?w=400&h=400&fit=crop&q=80',
+  },
+  {
+    id: 6,
+    name: 'Kit de verano Leroma',
+    description: 'Bolsa térmica + cuchara coleccionable + voucher de media docena. Al alcanzar Sundae.',
+    use_type: 'onetime',
+    tier_required: 't3',
+    image_url: null,
+  },
+]
+
+const MEMBER_LEROMA = {
+  total_spend: 26000,
+  redeemed_monthly: new Set([2]),
+  redeemed_onetime: new Set([]),
+}
+
+const MOCK_ACTIVITY_LEROMA = [
+  { id: 1, type: 'spent', label: 'Visita — 2 cucuruchos + copa', amount: '$5.800', date: '2 may 2026' },
+  { id: 2, type: 'redeemed', label: 'Degustación gusto nuevo', date: '2 may 2026' },
+  { id: 3, type: 'referral', label: 'Referido — Luciana Peralta', date: '25 abr 2026' },
+  { id: 4, type: 'spent', label: 'Visita — media docena', amount: '$9.200', date: '18 abr 2026' },
+  { id: 5, type: 'redeemed', label: '10% off en helados', date: '18 abr 2026' },
+  { id: 6, type: 'spent', label: 'Visita — 3 bolas', amount: '$4.400', date: '10 abr 2026' },
+]
+
+const POSTS_LEROMA = [
+  {
+    id: 1,
+    type: 'novedad',
+    title: 'Nuevo gusto: mango y maracuyá',
+    body: 'Fresco, tropical y artesanal. Disponible por tiempo limitado. Socios Cucurucho lo prueban primero.',
+    image_url: 'https://images.unsplash.com/photo-1501443762994-82bd5dace89a?w=600&h=400&fit=crop&q=80',
+    date: '2 may',
+  },
+  {
+    id: 2,
+    type: 'evento',
+    title: 'Noche de helado artesanal — sábado 10',
+    body: 'Maridaje de helados con vinos dulces. Cupos limitados. Solo para socios Sundae.',
+    image_url: 'https://images.unsplash.com/photo-1488900128323-21503983a07e?w=600&h=400&fit=crop&q=80',
+    date: '28 abr',
+  },
+  {
+    id: 3,
+    type: 'promo',
+    title: 'Mayo: doble gusto por el precio de uno',
+    body: 'Todos los lunes de mayo, pedís un cucurucho doble y pagás solo el sencillo. Solo con app.',
+    image_url: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=600&h=400&fit=crop&q=80',
+    date: '25 abr',
+  },
+]
+
 const MOCK_BARBER = {
   name: 'Barber Club',
   logo_url: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=80&h=80&fit=crop&q=80',
@@ -893,13 +1001,46 @@ export default function PublicMembership() {
   const isSpa = programId === 'spa-demo'
   const isGym = programId === 'gym-demo'
   const isBarber = programId === 'barber-membership-demo'
+  const isLeroma = programId === 'leroma-membership-demo'
 
-  const program = isSpa ? MOCK_SPA : isGym ? MOCK_GYM : isBarber ? MOCK_BARBER : MOCK_DEFAULT
-  const tiers = isSpa ? TIERS_SPA : isGym ? TIERS_GYM : isBarber ? TIERS_BARBER : TIERS_DEFAULT
-  const catalog = isSpa ? CATALOG_SPA : isGym ? CATALOG_GYM : isBarber ? CATALOG_BARBER : CATALOG_DEFAULT
-  const memberData = isSpa ? MEMBER_SPA : isGym ? MEMBER_GYM : isBarber ? MEMBER_BARBER : MEMBER_DEFAULT
-  const posts = isSpa ? POSTS_SPA : isGym ? POSTS_GYM : isBarber ? POSTS_BARBER : POSTS_SPA
-  const activity = isSpa ? MOCK_ACTIVITY_SPA : isGym ? MOCK_ACTIVITY_GYM : isBarber ? MOCK_ACTIVITY_BARBER : []
+  const program = isSpa ? MOCK_SPA : isGym ? MOCK_GYM : isBarber ? MOCK_BARBER : isLeroma ? MOCK_LEROMA : MOCK_DEFAULT
+  const tiers = isSpa
+    ? TIERS_SPA
+    : isGym
+      ? TIERS_GYM
+      : isBarber
+        ? TIERS_BARBER
+        : isLeroma
+          ? TIERS_LEROMA
+          : TIERS_DEFAULT
+  const catalog = isSpa
+    ? CATALOG_SPA
+    : isGym
+      ? CATALOG_GYM
+      : isBarber
+        ? CATALOG_BARBER
+        : isLeroma
+          ? CATALOG_LEROMA
+          : CATALOG_DEFAULT
+  const memberData = isSpa
+    ? MEMBER_SPA
+    : isGym
+      ? MEMBER_GYM
+      : isBarber
+        ? MEMBER_BARBER
+        : isLeroma
+          ? MEMBER_LEROMA
+          : MEMBER_DEFAULT
+  const posts = isSpa ? POSTS_SPA : isGym ? POSTS_GYM : isBarber ? POSTS_BARBER : isLeroma ? POSTS_LEROMA : POSTS_SPA
+  const activity = isSpa
+    ? MOCK_ACTIVITY_SPA
+    : isGym
+      ? MOCK_ACTIVITY_GYM
+      : isBarber
+        ? MOCK_ACTIVITY_BARBER
+        : isLeroma
+          ? MOCK_ACTIVITY_LEROMA
+          : []
 
   const color = program.brand_color
 
@@ -987,7 +1128,9 @@ export default function PublicMembership() {
                   ? '✨ Masajes y tratamientos exclusivos · 💅 Manicura gratis mensual · 🌟 Beneficios según tu nivel'
                   : isGym
                     ? '🏋️ Acceso ilimitado al gym · 🥤 Shake mensual incluido · 👟 Personal trainer para socios Elite'
-                    : '⭐ Beneficios exclusivos para socios · 🎁 Descuentos y productos gratis'}
+                    : isLeroma
+                      ? '🍦 Degustaciones exclusivas · 🎉 Eventos privados · 🥄 Copas y gustos nuevos cada mes'
+                      : '⭐ Beneficios exclusivos para socios · 🎁 Descuentos y productos gratis'}
               </span>
             ))}
           </div>

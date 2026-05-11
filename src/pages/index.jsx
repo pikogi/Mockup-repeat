@@ -45,6 +45,9 @@ const Preview = lazy(() => import('./Preview'))
 const PublicNetwork = lazy(() => import('./PublicNetwork'))
 const DashboardLeroma = lazy(() => import('./DashboardLeroma'))
 const CustomersLeroma = lazy(() => import('./CustomersLeroma'))
+const MyProgramsLeroma = lazy(() => import('./MyProgramsLeroma'))
+const NotificationsLeroma = lazy(() => import('./NotificationsLeroma'))
+const PublicMembershipLeroma = lazy(() => import('./PublicMembershipLeroma'))
 
 function LayoutWrapper({ children }) {
   const location = useLocation()
@@ -72,10 +75,11 @@ export default function Pages() {
             <Route path="/publicprogram" element={<PublicCard />} />
             <Route path="/store/:storeId" element={<PublicStore />} />
             <Route path="/catalog/:programId" element={<PublicCatalog />} />
+            <Route path="/membership/leroma-membership-demo" element={<PublicMembershipLeroma />} />
             <Route path="/membership/:programId" element={<PublicMembership />} />
             <Route path="/cashback/:programId" element={<PublicCashback />} />
             <Route path="/demo" element={<Demo />} />
-            <Route path="/preview" element={<Preview />} />
+            <Route path="/demo-leroma" element={<Preview />} />
             <Route path="/network" element={<PublicNetwork />} />
             <Route
               path="/dashboard/leroma-demo"
@@ -90,6 +94,22 @@ export default function Pages() {
               element={
                 <LayoutWrapper>
                   <CustomersLeroma />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/myprograms/leroma-demo"
+              element={
+                <LayoutWrapper>
+                  <MyProgramsLeroma />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/notifications/leroma-demo"
+              element={
+                <LayoutWrapper>
+                  <NotificationsLeroma />
                 </LayoutWrapper>
               }
             />

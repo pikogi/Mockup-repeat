@@ -5,16 +5,39 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Apple, Smartphone, Share2, CheckCircle, Mail, Phone, Globe, Loader2, Gift } from 'lucide-react'
+import { Apple, Smartphone, Share2, CheckCircle, Mail, Phone, Globe, Loader2, Gift, ChevronDown } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
 import { useDeviceDetection } from '@/hooks/useDeviceDetection'
 
+const DEMO_PROGRAMS = {
+  leroma: {
+    card_color: '#111111',
+    foreground_color: '#ffffff',
+    club_name: 'Círculo Leroma',
+    card_title: 'Círculo Leroma',
+    description: 'il momento felice',
+    logo_url: '/leroma-logo.jpg',
+    reward_text: 'Experiencias exclusivas Leroma',
+    stamps_required: 10,
+    collect_name: true,
+    collect_email: true,
+    collect_phone: true,
+    collect_birthday: true,
+    is_active: true,
+    terms: `Círculo Leroma es el programa de fidelidad de Leroma. Al registrarte aceptás los siguientes términos:\n\n• Los puntos se acumulan con cada compra en locales adheridos.\n• Los puntos no son transferibles ni canjeables por dinero.\n• Leroma se reserva el derecho de modificar los beneficios con previo aviso.\n• La membresía es personal e intransferible.\n• Los niveles se calculan según los puntos acumulados en el período vigente.\n• Las experiencias tienen disponibilidad limitada y sujeta a reserva previa.`,
+    contact_email: '',
+    contact_phone: '',
+    website: 'leroma.com.ar',
+  },
+}
+
 export default function PublicCard() {
   const urlParams = new URLSearchParams(window.location.search)
   const cardId = urlParams.get('id') // Este es el program_id
   const brandIdFromUrl = urlParams.get('brand_id')
+  const demoParam = urlParams.get('demo')
 
   const [pageLoadTs] = useState(() => Date.now())
   const [added, setAdded] = useState(false)
@@ -24,6 +47,7 @@ export default function PublicCard() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [walletType, setWalletType] = useState(null)
   const [customerData, setCustomerData] = useState(null) // Datos de la tarjeta del cliente
+  const [termsOpen, setTermsOpen] = useState(false)
 
   // Detectar sistema operativo usando el hook
   const { preferredWallet, isMobile } = useDeviceDetection()
@@ -64,7 +88,7 @@ export default function PublicCard() {
         throw err
       }
     },
-    enabled: !!cardId,
+    enabled: !!cardId && !demoParam,
     retry: false,
   })
 
@@ -148,16 +172,6 @@ export default function PublicCard() {
     : null
 
   const handleAddToWallet = (type) => {
-    // Validar que el usuario esté en un dispositivo móvil
-    if (!isMobile) {
-      toast.error(
-        'Solo puedes unirte al club desde un teléfono móvil (Android o iOS). Por favor, abre este enlace desde tu celular.',
-        {
-          duration: 5000,
-        },
-      )
-      return
-    }
     setWalletType(type)
     setShowSignUp(true)
   }
@@ -264,7 +278,9 @@ export default function PublicCard() {
     }
   }
 
-  if (isLoading) {
+  const demoCard = demoParam ? DEMO_PROGRAMS[demoParam] || null : null
+
+  if (isLoading && !demoCard) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-yellow-500" />
@@ -272,7 +288,7 @@ export default function PublicCard() {
     )
   }
 
-  if (error) {
+  if (error && !demoCard) {
     console.error('[PublicCard] Error al cargar:', error)
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 flex items-center justify-center p-4">
@@ -292,7 +308,9 @@ export default function PublicCard() {
     )
   }
 
-  if (!card) {
+  const resolvedCard = demoCard || card
+
+  if (!resolvedCard) {
     console.warn('[PublicCard] Programa no encontrado:', { cardId })
 
     return (
@@ -318,15 +336,15 @@ export default function PublicCard() {
       {/* Hero Section */}
       <div
         className="w-full py-12 px-4"
-        style={{ background: program?.wallet_design?.hex_background_color || card?.card_color || '#1a1a1a' }}
+        style={{ background: program?.wallet_design?.hex_background_color || resolvedCard?.card_color || '#1a1a1a' }}
       >
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="max-w-2xl mx-auto text-center"
-          style={{ color: program?.wallet_design?.hex_foreground_color || card?.foreground_color || '#FFFFFF' }}
+          style={{ color: program?.wallet_design?.hex_foreground_color || resolvedCard?.foreground_color || '#FFFFFF' }}
         >
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">¡Bienvenido a nuestro Club de Fidelidad!</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">¡Bienvenido a {resolvedCard.club_name}!</h1>
         </motion.div>
       </div>
 
@@ -345,7 +363,7 @@ export default function PublicCard() {
               </div>
               <div>
                 <p className="text-sm text-gray-500 font-medium">Tu recompensa</p>
-                <p className="text-xl font-bold text-gray-900">{card.reward_text}</p>
+                <p className="text-xl font-bold text-gray-900">{resolvedCard.reward_text}</p>
               </div>
             </div>
           </Card>
@@ -363,7 +381,7 @@ export default function PublicCard() {
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">¡Bienvenido al club!</h3>
                 <p className="text-gray-600 mb-6">
-                  Ya eres parte de {card.club_name}. Tu tarjeta ha sido agregada a tu wallet.
+                  Ya eres parte de {resolvedCard.club_name}. Tu tarjeta ha sido agregada a tu wallet.
                 </p>
 
                 {customerData && (
@@ -373,7 +391,7 @@ export default function PublicCard() {
                     <div className="mt-3 pt-3 border-t border-amber-200">
                       <p className="text-sm text-gray-500">Sellos acumulados</p>
                       <p className="text-2xl font-bold text-amber-600">
-                        {customerData.currentStamps || 0} / {card.stamps_required}
+                        {customerData.currentStamps || 0} / {resolvedCard.stamps_required}
                       </p>
                     </div>
                   </div>
@@ -391,10 +409,10 @@ export default function PublicCard() {
             ) : (
               <>
                 <div className="text-center mb-6">
-                  {card.logo_url && (
+                  {resolvedCard.logo_url && (
                     <img
-                      src={card.logo_url}
-                      alt={card.club_name}
+                      src={resolvedCard.logo_url}
+                      alt={resolvedCard.club_name}
                       className="w-32 h-32 object-contain rounded-2xl mx-auto mb-4 transition-opacity duration-300"
                       style={{ opacity: 0 }}
                       fetchPriority="high"
@@ -455,21 +473,27 @@ export default function PublicCard() {
                     </Button>
                   )}
                   {/* Terms */}
-                  {card.terms && (
+                  {resolvedCard.terms && (
                     <div className="pt-4 border-t border-gray-100">
-                      <h3 className="font-semibold text-gray-900 mb-2 text-sm">Términos y Condiciones</h3>
-                      <p className="text-xs text-gray-500 whitespace-pre-wrap break-words">{card.terms}</p>
+                      <button
+                        onClick={() => setTermsOpen((o) => !o)}
+                        className="w-full flex items-center justify-between text-sm font-semibold text-gray-900"
+                      >
+                        Términos y Condiciones
+                        <ChevronDown
+                          className="w-4 h-4 text-gray-400 transition-transform"
+                          style={{ transform: termsOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                        />
+                      </button>
+                      {termsOpen && (
+                        <p className="mt-2 text-xs text-gray-500 whitespace-pre-wrap break-words leading-relaxed">
+                          {resolvedCard.terms}
+                        </p>
+                      )}
                     </div>
                   )}
 
-                  <div className="relative my-4">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-gray-200" />
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="px-4 bg-white text-gray-500">o</span>
-                    </div>
-                  </div>
+                  <div className="border-t border-gray-100 my-4" />
                   <Button
                     size="lg"
                     variant="ghost"
@@ -485,35 +509,37 @@ export default function PublicCard() {
           </Card>
 
           {/* Contact Info */}
-          {(card.contact_email || card.contact_phone || card.website) && (
+          {(resolvedCard.contact_email || resolvedCard.contact_phone || resolvedCard.website) && (
             <Card className="p-6 border-0 bg-white shadow-md">
               <h3 className="font-semibold text-gray-900 mb-4">Información de Contacto</h3>
               <div className="space-y-3">
-                {card.contact_email && (
+                {resolvedCard.contact_email && (
                   <a
-                    href={`mailto:${card.contact_email}`}
+                    href={`mailto:${resolvedCard.contact_email}`}
                     className="flex items-center gap-3 text-gray-600 hover:text-amber-600 transition-colors"
                   >
                     <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
                       <Mail className="w-5 h-5 text-amber-600" />
                     </div>
-                    <span>{card.contact_email}</span>
+                    <span>{resolvedCard.contact_email}</span>
                   </a>
                 )}
-                {card.contact_phone && (
+                {resolvedCard.contact_phone && (
                   <a
-                    href={`tel:${card.contact_phone}`}
+                    href={`tel:${resolvedCard.contact_phone}`}
                     className="flex items-center gap-3 text-gray-600 hover:text-amber-600 transition-colors"
                   >
                     <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
                       <Phone className="w-5 h-5 text-amber-600" />
                     </div>
-                    <span>{card.contact_phone}</span>
+                    <span>{resolvedCard.contact_phone}</span>
                   </a>
                 )}
-                {card.website && (
+                {resolvedCard.website && (
                   <a
-                    href={card.website.startsWith('http') ? card.website : `https://${card.website}`}
+                    href={
+                      resolvedCard.website.startsWith('http') ? resolvedCard.website : `https://${resolvedCard.website}`
+                    }
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-3 text-gray-600 hover:text-amber-600 transition-colors"
@@ -521,7 +547,7 @@ export default function PublicCard() {
                     <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
                       <Globe className="w-5 h-5 text-amber-600" />
                     </div>
-                    <span className="truncate max-w-[200px]">{card.website.replace(/^https?:\/\//, '')}</span>
+                    <span className="truncate max-w-[200px]">{resolvedCard.website.replace(/^https?:\/\//, '')}</span>
                   </a>
                 )}
               </div>
@@ -537,10 +563,10 @@ export default function PublicCard() {
       <Dialog open={showSignUp} onOpenChange={setShowSignUp}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-center text-xl">Únete a {card?.club_name}</DialogTitle>
+            <DialogTitle className="text-center text-xl">Únete a {resolvedCard?.club_name}</DialogTitle>
           </DialogHeader>
           <form onSubmit={processAddToWallet} className="space-y-4 py-4">
-            {card?.collect_name && (
+            {resolvedCard?.collect_name && (
               <div className="space-y-2">
                 <Label htmlFor="name">Nombre completo</Label>
                 <Input
@@ -553,7 +579,7 @@ export default function PublicCard() {
                 />
               </div>
             )}
-            {card?.collect_email && (
+            {resolvedCard?.collect_email && (
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -568,7 +594,7 @@ export default function PublicCard() {
                 <p className="text-xs text-gray-400">Te enviaremos un mail con tu tarjeta de fidelidad</p>
               </div>
             )}
-            {card?.collect_phone && (
+            {resolvedCard?.collect_phone && (
               <div className="space-y-2">
                 <Label htmlFor="phone">Celular</Label>
                 <Input
@@ -582,7 +608,7 @@ export default function PublicCard() {
                 />
               </div>
             )}
-            {card?.collect_birthday && (
+            {resolvedCard?.collect_birthday && (
               <div className="space-y-2">
                 <Label htmlFor="birthday">Fecha de cumpleaños</Label>
                 <Input

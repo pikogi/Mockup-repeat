@@ -95,10 +95,13 @@ export default function ScanQR() {
       const isDirect = demo === 'points-direct'
       setCardData({
         card: {
-          customer: { full_name: 'Laura Gómez', email: 'laura@gmail.com' },
-          current_balance: 1250,
-          created_at: '2024-03-01T00:00:00Z',
-          redemptions: [],
+          customer: { full_name: 'Valentina Gómez', email: 'vale.gomez@gmail.com' },
+          current_balance: 800,
+          created_at: '2026-01-12T00:00:00Z',
+          redemptions: [
+            { id: 'r1', status: 'pending', benefit_name: 'Degustación de nuevos sabores', tier: 'Bronce' },
+            { id: 'r2', status: 'pending', benefit_name: '10% off en todos los helados', tier: 'Bronce' },
+          ],
         },
         cardId: 'mock-points-card',
         stampsRequired: 10,
@@ -605,26 +608,28 @@ export default function ScanQR() {
   return (
     <div className="fixed inset-0 bg-black z-50">
       {/* Store Indicator */}
-      <div className="absolute top-4 left-4 z-10 bg-black/50 backdrop-blur-md rounded-full px-4 py-2 flex items-center gap-2 text-white border border-white/20">
-        <Store className="w-4 h-4" />
-        <span className="text-sm font-medium">
-          {(() => {
-            const s = stores.find((s) => (s.store_id || s.id) === selectedStore)
-            return s?.store_name || s?.name || t('loading')
-          })()}
-        </span>
-        {!user?.assigned_branch_id && stores.length > 1 && (
-          <button
-            onClick={() => {
-              setSelectedStore(null)
-              localStorage.removeItem('operating_branch_id')
-            }}
-            className="ml-2 text-xs text-yellow-400 hover:underline"
-          >
-            {t('change')}
-          </button>
-        )}
-      </div>
+      {!isDemo && (
+        <div className="absolute top-4 left-4 z-10 bg-black/50 backdrop-blur-md rounded-full px-4 py-2 flex items-center gap-2 text-white border border-white/20">
+          <Store className="w-4 h-4" />
+          <span className="text-sm font-medium">
+            {(() => {
+              const s = stores.find((s) => (s.store_id || s.id) === selectedStore)
+              return s?.store_name || s?.name || t('loading')
+            })()}
+          </span>
+          {!user?.assigned_branch_id && stores.length > 1 && (
+            <button
+              onClick={() => {
+                setSelectedStore(null)
+                localStorage.removeItem('operating_branch_id')
+              }}
+              className="ml-2 text-xs text-yellow-400 hover:underline"
+            >
+              {t('change')}
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Close Button */}
       <Button
@@ -936,53 +941,52 @@ export default function ScanQR() {
                                 exit={{ opacity: 0, x: -8 }}
                                 className="space-y-3 text-left"
                               >
-                                <div>
-                                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">
-                                    Código de canje
-                                  </label>
-                                  <Input
-                                    value={redeemCodeInput}
-                                    onChange={(e) => setRedeemCodeInput(e.target.value.toUpperCase())}
-                                    placeholder="REP-XXXX"
-                                    className="h-11 text-base font-mono tracking-widest"
-                                  />
-                                  {redeemCodeInput.startsWith('REP-') && redeemCodeInput.length >= 8 && (
-                                    <div className="mt-2 p-3 rounded-xl bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800">
-                                      <p className="text-xs font-semibold text-green-600 uppercase tracking-wider mb-2">
-                                        Canje encontrado
-                                      </p>
-                                      <div className="flex items-center gap-3">
-                                        <img
-                                          src="https://images.unsplash.com/photo-1562322140-8baeececf3df?w=120&h=120&fit=crop&q=80"
-                                          alt="Corte de cabello"
-                                          className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
-                                        />
-                                        <div className="flex-1 min-w-0">
-                                          <p className="font-semibold text-green-900 dark:text-green-100">
-                                            Corte de cabello
-                                          </p>
-                                          <span className="text-xs font-bold text-green-700 dark:text-green-300">
-                                            300 pts
-                                          </span>
-                                        </div>
+                                {(() => {
+                                  const pending = (card.redemptions || []).filter((r) => r.status === 'pending')
+                                  if (pending.length === 0) {
+                                    return (
+                                      <div className="py-6 text-center">
+                                        <Gift className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                                        <p className="text-sm text-gray-400">No hay canjes pendientes</p>
                                       </div>
+                                    )
+                                  }
+                                  return (
+                                    <div className="space-y-2">
+                                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                        Canjes pendientes ({pending.length})
+                                      </p>
+                                      {pending.map((r) => (
+                                        <div
+                                          key={r.id}
+                                          className="flex items-center gap-3 p-3 rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-950 dark:border-amber-800"
+                                        >
+                                          <div className="w-9 h-9 rounded-lg bg-amber-200 dark:bg-amber-900 flex items-center justify-center flex-shrink-0">
+                                            <Gift className="w-4 h-4 text-amber-700 dark:text-amber-300" />
+                                          </div>
+                                          <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-tight">
+                                              {r.benefit_name}
+                                            </p>
+                                            {r.tier && (
+                                              <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                                                Nivel {r.tier}
+                                              </span>
+                                            )}
+                                          </div>
+                                          <Button
+                                            size="sm"
+                                            className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold text-xs h-8 px-3 flex-shrink-0"
+                                            onClick={handleValidateRedeem}
+                                            disabled={processing}
+                                          >
+                                            {processing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Validar'}
+                                          </Button>
+                                        </div>
+                                      ))}
                                     </div>
-                                  )}
-                                </div>
-                                <Button
-                                  className="w-full h-11 bg-yellow-500 hover:bg-yellow-600 text-black font-bold"
-                                  onClick={handleValidateRedeem}
-                                  disabled={processing || !redeemCodeInput.trim()}
-                                >
-                                  {processing ? (
-                                    <span className="flex items-center gap-2">
-                                      <Loader2 className="w-4 h-4 animate-spin" />
-                                      Validando...
-                                    </span>
-                                  ) : (
-                                    'Confirmar canje'
-                                  )}
-                                </Button>
+                                  )
+                                })()}
                               </motion.div>
                             )}
                           </AnimatePresence>

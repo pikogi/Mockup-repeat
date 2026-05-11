@@ -84,6 +84,20 @@ const COL_RIGHT = [
         single: true,
         mobile: false,
       },
+      {
+        label: 'Mis programas · Leroma',
+        url: '/myprograms/leroma-demo',
+        desc: 'Lista de programas con gestión. Heladería.',
+        single: true,
+        mobile: false,
+      },
+      {
+        label: 'Notificaciones · Leroma',
+        url: '/notifications/leroma-demo',
+        desc: 'Envío de push notifications a miembros.',
+        single: true,
+        mobile: false,
+      },
     ],
   },
   {
@@ -150,6 +164,13 @@ const COL_RIGHT = [
         desc: 'Beneficios + red de comercios aliados.',
         single: true,
       },
+      {
+        label: 'Leroma Gelato',
+        url: '/membership/leroma-membership-demo',
+        previewUrl: '/demo-leroma',
+        desc: 'Degustaciones, eventos y beneficios. Heladería.',
+        single: true,
+      },
     ],
   },
   {
@@ -193,7 +214,7 @@ function LinkCard({ link }) {
             </a>
             {link.mobile !== false && (
               <a
-                href={`/preview?url=${encodeURIComponent(link.url)}`}
+                href={link.previewUrl ?? `/demo-leroma?url=${encodeURIComponent(link.url)}`}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-500 hover:bg-gray-50 transition-colors"
@@ -223,7 +244,7 @@ function LinkCard({ link }) {
               Miembro
             </a>
             <a
-              href={`/preview?url=${encodeURIComponent(link.url)}`}
+              href={`/demo-leroma?url=${encodeURIComponent(link.url)}`}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-500 hover:bg-gray-50 transition-colors"

@@ -222,12 +222,14 @@ export default function CustomersLeroma() {
         )}
 
         {/* Detail modal */}
-        <CustomerDetailModal
-          customer={selectedCustomer}
-          brandId="leroma-demo"
-          initialData={selectedCustomer ? USER_STATS_MAP[selectedCustomer.user_id] : undefined}
-          onClose={() => setSelectedCustomer(null)}
-        />
+        {selectedCustomer && (
+          <CustomerDetailModal
+            customer={selectedCustomer}
+            brandId={null}
+            initialData={USER_STATS_MAP[selectedCustomer.user_id]}
+            onClose={() => setSelectedCustomer(null)}
+          />
+        )}
       </div>
     </div>
   )
