@@ -70,12 +70,24 @@ export default function Sidebar() {
     ScanQR: '/scanqr?demo=points',
   }
 
-  const currentPath = location.pathname
-  const DEMO_PATH_PREFIXES = Object.values(DEMO_URLS).map((u) => u.split('?')[0])
-  const isDemo = !user || DEMO_PATH_PREFIXES.some((p) => currentPath.startsWith(p))
-  const isMoonCafeDemo = currentPath.startsWith('/dashboard/mooncafe-demo')
+  const MOONCAFE_DEMO_URLS = {
+    Dashboard: '/dashboard/mooncafe-demo',
+    Customers: '/dashboard/mooncafe-demo',
+    Notifications: '/dashboard/mooncafe-demo',
+    MyPrograms: '/dashboard/mooncafe-demo',
+    ScanQR: '/scan-demo/mooncafe',
+  }
 
-  const resolveUrl = (page) => (isDemo ? (DEMO_URLS[page] ?? createPageUrl(page)) : createPageUrl(page))
+  const currentPath = location.pathname
+  const isMoonCafeDemo = currentPath.startsWith('/dashboard/mooncafe-demo')
+  const DEMO_PATH_PREFIXES = Object.values(DEMO_URLS).map((u) => u.split('?')[0])
+  const isDemo = !user || isMoonCafeDemo || DEMO_PATH_PREFIXES.some((p) => currentPath.startsWith(p))
+
+  const resolveUrl = (page) => {
+    if (!isDemo) return createPageUrl(page)
+    if (isMoonCafeDemo) return MOONCAFE_DEMO_URLS[page] ?? createPageUrl(page)
+    return DEMO_URLS[page] ?? createPageUrl(page)
+  }
 
   const navItems = [
     { name: t('dashboard'), icon: LayoutDashboard, page: 'Dashboard' },
