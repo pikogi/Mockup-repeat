@@ -90,6 +90,7 @@ export default function Sidebar() {
   ]
 
   const currentPath = location.pathname
+  const isBgMode = new URLSearchParams(location.search).get('bg') === '1'
   const isMoonCafeDemo = MOONCAFE_PATHS.some((p) => currentPath.startsWith(p))
   const DEMO_PATH_PREFIXES = Object.values(DEMO_URLS).map((u) => u.split('?')[0])
   const isDemo = !user || isMoonCafeDemo || DEMO_PATH_PREFIXES.some((p) => currentPath.startsWith(p))
@@ -221,7 +222,7 @@ export default function Sidebar() {
       <header className="lg:hidden fixed top-0 left-0 right-0 bg-black z-40 px-4 py-3 flex items-center justify-between">
         <h1 className="text-xl font-bold text-white">repeat</h1>
         <div className="flex items-center gap-1">
-          {(user?.type_user === 'brand_admin' || isMoonCafeDemo) && (
+          {(user?.type_user === 'brand_admin' || isMoonCafeDemo) && !isBgMode && (
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
                 <button className="text-white p-4 -mr-4 -my-3">

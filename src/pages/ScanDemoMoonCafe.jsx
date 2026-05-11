@@ -25,7 +25,7 @@ export default function ScanDemoMoonCafe() {
       {/* Real dashboard in iframe as background */}
       <div style={{ flex: 1, position: 'relative' }}>
         <iframe
-          src="/dashboard/mooncafe-demo"
+          src="/dashboard/mooncafe-demo?bg=1"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
           title="Dashboard"
         />
