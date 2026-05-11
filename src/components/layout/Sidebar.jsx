@@ -169,27 +169,40 @@ export default function Sidebar() {
 
         {/* Profile + Soporte */}
         <div className="p-4 border-t border-gray-100 dark:border-gray-800 flex items-center gap-2">
-          <Link
-            to={resolveUrl('Profile')}
-            className={cn(
-              'flex flex-1 items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200',
-              currentPath.includes('Profile')
-                ? 'bg-gray-100 dark:bg-gray-800 text-black dark:text-white shadow-sm font-semibold'
-                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800',
-            )}
-          >
-            <User className="w-5 h-5" />
-            <span className="font-medium">{t('profile')}</span>
-          </Link>
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="p-3 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 flex-shrink-0"
-            aria-label={t('support')}
-          >
-            <HelpCircle className="w-5 h-5" />
-          </a>
+          {isMoonCafeDemo ? (
+            <button className="flex flex-1 items-center gap-3 px-4 py-3 rounded-xl text-gray-600 dark:text-gray-400 cursor-default">
+              <User className="w-5 h-5" />
+              <span className="font-medium">{t('profile')}</span>
+            </button>
+          ) : (
+            <Link
+              to={resolveUrl('Profile')}
+              className={cn(
+                'flex flex-1 items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200',
+                currentPath.includes('Profile')
+                  ? 'bg-gray-100 dark:bg-gray-800 text-black dark:text-white shadow-sm font-semibold'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800',
+              )}
+            >
+              <User className="w-5 h-5" />
+              <span className="font-medium">{t('profile')}</span>
+            </Link>
+          )}
+          {isMoonCafeDemo ? (
+            <button className="p-3 rounded-xl text-gray-500 dark:text-gray-400 flex-shrink-0 cursor-default">
+              <HelpCircle className="w-5 h-5" />
+            </button>
+          ) : (
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-3 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 flex-shrink-0"
+              aria-label={t('support')}
+            >
+              <HelpCircle className="w-5 h-5" />
+            </a>
+          )}
         </div>
       </aside>
 
@@ -240,16 +253,23 @@ export default function Sidebar() {
                   </Link>
 
                   <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4 flex flex-col gap-2">
-                    <a
-                      href={whatsappUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <HelpCircle className="w-5 h-5" />
-                      {t('support')}
-                    </a>
+                    {isMoonCafeDemo ? (
+                      <button className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg text-gray-500 cursor-default w-full text-left">
+                        <HelpCircle className="w-5 h-5" />
+                        {t('support')}
+                      </button>
+                    ) : (
+                      <a
+                        href={whatsappUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <HelpCircle className="w-5 h-5" />
+                        {t('support')}
+                      </a>
+                    )}
                     <button
                       onClick={handleLogout}
                       className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-950 text-red-600 dark:text-red-400 w-full text-left"
