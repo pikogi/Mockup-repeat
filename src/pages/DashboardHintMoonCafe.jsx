@@ -13,7 +13,7 @@ export default function DashboardHintMoonCafe() {
     >
       <div style={{ flex: 1, position: 'relative' }}>
         <iframe
-          src="/dashboard/mooncafe-demo?bg=1"
+          src="/dashboard/mooncafe-demo"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
           title="Dashboard"
         />
