@@ -1,0 +1,159 @@
+import { useState } from 'react'
+import { Bell, Send, Users, Clock, CheckCircle2 } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent } from '@/components/ui/card'
+import { toast } from 'sonner'
+
+const HEADER_MAX = 40
+const BODY_MAX = 200
+
+function formatDate(iso) {
+  return new Date(iso).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+export default function NotificationsMoonCafe() {
+  const [header, setHeader] = useState('')
+  const [body, setBody] = useState('')
+  const [history, setHistory] = useState([])
+
+  const canSend = header.trim().length > 0 && body.trim().length > 0
+
+  const handleSend = () => {
+    setHistory([
+      {
+        id: Date.now(),
+        header,
+        body,
+        sent_at: new Date().toISOString(),
+        recipients: 148,
+      },
+      ...history,
+    ])
+    toast.success('Notificación enviada a 148 miembros')
+    setHeader('')
+    setBody('')
+  }
+
+  return (
+    <div className="min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
+        {/* Header */}
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <Bell className="w-8 h-8 text-gray-700 dark:text-gray-300" />
+            <h1 className="text-4xl font-bold leading-tight text-foreground">Notificaciones</h1>
+          </div>
+          <p className="text-gray-600 dark:text-gray-400">
+            Enviá notificaciones push a los miembros de tu club de fidelidad.
+          </p>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            {/* Form */}
+            <div>
+              <h2 className="text-lg font-semibold text-foreground mb-4">Nueva campaña</h2>
+              <Card>
+                <CardContent className="pt-6 space-y-6">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label>Título</Label>
+                      <span className="text-xs text-muted-foreground">
+                        {header.length}/{HEADER_MAX}
+                      </span>
+                    </div>
+                    <Input
+                      value={header}
+                      onChange={(e) => setHeader(e.target.value.slice(0, HEADER_MAX))}
+                      placeholder="Ej: ¡Café doble esta semana!"
+                      maxLength={HEADER_MAX}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label>Mensaje</Label>
+                      <span className="text-xs text-muted-foreground">
+                        {body.length}/{BODY_MAX}
+                      </span>
+                    </div>
+                    <Textarea
+                      value={body}
+                      onChange={(e) => setBody(e.target.value.slice(0, BODY_MAX))}
+                      placeholder="Ej: Pasá por Moon Cafe y sumá un sello extra en tu próxima visita."
+                      maxLength={BODY_MAX}
+                      rows={4}
+                    />
+                  </div>
+                  <div className="space-y-1.5 border-t border-gray-100 dark:border-gray-800 pt-4">
+                    <p className="text-xs text-muted-foreground">
+                      La notificación se enviará a todos los miembros con tarjeta en Google Wallet y Apple Wallet.
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-muted-foreground">Podés enviar notificaciones cada 24 horas.</p>
+                      <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">3/3 restantes</p>
+                    </div>
+                  </div>
+                  <Button onClick={handleSend} disabled={!canSend} className="w-full">
+                    <Send className="w-4 h-4 mr-2" />
+                    Enviar notificación
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* History */}
+            <div>
+              <h2 className="text-lg font-semibold text-foreground mb-4">Historial de envíos</h2>
+              {history.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center text-gray-400">
+                  <Bell className="w-10 h-10 mb-3 opacity-30" />
+                  <p className="text-sm">Todavía no enviaste ninguna notificación.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {history.map((n, i) => (
+                    <motion.div
+                      key={n.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.04 }}
+                    >
+                      <Card className="border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between gap-3 mb-2">
+                            <p className="font-semibold text-sm text-gray-900 dark:text-gray-100 leading-snug">
+                              {n.header}
+                            </p>
+                            <span className="flex items-center gap-1 text-emerald-600 flex-shrink-0 mt-0.5">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span className="text-xs font-medium">Enviada</span>
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3">{n.body}</p>
+                          <div className="flex items-center gap-3 text-xs text-gray-400">
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {formatDate(n.sent_at)}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Users className="w-3 h-3" />
+                              {n.recipients} miembros
+                            </span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  )
+}

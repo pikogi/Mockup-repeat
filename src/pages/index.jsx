@@ -51,6 +51,7 @@ const PublicMembershipLeroma = lazy(() => import('./PublicMembershipLeroma'))
 const WalletMoonCafe = lazy(() => import('./WalletMoonCafe'))
 const ScanDemoMoonCafe = lazy(() => import('./ScanDemoMoonCafe'))
 const DashboardMoonCafe = lazy(() => import('./DashboardMoonCafe'))
+const NotificationsMoonCafe = lazy(() => import('./NotificationsMoonCafe'))
 
 function LayoutWrapper({ children }) {
   const location = useLocation()
@@ -86,6 +87,14 @@ export default function Pages() {
             <Route path="/demo-mooncafe" element={<Preview />} />
             <Route path="/wallet/mooncafe" element={<WalletMoonCafe />} />
             <Route path="/scan-demo/mooncafe" element={<ScanDemoMoonCafe />} />
+            <Route
+              path="/notifications/mooncafe-demo"
+              element={
+                <LayoutWrapper>
+                  <NotificationsMoonCafe />
+                </LayoutWrapper>
+              }
+            />
             <Route
               path="/dashboard/mooncafe-demo"
               element={

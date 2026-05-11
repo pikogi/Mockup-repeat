@@ -73,7 +73,7 @@ export default function Sidebar() {
   const MOONCAFE_DEMO_URLS = {
     Dashboard: '/dashboard/mooncafe-demo',
     Customers: '/dashboard/mooncafe-demo',
-    Notifications: '/dashboard/mooncafe-demo',
+    Notifications: '/notifications/mooncafe-demo',
     MyPrograms: '/dashboard/mooncafe-demo',
     CreateClub: '/dashboard/mooncafe-demo',
     Stores: '/dashboard/mooncafe-demo',
@@ -82,7 +82,7 @@ export default function Sidebar() {
     ScanQR: '/scan-demo/mooncafe',
   }
 
-  const MOONCAFE_PATHS = ['/dashboard/mooncafe-demo', '/scan-demo/mooncafe']
+  const MOONCAFE_PATHS = ['/dashboard/mooncafe-demo', '/notifications/mooncafe-demo', '/scan-demo/mooncafe']
 
   const currentPath = location.pathname
   const isMoonCafeDemo = MOONCAFE_PATHS.some((p) => currentPath.startsWith(p))
