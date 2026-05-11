@@ -33,6 +33,12 @@ export default function NotificationsMoonCafe() {
         id: Date.now(),
         header,
         body,
+        program:
+          audience === 'todos'
+            ? 'Todos los programas'
+            : audience === 'club'
+              ? 'Club de Fidelidad Moon Cafe'
+              : 'Por sucursal',
         sent_at: new Date().toISOString(),
         recipients: 148,
       },
@@ -52,9 +58,7 @@ export default function NotificationsMoonCafe() {
             <Bell className="w-8 h-8 text-gray-700 dark:text-gray-300" />
             <h1 className="text-4xl font-bold leading-tight text-foreground">Notificaciones</h1>
           </div>
-          <p className="text-gray-600 dark:text-gray-400">
-            Enviá notificaciones push a los miembros de tu club de fidelidad.
-          </p>
+          <p className="text-gray-600 dark:text-gray-400">Enviá notificaciones push a los miembros de tus programas.</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
@@ -121,10 +125,11 @@ export default function NotificationsMoonCafe() {
                     <Input
                       value={header}
                       onChange={(e) => setHeader(e.target.value.slice(0, HEADER_MAX))}
-                      placeholder="Ej: ¡Café doble esta semana!"
+                      placeholder="Ej: ¡Nueva promo esta semana!"
                       maxLength={HEADER_MAX}
                     />
                   </div>
+
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <Label>Mensaje</Label>
@@ -140,15 +145,17 @@ export default function NotificationsMoonCafe() {
                       rows={4}
                     />
                   </div>
+
                   <div className="space-y-1.5 border-t border-gray-100 dark:border-gray-800 pt-4">
                     <p className="text-xs text-muted-foreground">
-                      La notificación se enviará a todos los miembros con tarjeta en Google Wallet y Apple Wallet.
+                      La notificación se enviará a todos los usuarios con tarjetas en Google Wallet y Apple Wallet.
                     </p>
                     <div className="flex items-center justify-between">
                       <p className="text-xs text-muted-foreground">Podés enviar notificaciones cada 24 horas.</p>
                       <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">3/3 restantes</p>
                     </div>
                   </div>
+
                   <Button onClick={handleSend} disabled={!canSend} className="w-full">
                     <Send className="w-4 h-4 mr-2" />
                     Enviar notificación
@@ -194,6 +201,9 @@ export default function NotificationsMoonCafe() {
                             <span className="flex items-center gap-1">
                               <Users className="w-3 h-3" />
                               {n.recipients} miembros
+                            </span>
+                            <span className="ml-auto bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full">
+                              {n.program}
                             </span>
                           </div>
                         </CardContent>
