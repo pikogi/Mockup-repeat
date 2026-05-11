@@ -19,6 +19,7 @@ function formatDate(iso) {
 
 export default function NotificationsMoonCafe() {
   const [audience, setAudience] = useState('todos')
+  const [sucursal, setSucursal] = useState('all')
   const [club, setClub] = useState('all')
   const [header, setHeader] = useState('')
   const [body, setBody] = useState('')
@@ -69,6 +70,7 @@ export default function NotificationsMoonCafe() {
                     <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1 gap-1">
                       {[
                         { id: 'todos', label: 'Todos' },
+                        { id: 'sucursal', label: 'Por sucursal' },
                         { id: 'club', label: 'Por club' },
                       ].map((opt) => (
                         <button
@@ -85,6 +87,17 @@ export default function NotificationsMoonCafe() {
                         </button>
                       ))}
                     </div>
+                    {audience === 'sucursal' && (
+                      <Select value={sucursal} onValueChange={setSucursal}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar sucursal" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todas las sucursales</SelectItem>
+                          <SelectItem value="s1">Moon Cafe Centro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
                     {audience === 'club' && (
                       <Select value={club} onValueChange={setClub}>
                         <SelectTrigger>
