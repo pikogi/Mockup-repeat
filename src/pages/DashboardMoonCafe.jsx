@@ -89,7 +89,7 @@ export default function DashboardMoonCafe() {
             gradient="bg-gradient-to-br from-emerald-500 to-emerald-600"
           />
           <MetricCard
-            title="Cafés gratis canjeados"
+            title="Premios canjeados"
             value={metrics.rewards}
             icon={Gift}
             gradient="bg-gradient-to-br from-amber-500 to-orange-500"
@@ -100,7 +100,7 @@ export default function DashboardMoonCafe() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <StatsChart title="Miembros nuevos" data={chartData} dataKey="adds" color="#3B82F6" />
           <StatsChart title="Sellos otorgados" data={chartData} dataKey="scans" color="#10B981" />
-          <StatsChart title="Cafés gratis canjeados" data={chartData} dataKey="redemptions" color="#F59E0B" />
+          <StatsChart title="Premios canjeados" data={chartData} dataKey="redemptions" color="#F59E0B" />
         </div>
       </div>
     </div>

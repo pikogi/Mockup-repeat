@@ -344,9 +344,9 @@ export default function Sidebar() {
                   <User className="w-5 h-5" />
                   <span className="text-xs font-medium">{t('profile')}</span>
                 </button>
-                <button className="flex flex-col items-center justify-center gap-0.5 py-2 min-w-[52px] rounded-xl text-gray-500 dark:text-gray-400">
-                  <HelpCircle className="w-5 h-5" />
-                  <span className="text-xs font-medium">Ayuda</span>
+                <button className="flex flex-col items-center justify-center gap-0.5 py-2 min-w-[52px] rounded-xl text-gray-500 dark:text-gray-400 cursor-default">
+                  <Store className="w-5 h-5" />
+                  <span className="text-xs font-medium">{t('store')}</span>
                 </button>
               </>
             ) : (
