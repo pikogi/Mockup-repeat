@@ -557,10 +557,14 @@ export default function ScanQR() {
     setStep('review')
   }
 
-  const resetScanner = () => {
+  const resetScanner = (backToDashboard = false) => {
     const demo = searchParams.get('demo')
     if (demo) {
-      window.location.reload()
+      if (backToDashboard) {
+        window.parent.postMessage({ type: 'demo-close' }, '*')
+      } else {
+        window.location.reload()
+      }
       return
     }
     setScanning(true)
@@ -1084,7 +1088,12 @@ export default function ScanQR() {
                         </>
                       )}
 
-                      <Button variant="outline" className="w-full mt-2" onClick={resetScanner} disabled={processing}>
+                      <Button
+                        variant="outline"
+                        className="w-full mt-2"
+                        onClick={() => resetScanner(true)}
+                        disabled={processing}
+                      >
                         {t('cancel')}
                       </Button>
                     </>
