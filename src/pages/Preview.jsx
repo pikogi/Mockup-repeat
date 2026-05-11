@@ -243,6 +243,7 @@ const MOONCAFE_FLOW = [
   {
     type: 'laptop',
     url: '/dashboard/mooncafe-demo',
+    mobileUrl: '/dashboard-hint/mooncafe',
     label: 'Dashboard',
     desc: 'Panel de control con métricas del programa de sellos.',
   },
@@ -421,7 +422,11 @@ function DemoFlow({ flow }) {
       {/* Frame */}
       <div style={{ height: frameNaturalH * scale, width: '100%', display: 'flex', justifyContent: 'center' }}>
         <div style={{ transform: `scale(${scale})`, transformOrigin: 'top center', flexShrink: 0 }}>
-          {effectiveType === 'phone' ? <IPhone url={screen.url} /> : <Laptop url={screen.url} width={LAPTOP_W} />}
+          {effectiveType === 'phone' ? (
+            <IPhone url={isMobile && screen.mobileUrl ? screen.mobileUrl : screen.url} />
+          ) : (
+            <Laptop url={screen.url} width={LAPTOP_W} />
+          )}
         </div>
       </div>
     </div>
