@@ -75,17 +75,23 @@ export default function Sidebar() {
     Customers: '/dashboard/mooncafe-demo',
     Notifications: '/dashboard/mooncafe-demo',
     MyPrograms: '/dashboard/mooncafe-demo',
+    CreateClub: '/dashboard/mooncafe-demo',
+    Stores: '/dashboard/mooncafe-demo',
+    Profile: '/dashboard/mooncafe-demo',
+    Team: '/dashboard/mooncafe-demo',
     ScanQR: '/scan-demo/mooncafe',
   }
 
+  const MOONCAFE_PATHS = ['/dashboard/mooncafe-demo', '/scan-demo/mooncafe']
+
   const currentPath = location.pathname
-  const isMoonCafeDemo = currentPath.startsWith('/dashboard/mooncafe-demo')
+  const isMoonCafeDemo = MOONCAFE_PATHS.some((p) => currentPath.startsWith(p))
   const DEMO_PATH_PREFIXES = Object.values(DEMO_URLS).map((u) => u.split('?')[0])
   const isDemo = !user || isMoonCafeDemo || DEMO_PATH_PREFIXES.some((p) => currentPath.startsWith(p))
 
   const resolveUrl = (page) => {
     if (!isDemo) return createPageUrl(page)
-    if (isMoonCafeDemo) return MOONCAFE_DEMO_URLS[page] ?? createPageUrl(page)
+    if (isMoonCafeDemo) return MOONCAFE_DEMO_URLS[page] ?? '/dashboard/mooncafe-demo'
     return DEMO_URLS[page] ?? createPageUrl(page)
   }
 
