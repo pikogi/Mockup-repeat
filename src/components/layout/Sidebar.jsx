@@ -340,10 +340,34 @@ export default function Sidebar() {
           <div className="flex items-center gap-4 flex-1 justify-end">
             {isMoonCafeDemo ? (
               <>
-                <button className="flex flex-col items-center justify-center gap-0.5 py-2 min-w-[52px] rounded-xl text-gray-500 dark:text-gray-400">
-                  <User className="w-5 h-5" />
-                  <span className="text-xs font-medium">{t('profile')}</span>
-                </button>
+                <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                  <SheetTrigger asChild>
+                    <button className="flex flex-col items-center justify-center gap-0.5 py-2 min-w-[52px] rounded-xl text-gray-500 dark:text-gray-400">
+                      <Menu className="w-5 h-5" />
+                      <span className="text-xs font-medium">Más</span>
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="right">
+                    <nav className="flex flex-col gap-4 mt-8">
+                      <Link
+                        to={resolveUrl('Notifications')}
+                        className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <Bell className="w-5 h-5" />
+                        {t('notifications')}
+                      </Link>
+                      <Link
+                        to={resolveUrl('MyPrograms')}
+                        className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <CreditCard className="w-5 h-5" />
+                        {t('myPrograms')}
+                      </Link>
+                    </nav>
+                  </SheetContent>
+                </Sheet>
                 <button className="flex flex-col items-center justify-center gap-0.5 py-2 min-w-[52px] rounded-xl text-gray-500 dark:text-gray-400 cursor-default">
                   <Store className="w-5 h-5" />
                   <span className="text-xs font-medium">{t('store')}</span>
