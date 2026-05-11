@@ -533,30 +533,6 @@ export default function ScanQR() {
     }
   }
 
-  // Demo: simular escaneo de tarjeta de puntos
-  const handleMockPointsScan = (mode = 'catalog') => {
-    setScanning(false)
-    setPointsTab('add')
-    setPurchaseAmount('')
-    setRedeemCodeInput('')
-    setPointsToRedeem('')
-    setCardData({
-      card: {
-        customer: { full_name: 'Laura Gómez', email: 'laura@gmail.com' },
-        current_balance: 1250,
-        created_at: '2024-03-01T00:00:00Z',
-        redemptions: [],
-      },
-      cardId: 'mock-points-card',
-      stampsRequired: 10,
-      programTypeId: POINTS_PROGRAM_TYPE_ID,
-      moneyPerPoint: 1000,
-      redeemMode: mode,
-      moneyPerPointRedeem: 100,
-    })
-    setStep('review')
-  }
-
   const resetScanner = (backToDashboard = false) => {
     const demo = searchParams.get('demo')
     if (demo) {
@@ -715,24 +691,6 @@ export default function ScanQR() {
 
               <p className="text-white text-lg font-medium mb-2">{t('scanCustomerQR')}</p>
               <p className="text-white/70 text-sm mb-4">{t('positionQR')}</p>
-
-              {/* Demo buttons */}
-              <div className="flex gap-2 mb-6">
-                <button
-                  onClick={() => handleMockPointsScan('catalog')}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/10 border border-white/20 text-white/80 text-xs hover:bg-white/20 transition-colors"
-                >
-                  <Coins className="w-3 h-3 text-yellow-400" />
-                  Demo · Catálogo
-                </button>
-                <button
-                  onClick={() => handleMockPointsScan('direct')}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/10 border border-white/20 text-white/80 text-xs hover:bg-white/20 transition-colors"
-                >
-                  <Coins className="w-3 h-3 text-green-400" />
-                  Demo · Directo
-                </button>
-              </div>
 
               {/* Processing Indicator */}
               {processing && (
