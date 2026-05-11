@@ -13,6 +13,14 @@ export default function ScanDemoMoonCafe() {
     }
   }, [state])
 
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.data?.type === 'demo-close') setState('idle')
+    }
+    window.addEventListener('message', handler)
+    return () => window.removeEventListener('message', handler)
+  }, [])
+
   return (
     <div
       style={{

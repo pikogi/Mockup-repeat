@@ -294,7 +294,7 @@ export default function ScanQR() {
   const handleClose = () => {
     const demo = searchParams.get('demo')
     if (demo) {
-      window.location.reload()
+      window.parent.postMessage({ type: 'demo-close' }, '*')
       return
     }
     navigate(createPageUrl('Dashboard'))
@@ -549,7 +549,7 @@ export default function ScanQR() {
   const resetScanner = () => {
     const demo = searchParams.get('demo')
     if (demo) {
-      window.location.reload()
+      window.parent.postMessage({ type: 'demo-close' }, '*')
       return
     }
     setScanning(true)
