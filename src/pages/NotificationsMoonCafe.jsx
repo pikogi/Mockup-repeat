@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
 const HEADER_MAX = 40
@@ -16,6 +18,8 @@ function formatDate(iso) {
 }
 
 export default function NotificationsMoonCafe() {
+  const [audience, setAudience] = useState('todos')
+  const [club, setClub] = useState('all')
   const [header, setHeader] = useState('')
   const [body, setBody] = useState('')
   const [history, setHistory] = useState([])
@@ -59,6 +63,41 @@ export default function NotificationsMoonCafe() {
               <h2 className="text-lg font-semibold text-foreground mb-4">Nueva campaña</h2>
               <Card>
                 <CardContent className="pt-6 space-y-6">
+                  {/* Audience selector */}
+                  <div className="space-y-3">
+                    <Label>Enviar a</Label>
+                    <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1 gap-1">
+                      {[
+                        { id: 'todos', label: 'Todos' },
+                        { id: 'club', label: 'Por club' },
+                      ].map((opt) => (
+                        <button
+                          key={opt.id}
+                          onClick={() => setAudience(opt.id)}
+                          className={cn(
+                            'flex-1 py-2 text-sm font-medium rounded-lg transition-all duration-200',
+                            audience === opt.id
+                              ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm'
+                              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300',
+                          )}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                    {audience === 'club' && (
+                      <Select value={club} onValueChange={setClub}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar club" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos los clubs</SelectItem>
+                          <SelectItem value="mooncafe">Club de Fidelidad Moon Cafe</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <Label>Título</Label>
