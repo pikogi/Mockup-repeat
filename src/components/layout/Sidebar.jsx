@@ -221,7 +221,7 @@ export default function Sidebar() {
       <header className="lg:hidden fixed top-0 left-0 right-0 bg-black z-40 px-4 py-3 flex items-center justify-between">
         <h1 className="text-xl font-bold text-white">repeat</h1>
         <div className="flex items-center gap-1">
-          {user?.type_user === 'brand_admin' && !isMoonCafeDemo && (
+          {(user?.type_user === 'brand_admin' || isMoonCafeDemo) && (
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
                 <button className="text-white p-4 -mr-4 -my-3">
@@ -340,34 +340,10 @@ export default function Sidebar() {
           <div className="flex items-center gap-4 flex-1 justify-end">
             {isMoonCafeDemo ? (
               <>
-                <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-                  <SheetTrigger asChild>
-                    <button className="flex flex-col items-center justify-center gap-0.5 py-2 min-w-[52px] rounded-xl text-gray-500 dark:text-gray-400">
-                      <Menu className="w-5 h-5" />
-                      <span className="text-xs font-medium">Más</span>
-                    </button>
-                  </SheetTrigger>
-                  <SheetContent side="right">
-                    <nav className="flex flex-col gap-4 mt-8">
-                      <Link
-                        to={resolveUrl('Notifications')}
-                        className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        <Bell className="w-5 h-5" />
-                        {t('notifications')}
-                      </Link>
-                      <Link
-                        to={resolveUrl('MyPrograms')}
-                        className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        <CreditCard className="w-5 h-5" />
-                        {t('myPrograms')}
-                      </Link>
-                    </nav>
-                  </SheetContent>
-                </Sheet>
+                <button className="flex flex-col items-center justify-center gap-0.5 py-2 min-w-[52px] rounded-xl text-gray-500 dark:text-gray-400 cursor-default">
+                  <User className="w-5 h-5" />
+                  <span className="text-xs font-medium">{t('profile')}</span>
+                </button>
                 <button className="flex flex-col items-center justify-center gap-0.5 py-2 min-w-[52px] rounded-xl text-gray-500 dark:text-gray-400 cursor-default">
                   <Store className="w-5 h-5" />
                   <span className="text-xs font-medium">{t('store')}</span>
