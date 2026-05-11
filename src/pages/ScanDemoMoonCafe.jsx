@@ -61,12 +61,12 @@ export default function ScanDemoMoonCafe() {
                   borderRadius: 12,
                   whiteSpace: 'nowrap',
                   boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
-                  border: '2.5px solid #f59e0b',
+                  border: '2.5px solid #eab308',
                 }}
               >
                 Presionar para escanear
               </span>
-              <span style={{ fontSize: 42, lineHeight: 1, color: '#f59e0b' }}>↓</span>
+              <span style={{ fontSize: 42, lineHeight: 1, color: '#eab308' }}>↓</span>
             </motion.div>
 
             {/* Transparent clickable circle over the yellow scan button */}
