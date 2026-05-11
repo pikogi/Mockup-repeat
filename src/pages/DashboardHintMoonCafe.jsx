@@ -23,7 +23,7 @@ export default function DashboardHintMoonCafe() {
           style={{
             position: 'fixed',
             bottom: 100,
-            left: '30%',
+            left: '35%',
             transform: 'translateX(-50%)',
             display: 'flex',
             flexDirection: 'column',
