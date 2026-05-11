@@ -56,6 +56,7 @@ export default function ScanQR() {
   const isDemoMembership = demoParam === 'membership'
   const isDemoCashback = demoParam === 'cashback'
   const isDemo = isDemoPoints || isDemoStamps || isDemoMembership || isDemoCashback
+  const autoScan = searchParams.get('scan') === '1'
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const [hasCamera, setHasCamera] = useState(true)
@@ -84,76 +85,86 @@ export default function ScanQR() {
   useEffect(() => {
     const demo = searchParams.get('demo')
     if (!demo) return
-    setSelectedStore(MOCK_STORE_ID)
-    setScanning(false)
-    setPointsTab('add')
-    setPurchaseAmount('')
-    setRedeemCodeInput('')
-    setPointsToRedeem('')
 
-    if (demo === 'points' || demo === 'points-direct') {
-      const isDirect = demo === 'points-direct'
-      setCardData({
-        card: {
-          customer: { full_name: 'Valentina Gómez', email: 'vale.gomez@gmail.com' },
-          current_balance: 800,
-          created_at: '2026-01-12T00:00:00Z',
-          redemptions: [
-            { id: 'r1', status: 'pending', benefit_name: 'Degustación de nuevos sabores', tier: 'Bronce' },
-            { id: 'r2', status: 'pending', benefit_name: '10% off en todos los helados', tier: 'Bronce' },
-          ],
-        },
-        cardId: 'mock-points-card',
-        stampsRequired: 10,
-        programTypeId: POINTS_PROGRAM_TYPE_ID,
-        moneyPerPoint: 1000,
-        redeemMode: isDirect ? 'direct' : 'catalog',
-        moneyPerPointRedeem: 100,
-      })
-    } else if (demo === 'stamps') {
-      setCardData({
-        card: {
-          customer: { full_name: 'Carlos Martínez', email: 'carlos@gmail.com' },
-          current_balance: 4,
-          created_at: '2024-01-15T00:00:00Z',
-          redemptions: [],
-          program: { reward_description: 'Café gratis', program_rules: { stamps_required: 8 } },
-        },
-        cardId: 'mock-stamps-card',
-        stampsRequired: 8,
-        programTypeId: STAMPS_PROGRAM_TYPE_ID,
-        moneyPerPoint: null,
-      })
-    } else if (demo === 'membership') {
-      setCardData({
-        card: {
-          customer: { full_name: 'Valentina Ríos', email: 'valentina@gmail.com' },
-          current_balance: 2,
-          created_at: '2024-02-10T00:00:00Z',
-          redemptions: [],
-          program: { reward_description: 'Mes gratis de membresía', program_rules: { stamps_required: 1 } },
-        },
-        cardId: 'mock-membership-card',
-        stampsRequired: 1,
-        programTypeId: MEMBERSHIP_PROGRAM_TYPE_ID,
-        moneyPerPoint: null,
-      })
-    } else if (demo === 'cashback') {
-      setCardData({
-        card: {
-          customer: { full_name: 'Martín Gómez', email: 'martin@gmail.com' },
-          current_balance: 7,
-          created_at: '2024-04-01T00:00:00Z',
-          redemptions: [],
-          program: { reward_description: '$500 de cashback', program_rules: { stamps_required: 10 } },
-        },
-        cardId: 'mock-cashback-card',
-        stampsRequired: 10,
-        programTypeId: CASHBACK_PROGRAM_TYPE_ID,
-        moneyPerPoint: null,
-      })
+    const run = () => {
+      setSelectedStore(MOCK_STORE_ID)
+      setScanning(false)
+      setPointsTab('add')
+      setPurchaseAmount('')
+      setRedeemCodeInput('')
+      setPointsToRedeem('')
+
+      if (demo === 'points' || demo === 'points-direct') {
+        const isDirect = demo === 'points-direct'
+        setCardData({
+          card: {
+            customer: { full_name: 'Valentina Gómez', email: 'vale.gomez@gmail.com' },
+            current_balance: 800,
+            created_at: '2026-01-12T00:00:00Z',
+            redemptions: [
+              { id: 'r1', status: 'pending', benefit_name: 'Degustación de nuevos sabores', tier: 'Bronce' },
+              { id: 'r2', status: 'pending', benefit_name: '10% off en todos los helados', tier: 'Bronce' },
+            ],
+          },
+          cardId: 'mock-points-card',
+          stampsRequired: 10,
+          programTypeId: POINTS_PROGRAM_TYPE_ID,
+          moneyPerPoint: 1000,
+          redeemMode: isDirect ? 'direct' : 'catalog',
+          moneyPerPointRedeem: 100,
+        })
+      } else if (demo === 'stamps') {
+        setCardData({
+          card: {
+            customer: { full_name: 'Carlos Martínez', email: 'carlos@gmail.com' },
+            current_balance: 4,
+            created_at: '2024-01-15T00:00:00Z',
+            redemptions: [],
+            program: { reward_description: 'Café gratis', program_rules: { stamps_required: 8 } },
+          },
+          cardId: 'mock-stamps-card',
+          stampsRequired: 8,
+          programTypeId: STAMPS_PROGRAM_TYPE_ID,
+          moneyPerPoint: null,
+        })
+      } else if (demo === 'membership') {
+        setCardData({
+          card: {
+            customer: { full_name: 'Valentina Ríos', email: 'valentina@gmail.com' },
+            current_balance: 2,
+            created_at: '2024-02-10T00:00:00Z',
+            redemptions: [],
+            program: { reward_description: 'Mes gratis de membresía', program_rules: { stamps_required: 1 } },
+          },
+          cardId: 'mock-membership-card',
+          stampsRequired: 1,
+          programTypeId: MEMBERSHIP_PROGRAM_TYPE_ID,
+          moneyPerPoint: null,
+        })
+      } else if (demo === 'cashback') {
+        setCardData({
+          card: {
+            customer: { full_name: 'Martín Gómez', email: 'martin@gmail.com' },
+            current_balance: 7,
+            created_at: '2024-04-01T00:00:00Z',
+            redemptions: [],
+            program: { reward_description: '$500 de cashback', program_rules: { stamps_required: 10 } },
+          },
+          cardId: 'mock-cashback-card',
+          stampsRequired: 10,
+          programTypeId: CASHBACK_PROGRAM_TYPE_ID,
+          moneyPerPoint: null,
+        })
+      }
+      setStep('review')
     }
-    setStep('review')
+
+    if (autoScan) {
+      const t = setTimeout(run, 2000)
+      return () => clearTimeout(t)
+    } else {
+      run()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -190,7 +201,7 @@ export default function ScanQR() {
 
   // Iniciar cámara y detector
   useEffect(() => {
-    if (!selectedStore || !scanning) return
+    if (!selectedStore || !scanning || autoScan) return
     let stream = null
 
     const startCamera = async () => {
@@ -229,7 +240,7 @@ export default function ScanQR() {
       setBarcodeDetector(null)
       setUseJsQR(false)
     }
-  }, [selectedStore, scanning])
+  }, [selectedStore, scanning, autoScan])
 
   // Detección con BarcodeDetector nativo
   useEffect(() => {
