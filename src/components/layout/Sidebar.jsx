@@ -73,6 +73,7 @@ export default function Sidebar() {
   const currentPath = location.pathname
   const DEMO_PATH_PREFIXES = Object.values(DEMO_URLS).map((u) => u.split('?')[0])
   const isDemo = !user || DEMO_PATH_PREFIXES.some((p) => currentPath.startsWith(p))
+  const isMoonCafeDemo = currentPath.startsWith('/dashboard/mooncafe-demo')
 
   const resolveUrl = (page) => (isDemo ? (DEMO_URLS[page] ?? createPageUrl(page)) : createPageUrl(page))
 
@@ -294,31 +295,46 @@ export default function Sidebar() {
 
           {/* Right side: Profile & Stores */}
           <div className="flex items-center gap-4 flex-1 justify-end">
-            <Link
-              to={resolveUrl('Profile')}
-              className={cn(
-                'flex flex-col items-center justify-center gap-0.5 py-2 min-w-[52px] rounded-xl transition-all',
-                currentPath.includes('Profile')
-                  ? 'text-black dark:text-white bg-gray-100 dark:bg-gray-800'
-                  : 'text-gray-500 dark:text-gray-400',
-              )}
-            >
-              <User className="w-5 h-5" />
-              <span className="text-xs font-medium">{t('profile')}</span>
-            </Link>
+            {isMoonCafeDemo ? (
+              <>
+                <button className="flex flex-col items-center justify-center gap-0.5 py-2 min-w-[52px] rounded-xl text-gray-500 dark:text-gray-400">
+                  <User className="w-5 h-5" />
+                  <span className="text-xs font-medium">{t('profile')}</span>
+                </button>
+                <button className="flex flex-col items-center justify-center gap-0.5 py-2 min-w-[52px] rounded-xl text-gray-500 dark:text-gray-400">
+                  <HelpCircle className="w-5 h-5" />
+                  <span className="text-xs font-medium">Ayuda</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to={resolveUrl('Profile')}
+                  className={cn(
+                    'flex flex-col items-center justify-center gap-0.5 py-2 min-w-[52px] rounded-xl transition-all',
+                    currentPath.includes('Profile')
+                      ? 'text-black dark:text-white bg-gray-100 dark:bg-gray-800'
+                      : 'text-gray-500 dark:text-gray-400',
+                  )}
+                >
+                  <User className="w-5 h-5" />
+                  <span className="text-xs font-medium">{t('profile')}</span>
+                </Link>
 
-            <Link
-              to={resolveUrl('Stores')}
-              className={cn(
-                'flex flex-col items-center justify-center gap-0.5 py-2 min-w-[52px] rounded-xl transition-all',
-                currentPath.includes('Stores')
-                  ? 'text-black dark:text-white bg-gray-100 dark:bg-gray-800'
-                  : 'text-gray-500 dark:text-gray-400',
-              )}
-            >
-              <Store className="w-5 h-5" />
-              <span className="text-xs font-medium">{t('store')}</span>
-            </Link>
+                <Link
+                  to={resolveUrl('Stores')}
+                  className={cn(
+                    'flex flex-col items-center justify-center gap-0.5 py-2 min-w-[52px] rounded-xl transition-all',
+                    currentPath.includes('Stores')
+                      ? 'text-black dark:text-white bg-gray-100 dark:bg-gray-800'
+                      : 'text-gray-500 dark:text-gray-400',
+                  )}
+                >
+                  <Store className="w-5 h-5" />
+                  <span className="text-xs font-medium">{t('store')}</span>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
