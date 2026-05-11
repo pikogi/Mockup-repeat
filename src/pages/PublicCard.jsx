@@ -19,6 +19,7 @@ const DEMO_PROGRAMS = {
     card_title: 'The Club',
     description: 'café moon',
     logo_url: '/moon-cafe-logo.png',
+    welcome_text: '¡Bienvenido a nuestro Club de Fidelidad!',
     reward_text: 'Cada 5 cafés, 1 GRATIS ☕',
     stamps_required: 5,
     collect_name: true,
@@ -363,7 +364,9 @@ export default function PublicCard() {
           className="max-w-2xl mx-auto text-center"
           style={{ color: program?.wallet_design?.hex_foreground_color || resolvedCard?.foreground_color || '#FFFFFF' }}
         >
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">¡Bienvenido a {resolvedCard.club_name}!</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">
+            {resolvedCard.welcome_text || `¡Bienvenido a ${resolvedCard.club_name}!`}
+          </h1>
         </motion.div>
       </div>
 

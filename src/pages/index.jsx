@@ -221,6 +221,7 @@ export default function Pages() {
                 </LayoutWrapper>
               }
             />
+            <Route path="/scanqr-demo" element={<ScanQR />} />
             <Route
               path="/survey"
               element={

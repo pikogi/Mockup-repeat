@@ -231,8 +231,8 @@ const MOONCAFE_FLOW = [
   {
     type: 'phone',
     url: '/wallet/mooncafe',
-    label: 'Wallet',
-    desc: 'La tarjeta aparece en Apple Wallet con los sellos del cliente.',
+    label: 'Guardar Tarjeta',
+    desc: 'El cliente guarda la tarjeta en la wallet de su celular.',
   },
   {
     type: 'phone',
@@ -360,7 +360,7 @@ function DemoFlow({ flow }) {
       ) : (
         /* Desktop: original full cards in a row */
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', padding: '0 20px' }}>
-          {LEROMA_FLOW.map((s, i) => (
+          {flow.map((s, i) => (
             <button
               key={i}
               onClick={() => setActive(i)}

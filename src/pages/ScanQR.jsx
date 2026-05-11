@@ -292,6 +292,11 @@ export default function ScanQR() {
   }, [useJsQR, scanning])
 
   const handleClose = () => {
+    const demo = searchParams.get('demo')
+    if (demo) {
+      window.location.reload()
+      return
+    }
     navigate(createPageUrl('Dashboard'))
   }
 
@@ -363,6 +368,18 @@ export default function ScanQR() {
   const handleAddStamp = async () => {
     if (!cardData) return
     setProcessing(true)
+
+    if (isDemoStamps) {
+      await new Promise((r) => setTimeout(r, 800))
+      setResult({
+        success: true,
+        customerName: cardData.card?.customer?.full_name,
+        rewardText: cardData.card?.reward_description || t('rewards'),
+      })
+      setStep('success')
+      setProcessing(false)
+      return
+    }
 
     try {
       await api.transactions.create(cardData.cardId, selectedStore, 'stamp_added', 'stamp', 1)
@@ -530,6 +547,11 @@ export default function ScanQR() {
   }
 
   const resetScanner = () => {
+    const demo = searchParams.get('demo')
+    if (demo) {
+      window.location.reload()
+      return
+    }
     setScanning(true)
     setStep('scan')
     setResult(null)
