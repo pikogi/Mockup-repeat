@@ -1,16 +1,44 @@
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+
+const STEPS = [
+  {
+    state: 'idle',
+    title: 'Escaneá la tarjeta del cliente',
+    desc: 'El operador presiona el botón de escaneo para registrar la visita y sumar un sello.',
+    btn: 'Escanear →',
+  },
+  {
+    state: 'success',
+    title: '¡Sello registrado!',
+    desc: 'El sello se sumó a la tarjeta del cliente. Al completar 5 sellos, podrá canjear su premio.',
+    btn: 'Volver al dashboard',
+  },
+]
 
 export default function ScanDemoMoonCafe() {
-  const [state, setState] = useState('idle')
+  const [scanState, setScanState] = useState('idle')
 
   useEffect(() => {
     const handler = (e) => {
-      if (e.data?.type === 'demo-close') setState('idle')
+      if (e.data?.type === 'demo-close') setScanState('idle')
+      if (e.data?.type === 'scan-success') setScanState('success')
     }
     window.addEventListener('message', handler)
     return () => window.removeEventListener('message', handler)
   }, [])
+
+  const currentStep = STEPS.find((s) => s.state === scanState) ?? STEPS[0]
+  const stepIndex = STEPS.findIndex((s) => s.state === scanState)
+
+  const handleBtn = () => {
+    if (scanState === 'idle') {
+      setScanState('found')
+    } else {
+      window.parent?.postMessage({ type: 'demo-close' }, '*')
+      setScanState('idle')
+    }
+  }
 
   return (
     <div
@@ -22,76 +50,19 @@ export default function ScanDemoMoonCafe() {
         fontFamily: 'system-ui, -apple-system, sans-serif',
       }}
     >
-      {/* Real dashboard in iframe as background */}
       <div style={{ flex: 1, position: 'relative' }}>
+        {/* Dashboard as background */}
         <iframe
           src="/dashboard/mooncafe-demo?bg=1"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
           title="Dashboard"
         />
 
-        {/* Arrow + clickable area over the bottom nav scan button — idle only */}
-        {state === 'idle' && (
-          <>
-            {/* Animated arrow pointing down to the yellow button */}
-            <motion.div
-              animate={{ y: [0, 10, 0] }}
-              transition={{ duration: 1, repeat: Infinity, ease: 'easeInOut' }}
-              style={{
-                position: 'fixed',
-                bottom: 100,
-                left: 0,
-                right: 0,
-                margin: '0 auto',
-                width: 'fit-content',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 6,
-                pointerEvents: 'none',
-              }}
-            >
-              <span
-                style={{
-                  fontSize: 17,
-                  fontWeight: 800,
-                  color: '#1c1c1e',
-                  background: 'rgba(255,255,255,0.97)',
-                  padding: '10px 20px',
-                  borderRadius: 12,
-                  whiteSpace: 'nowrap',
-                  boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
-                  border: '2.5px solid #eab308',
-                }}
-              >
-                Presionar para escanear
-              </span>
-              <span style={{ fontSize: 42, lineHeight: 1, color: '#eab308' }}>↓</span>
-            </motion.div>
-
-            {/* Transparent clickable circle over the yellow scan button */}
-            <div
-              onClick={() => setState('found')}
-              style={{
-                position: 'fixed',
-                bottom: 18,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                width: 60,
-                height: 60,
-                borderRadius: '50%',
-                cursor: 'pointer',
-                zIndex: 10,
-              }}
-            />
-          </>
-        )}
-
-        {/* ScanQR overlay: scanning animation then result */}
+        {/* ScanQR overlay */}
         <AnimatePresence>
-          {state === 'found' && (
+          {(scanState === 'found' || scanState === 'success') && (
             <motion.div
-              key="found"
+              key="scan"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -105,6 +76,60 @@ export default function ScanDemoMoonCafe() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Tour card — idle and success only */}
+        {scanState !== 'found' && (
+          <div
+            style={{
+              position: 'fixed',
+              bottom: 80,
+              left: 16,
+              right: 16,
+              background: '#fff',
+              borderRadius: 16,
+              padding: '16px 16px 14px',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+              border: '2px solid #eab308',
+              zIndex: 30,
+            }}
+          >
+            {/* Progress bar */}
+            <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+              {STEPS.map((_, i) => (
+                <div
+                  key={i}
+                  style={{
+                    height: 4,
+                    flex: 1,
+                    borderRadius: 2,
+                    background: i <= stepIndex ? '#eab308' : '#e5e7eb',
+                    transition: 'background 0.3s',
+                  }}
+                />
+              ))}
+            </div>
+
+            <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>{currentStep.title}</p>
+            <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 14px', lineHeight: 1.5 }}>{currentStep.desc}</p>
+
+            <button
+              onClick={handleBtn}
+              style={{
+                width: '100%',
+                padding: '10px 0',
+                background: '#eab308',
+                color: '#000',
+                fontWeight: 700,
+                fontSize: 14,
+                border: 'none',
+                borderRadius: 10,
+                cursor: 'pointer',
+              }}
+            >
+              {currentStep.btn}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
