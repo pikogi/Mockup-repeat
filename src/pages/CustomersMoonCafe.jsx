@@ -105,6 +105,7 @@ const RAW_MEMBERS = [
     visits: 5,
     rewards: 1,
     phone: '+54 9 351 487-9915',
+    birthday: '1992-06-17',
   },
   {
     id: 9,
@@ -147,6 +148,7 @@ const RAW_MEMBERS = [
     visits: 1,
     rewards: 0,
     phone: '+54 9 351 621-8874',
+    birthday: '1995-10-22',
   },
 ]
 

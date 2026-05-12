@@ -330,12 +330,21 @@ export default function Sidebar() {
           </div>
 
           {/* Center: Scan QR (Primary) */}
-          <Link
-            to={resolveUrl('ScanQR')}
-            className="flex items-center justify-center w-14 h-14 -mt-6 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full shadow-lg"
-          >
-            <QrCode className="w-7 h-7 text-white" />
-          </Link>
+          {isBgMode ? (
+            <button
+              onClick={() => window.parent?.postMessage({ type: 'demo-scan' }, '*')}
+              className="flex items-center justify-center w-14 h-14 -mt-6 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full shadow-lg border-0 cursor-pointer"
+            >
+              <QrCode className="w-7 h-7 text-white" />
+            </button>
+          ) : (
+            <Link
+              to={resolveUrl('ScanQR')}
+              className="flex items-center justify-center w-14 h-14 -mt-6 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full shadow-lg"
+            >
+              <QrCode className="w-7 h-7 text-white" />
+            </Link>
+          )}
 
           {/* Right side: Profile & Stores */}
           <div className="flex items-center gap-4 flex-1 justify-end">

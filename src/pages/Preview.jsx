@@ -339,32 +339,6 @@ function DemoFlow({ flow }) {
               </button>
             ))}
           </div>
-          <div
-            style={{
-              padding: '10px 16px',
-              borderRadius: 12,
-              border: '1.5px solid rgba(255,255,255,0.12)',
-              background: 'rgba(255,255,255,0.06)',
-              textAlign: 'center',
-              width: '100%',
-              maxWidth: 360,
-            }}
-          >
-            <p style={{ color: '#fff', fontSize: 13, fontWeight: 700, fontFamily: 'system-ui', margin: '0 0 3px' }}>
-              {screen.label}
-            </p>
-            <p
-              style={{
-                color: 'rgba(255,255,255,0.4)',
-                fontSize: 12,
-                fontFamily: 'system-ui',
-                lineHeight: 1.4,
-                margin: 0,
-              }}
-            >
-              {screen.desc}
-            </p>
-          </div>
         </div>
       ) : (
         /* Desktop: original full cards in a row */

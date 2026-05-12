@@ -12,7 +12,7 @@ const STEPS = [
     state: 'success',
     title: '¡Sello registrado!',
     desc: 'El sello se sumó a la tarjeta del cliente. Al completar 5 sellos, podrá canjear su premio.',
-    btn: 'Volver al dashboard',
+    btn: 'Siguiente paso →',
   },
 ]
 
@@ -23,6 +23,7 @@ export default function ScanDemoMoonCafe() {
     const handler = (e) => {
       if (e.data?.type === 'demo-close') setScanState('idle')
       if (e.data?.type === 'scan-success') setScanState('success')
+      if (e.data?.type === 'demo-scan') setScanState('found')
     }
     window.addEventListener('message', handler)
     return () => window.removeEventListener('message', handler)
@@ -35,8 +36,7 @@ export default function ScanDemoMoonCafe() {
     if (scanState === 'idle') {
       setScanState('found')
     } else {
-      window.parent?.postMessage({ type: 'demo-close' }, '*')
-      setScanState('idle')
+      window.parent?.postMessage({ type: 'demo-next' }, '*')
     }
   }
 
@@ -77,7 +77,7 @@ export default function ScanDemoMoonCafe() {
           )}
         </AnimatePresence>
 
-        {/* Tour card — idle and success only */}
+        {/* Tour card — oculto solo durante el escaneo */}
         {scanState !== 'found' && (
           <div
             style={{
@@ -112,42 +112,60 @@ export default function ScanDemoMoonCafe() {
             <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>{currentStep.title}</p>
             <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 14px', lineHeight: 1.5 }}>{currentStep.desc}</p>
 
-            <div style={{ display: 'flex', gap: 8 }}>
-              {stepIndex > 0 && (
+            {scanState === 'idle' ? (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  padding: '10px 0 2px',
+                  color: '#eab308',
+                  fontWeight: 700,
+                  fontSize: 14,
+                }}
+              >
+                <span>Presiona el botón de escaneo</span>
+                <span style={{ fontSize: 22, lineHeight: 1 }}>↓</span>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', gap: 8 }}>
+                {stepIndex > 0 && (
+                  <button
+                    onClick={() => setScanState('idle')}
+                    style={{
+                      padding: '10px 16px',
+                      background: '#f3f4f6',
+                      color: '#374151',
+                      fontWeight: 600,
+                      fontSize: 14,
+                      border: 'none',
+                      borderRadius: 10,
+                      cursor: 'pointer',
+                      flexShrink: 0,
+                    }}
+                  >
+                    ← Atrás
+                  </button>
+                )}
                 <button
-                  onClick={() => setScanState('idle')}
+                  onClick={handleBtn}
                   style={{
-                    padding: '10px 16px',
-                    background: '#f3f4f6',
-                    color: '#374151',
-                    fontWeight: 600,
+                    flex: 1,
+                    padding: '10px 0',
+                    background: '#eab308',
+                    color: '#000',
+                    fontWeight: 700,
                     fontSize: 14,
                     border: 'none',
                     borderRadius: 10,
                     cursor: 'pointer',
-                    flexShrink: 0,
                   }}
                 >
-                  ← Atrás
+                  {currentStep.btn}
                 </button>
-              )}
-              <button
-                onClick={handleBtn}
-                style={{
-                  flex: 1,
-                  padding: '10px 0',
-                  background: '#eab308',
-                  color: '#000',
-                  fontWeight: 700,
-                  fontSize: 14,
-                  border: 'none',
-                  borderRadius: 10,
-                  cursor: 'pointer',
-                }}
-              >
-                {currentStep.btn}
-              </button>
-            </div>
+              </div>
+            )}
           </div>
         )}
       </div>
