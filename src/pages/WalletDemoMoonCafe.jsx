@@ -32,7 +32,7 @@ export default function WalletDemoMoonCafe() {
         <div
           style={{
             position: 'fixed',
-            bottom: 20,
+            bottom: 50,
             left: 16,
             right: 16,
             background: '#fff',
