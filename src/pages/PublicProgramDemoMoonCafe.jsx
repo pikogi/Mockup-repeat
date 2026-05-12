@@ -1,14 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const STEPS = [
   {
-    iframeSrc: '/publicprogram?demo=mooncafe',
     title: 'Escaneá para unirte',
-    desc: 'El cliente escanea el QR del negocio y accede al formulario de registro.',
-    btn: 'Ver formulario →',
+    desc: 'El cliente escanea el QR del negocio y toca "Agregar a Wallet" para registrarse.',
+    btn: null,
   },
   {
-    iframeSrc: '/publicprogram?demo=mooncafe&showform=1',
     title: 'Completá el formulario',
     desc: 'Ingresá nombre y email para unirte al programa y recibir tu tarjeta digital.',
     btn: 'Siguiente paso →',
@@ -19,6 +17,14 @@ export default function PublicProgramDemoMoonCafe() {
   const [step, setStep] = useState(0)
   const current = STEPS[step]
   const isLast = step === STEPS.length - 1
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.data?.type === 'demo-show-form') setStep(1)
+    }
+    window.addEventListener('message', handler)
+    return () => window.removeEventListener('message', handler)
+  }, [])
 
   const handleBtn = () => {
     if (isLast) {
@@ -40,24 +46,24 @@ export default function PublicProgramDemoMoonCafe() {
     >
       <div style={{ flex: 1, position: 'relative' }}>
         <iframe
-          key={step}
-          src={current.iframeSrc}
+          src="/publicprogram?demo=mooncafe"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
           title="Registro"
         />
 
-        {/* Tour card */}
+        {/* Tour card — bottom sheet */}
         <div
           style={{
             position: 'fixed',
-            bottom: 80,
-            left: 16,
-            right: 16,
+            bottom: 0,
+            left: 0,
+            right: 0,
             background: '#fff',
-            borderRadius: 16,
-            padding: '16px 16px 14px',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+            borderRadius: '16px 16px 0 0',
+            padding: '14px 16px 28px',
+            boxShadow: '0 -4px 24px rgba(0,0,0,0.12)',
             border: '2px solid #eab308',
+            borderBottom: 'none',
             zIndex: 30,
           }}
         >
@@ -78,44 +84,48 @@ export default function PublicProgramDemoMoonCafe() {
           </div>
 
           <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>{current.title}</p>
-          <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 14px', lineHeight: 1.5 }}>{current.desc}</p>
+          <p style={{ fontSize: 13, color: '#6b7280', margin: current.btn ? '0 0 14px' : 0, lineHeight: 1.5 }}>
+            {current.desc}
+          </p>
 
-          <div style={{ display: 'flex', gap: 8 }}>
-            {step > 0 && (
+          {current.btn && (
+            <div style={{ display: 'flex', gap: 8 }}>
+              {step > 0 && (
+                <button
+                  onClick={() => setStep((s) => s - 1)}
+                  style={{
+                    padding: '10px 16px',
+                    background: '#f3f4f6',
+                    color: '#374151',
+                    fontWeight: 600,
+                    fontSize: 14,
+                    border: 'none',
+                    borderRadius: 10,
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                  }}
+                >
+                  ← Atrás
+                </button>
+              )}
               <button
-                onClick={() => setStep((s) => s - 1)}
+                onClick={handleBtn}
                 style={{
-                  padding: '10px 16px',
-                  background: '#f3f4f6',
-                  color: '#374151',
-                  fontWeight: 600,
+                  flex: 1,
+                  padding: '10px 0',
+                  background: '#eab308',
+                  color: '#000',
+                  fontWeight: 700,
                   fontSize: 14,
                   border: 'none',
                   borderRadius: 10,
                   cursor: 'pointer',
-                  flexShrink: 0,
                 }}
               >
-                ← Atrás
+                {current.btn}
               </button>
-            )}
-            <button
-              onClick={handleBtn}
-              style={{
-                flex: 1,
-                padding: '10px 0',
-                background: '#eab308',
-                color: '#000',
-                fontWeight: 700,
-                fontSize: 14,
-                border: 'none',
-                borderRadius: 10,
-                cursor: 'pointer',
-              }}
-            >
-              {current.btn}
-            </button>
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

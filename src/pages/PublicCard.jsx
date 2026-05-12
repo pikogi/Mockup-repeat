@@ -194,6 +194,7 @@ export default function PublicCard() {
   const handleAddToWallet = (type) => {
     setWalletType(type)
     setShowSignUp(true)
+    if (demoParam) window.parent?.postMessage({ type: 'demo-show-form' }, '*')
   }
 
   const processAddToWallet = async (e) => {
