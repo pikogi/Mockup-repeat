@@ -63,9 +63,9 @@ function StoreScene({ onNext }) {
         overflow: 'hidden',
       }}
     >
-      {/* Foto real de cafetería */}
+      {/* Foto de cafetería con mostrador visible */}
       <img
-        src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=600&q=80"
+        src="https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=600&q=80"
         alt=""
         style={{
           position: 'absolute',
@@ -73,69 +73,38 @@ function StoreScene({ onNext }) {
           width: '100%',
           height: '100%',
           objectFit: 'cover',
-          objectPosition: 'center top',
+          objectPosition: 'center 60%',
         }}
       />
 
-      {/* Overlay oscuro para contraste */}
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.35)' }} />
+      {/* Overlay sutil */}
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.25)' }} />
 
-      {/* Superficie del mostrador — cubre el tercio inferior */}
+      {/* Flyer posicionado en el mostrador — parte baja de la foto */}
       <div
         style={{
           position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: '36%',
-          background: 'linear-gradient(180deg, #3b2208 0%, #2a1804 100%)',
-          borderTop: '3px solid #6b3c12',
-          boxShadow: 'inset 0 8px 24px rgba(0,0,0,0.5)',
-        }}
-      />
-
-      {/* Flyer apoyado sobre el mostrador */}
-      <div
-        style={{
-          position: 'relative',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          minHeight: '100vh',
-          paddingBottom: 210,
+          bottom: 220,
+          left: '50%',
+          transform: 'translateX(-50%) perspective(600px) rotateX(4deg)',
+          transformOrigin: 'bottom center',
         }}
       >
-        {/* Soporte / pie del porta-retrato */}
-        <div
-          style={{
-            width: 0,
-            height: 0,
-            borderLeft: '18px solid transparent',
-            borderRight: '18px solid transparent',
-            borderTop: '28px solid #5c3a10',
-            marginBottom: -2,
-            filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.5))',
-            zIndex: 1,
-          }}
-        />
-
         {/* Marco de madera */}
         <div
           style={{
-            padding: 7,
-            background: 'linear-gradient(145deg, #8a6030 0%, #5c3a10 50%, #8a6030 100%)',
-            borderRadius: 18,
-            boxShadow: '0 20px 50px rgba(0,0,0,0.8), 0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2)',
-            zIndex: 2,
+            padding: 6,
+            background: 'linear-gradient(145deg, #9a7040 0%, #6b4518 50%, #9a7040 100%)',
+            borderRadius: 16,
+            boxShadow: '0 16px 48px rgba(0,0,0,0.65), 0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.25)',
           }}
         >
           {/* Flyer */}
-          <div style={{ width: 240, background: '#fff', borderRadius: 13, overflow: 'hidden' }}>
+          <div style={{ width: 230, background: '#fff', borderRadius: 12, overflow: 'hidden' }}>
             <div style={{ height: 7, background: '#1c4a2e' }} />
             <div
               style={{
-                padding: '18px 20px 16px',
+                padding: '16px 18px 14px',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -145,36 +114,36 @@ function StoreScene({ onNext }) {
               <img
                 src="/moon-cafe-logo.png"
                 alt="Moon Cafe"
-                style={{ width: 56, height: 56, objectFit: 'contain', borderRadius: 12, marginBottom: 10 }}
+                style={{ width: 52, height: 52, objectFit: 'contain', borderRadius: 11, marginBottom: 9 }}
               />
-              <h2 style={{ fontSize: 16, fontWeight: 800, color: '#1c4a2e', margin: '0 0 3px', lineHeight: 1.2 }}>
+              <h2 style={{ fontSize: 15, fontWeight: 800, color: '#1c4a2e', margin: '0 0 3px', lineHeight: 1.2 }}>
                 ¡Únete a nuestro
                 <br />
                 Club de Fidelidad!
               </h2>
-              <div style={{ width: 36, height: 3, background: '#1c4a2e', borderRadius: 2, margin: '8px auto 12px' }} />
+              <div style={{ width: 32, height: 3, background: '#1c4a2e', borderRadius: 2, margin: '7px auto 11px' }} />
               <div
                 style={{
-                  padding: 12,
+                  padding: 10,
                   background: '#f8f6f2',
-                  borderRadius: 12,
+                  borderRadius: 11,
                   border: '2px solid rgba(28,74,46,0.15)',
-                  marginBottom: 12,
+                  marginBottom: 10,
                 }}
               >
-                <QRCodeSVG value={qrUrl} size={120} level="H" fgColor="#1a1a1a" bgColor="#f8f6f2" />
+                <QRCodeSVG value={qrUrl} size={110} level="H" fgColor="#1a1a1a" bgColor="#f8f6f2" />
               </div>
-              <p style={{ fontSize: 12, color: '#555', margin: '0 0 10px', fontWeight: 500 }}>Escaneá y unite gratis</p>
+              <p style={{ fontSize: 11, color: '#555', margin: '0 0 9px', fontWeight: 500 }}>Escaneá y unite gratis</p>
               <div
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: 5,
-                  padding: '7px 14px',
+                  padding: '6px 13px',
                   background: '#1c4a2e',
                   borderRadius: 50,
                   color: '#fff',
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: 700,
                 }}
               >
@@ -182,13 +151,22 @@ function StoreScene({ onNext }) {
               </div>
             </div>
             <div
-              style={{ padding: '8px 0', textAlign: 'center', borderTop: '1px solid #f0ece5', background: '#fafaf8' }}
+              style={{ padding: '7px 0', textAlign: 'center', borderTop: '1px solid #f0ece5', background: '#fafaf8' }}
             >
               <span style={{ color: '#aaa', fontSize: 10 }}>Powered by </span>
               <span style={{ color: '#1c4a2e', fontSize: 10, fontWeight: 700 }}>Repeat.la</span>
             </div>
           </div>
         </div>
+
+        {/* Sombra sobre el mostrador */}
+        <div
+          style={{
+            height: 10,
+            background: 'radial-gradient(ellipse at 50% 0%, rgba(0,0,0,0.45) 0%, transparent 70%)',
+            marginTop: 2,
+          }}
+        />
       </div>
 
       {/* Tour card */}
