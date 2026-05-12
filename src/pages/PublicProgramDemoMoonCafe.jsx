@@ -78,27 +78,56 @@ function StoreScene({ onNext }) {
       />
 
       {/* Overlay oscuro para contraste */}
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)' }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.35)' }} />
 
-      {/* Flyer centrado en la pared */}
+      {/* Superficie del mostrador — cubre el tercio inferior */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '36%',
+          background: 'linear-gradient(180deg, #3b2208 0%, #2a1804 100%)',
+          borderTop: '3px solid #6b3c12',
+          boxShadow: 'inset 0 8px 24px rgba(0,0,0,0.5)',
+        }}
+      />
+
+      {/* Flyer apoyado sobre el mostrador */}
       <div
         style={{
           position: 'relative',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: 'flex-end',
           minHeight: '100vh',
-          padding: '24px 28px 210px',
+          paddingBottom: 210,
         }}
       >
+        {/* Soporte / pie del porta-retrato */}
+        <div
+          style={{
+            width: 0,
+            height: 0,
+            borderLeft: '18px solid transparent',
+            borderRight: '18px solid transparent',
+            borderTop: '28px solid #5c3a10',
+            marginBottom: -2,
+            filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.5))',
+            zIndex: 1,
+          }}
+        />
+
         {/* Marco de madera */}
         <div
           style={{
             padding: 7,
             background: 'linear-gradient(145deg, #8a6030 0%, #5c3a10 50%, #8a6030 100%)',
             borderRadius: 18,
-            boxShadow: '0 24px 64px rgba(0,0,0,0.7), 0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.8), 0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2)',
+            zIndex: 2,
           }}
         >
           {/* Flyer */}
