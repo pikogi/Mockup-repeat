@@ -93,7 +93,7 @@ export default function DashboardHintMoonCafe() {
           <div
             style={{
               position: 'fixed',
-              ...(current.cardTop ? { top: 70 } : { bottom: 80 }),
+              ...(current.cardTop ? { top: 52 } : { bottom: 80 }),
               left: 16,
               right: 16,
               background: '#fff',
