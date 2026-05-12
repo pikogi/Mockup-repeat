@@ -131,7 +131,10 @@ export default function CustomersMoonCafe() {
   const [sortBy, setSortBy] = useState('date')
   const [selectedCustomer, setSelectedCustomer] = useState(null)
 
-  const handleCustomerClick = useCallback((member) => setSelectedCustomer(member), [])
+  const handleCustomerClick = useCallback((member) => {
+    setSelectedCustomer(member)
+    window.parent?.postMessage({ type: 'tour-customer-clicked' }, '*')
+  }, [])
 
   const filtered = MEMBERS.filter(
     (m) =>
