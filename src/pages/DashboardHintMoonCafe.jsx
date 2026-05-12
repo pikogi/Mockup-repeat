@@ -22,6 +22,7 @@ const STEPS = [
     desc: 'Podés ver sus visitas, sellos acumulados, premios canjeados y agregar un sello manualmente.',
     btn: 'Ver notificaciones →',
     cardTop: true,
+    compact: true,
   },
   {
     iframe: '/notifications/mooncafe-demo',
@@ -119,8 +120,19 @@ export default function DashboardHintMoonCafe() {
               ))}
             </div>
 
-            <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>{current.title}</p>
-            <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 14px', lineHeight: 1.5 }}>{current.desc}</p>
+            <p
+              style={{
+                fontSize: 15,
+                fontWeight: 700,
+                color: '#111827',
+                margin: current.compact ? '0 0 10px' : '0 0 4px',
+              }}
+            >
+              {current.title}
+            </p>
+            {!current.compact && (
+              <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 14px', lineHeight: 1.5 }}>{current.desc}</p>
+            )}
 
             {current.btn && (
               <button
