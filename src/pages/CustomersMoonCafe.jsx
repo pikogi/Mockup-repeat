@@ -28,6 +28,8 @@ const RAW_MEMBERS = [
     balance: 4,
     visits: 22,
     rewards: 4,
+    phone: '+54 9 351 412-3344',
+    birthday: '1990-03-15',
   },
   {
     id: 2,
@@ -37,6 +39,8 @@ const RAW_MEMBERS = [
     balance: 2,
     visits: 17,
     rewards: 3,
+    phone: '+54 9 351 508-7621',
+    birthday: '1995-07-22',
   },
   {
     id: 3,
@@ -46,6 +50,8 @@ const RAW_MEMBERS = [
     balance: 0,
     visits: 10,
     rewards: 2,
+    phone: '+54 9 351 623-0198',
+    birthday: '1988-11-04',
   },
   {
     id: 4,
@@ -55,8 +61,20 @@ const RAW_MEMBERS = [
     balance: 3,
     visits: 8,
     rewards: 1,
+    phone: '+54 9 351 741-5530',
+    birthday: '1997-01-30',
   },
-  { id: 5, name: 'Lucía Herrera', email: 'lucia.h@gmail.com', joined: '2026-02-20', balance: 1, visits: 6, rewards: 1 },
+  {
+    id: 5,
+    name: 'Lucía Herrera',
+    email: 'lucia.h@gmail.com',
+    joined: '2026-02-20',
+    balance: 1,
+    visits: 6,
+    rewards: 1,
+    phone: '+54 9 351 899-2267',
+    birthday: '1993-05-18',
+  },
   {
     id: 6,
     name: 'Mateo Flores',
@@ -65,6 +83,8 @@ const RAW_MEMBERS = [
     balance: 4,
     visits: 14,
     rewards: 2,
+    phone: '+54 9 351 312-4480',
+    birthday: '1991-09-09',
   },
   {
     id: 7,
@@ -74,8 +94,18 @@ const RAW_MEMBERS = [
     balance: 2,
     visits: 7,
     rewards: 1,
+    birthday: '1999-12-03',
   },
-  { id: 8, name: 'Diego Vargas', email: 'diego.v@gmail.com', joined: '2026-03-25', balance: 0, visits: 5, rewards: 1 },
+  {
+    id: 8,
+    name: 'Diego Vargas',
+    email: 'diego.v@gmail.com',
+    joined: '2026-03-25',
+    balance: 0,
+    visits: 5,
+    rewards: 1,
+    phone: '+54 9 351 487-9915',
+  },
   {
     id: 9,
     name: 'Martina Rojas',
@@ -84,6 +114,8 @@ const RAW_MEMBERS = [
     balance: 3,
     visits: 3,
     rewards: 0,
+    phone: '+54 9 351 556-1023',
+    birthday: '1996-02-14',
   },
   {
     id: 10,
@@ -93,6 +125,7 @@ const RAW_MEMBERS = [
     balance: 1,
     visits: 2,
     rewards: 0,
+    birthday: '1994-08-27',
   },
   {
     id: 11,
@@ -102,6 +135,8 @@ const RAW_MEMBERS = [
     balance: 2,
     visits: 2,
     rewards: 0,
+    phone: '+54 9 351 730-6642',
+    birthday: '1998-04-11',
   },
   {
     id: 12,
@@ -111,6 +146,7 @@ const RAW_MEMBERS = [
     balance: 1,
     visits: 1,
     rewards: 0,
+    phone: '+54 9 351 621-8874',
   },
 ]
 
@@ -123,7 +159,14 @@ const MEMBERS = RAW_MEMBERS.map((m) => ({
 }))
 
 const USER_STATS_MAP = Object.fromEntries(
-  RAW_MEMBERS.map((m) => [m.id, { loyalty_cards: [makeCard(m.id, m.balance, m.visits, m.rewards)] }]),
+  RAW_MEMBERS.map((m) => [
+    m.id,
+    {
+      loyalty_cards: [makeCard(m.id, m.balance, m.visits, m.rewards)],
+      ...(m.phone && { phone: m.phone }),
+      ...(m.birthday && { birth_date: m.birthday }),
+    },
+  ]),
 )
 
 export default function CustomersMoonCafe() {
