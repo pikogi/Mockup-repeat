@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Bell, Send, Users, Clock, CheckCircle2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
@@ -27,6 +27,14 @@ export default function NotificationsMoonCafe() {
 
   const canSend = header.trim().length > 0 && body.trim().length > 0
 
+  const canSendRef = useRef(false)
+  useEffect(() => {
+    if (canSend && !canSendRef.current) {
+      window.parent?.postMessage({ type: 'tour-can-send' }, '*')
+    }
+    canSendRef.current = canSend
+  }, [canSend])
+
   const handleSend = () => {
     setHistory([
       {
@@ -45,6 +53,7 @@ export default function NotificationsMoonCafe() {
       ...history,
     ])
     toast.success('Notificación enviada a 148 miembros')
+    window.parent?.postMessage({ type: 'tour-notification-sent' }, '*')
     setHeader('')
     setBody('')
   }

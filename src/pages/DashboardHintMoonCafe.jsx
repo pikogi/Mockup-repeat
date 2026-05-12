@@ -2,9 +2,23 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 
 const STEPS = [
-  { iframe: '/dashboard/mooncafe-demo', label: 'Ver miembros', hintLeft: '35%', hintBottom: 100 },
-  { iframe: '/customers/mooncafe-demo', label: 'Tocá un miembro', hintLeft: '50%', hintBottom: 240 },
-  { iframe: '/notifications/mooncafe-demo', label: 'Escribí un mensaje', hintLeft: '50%', hintBottom: 320 },
+  { iframe: '/dashboard/mooncafe-demo', label: 'Ver miembros', hintLeft: '35%', hintBottom: 100, arrow: true },
+  { iframe: '/customers/mooncafe-demo', label: 'Tocá un miembro', hintLeft: '50%', hintBottom: 240, arrow: true },
+  {
+    iframe: '/notifications/mooncafe-demo',
+    label: 'Escribí un mensaje',
+    hintLeft: '50%',
+    hintBottom: 120,
+    arrow: false,
+  },
+  {
+    iframe: '/notifications/mooncafe-demo',
+    label: 'Enviá la notificación',
+    hintLeft: '50%',
+    hintBottom: 100,
+    arrow: true,
+  },
+  { iframe: '/dashboard/mooncafe-demo', label: '¡Tour completo! 🎉', hintLeft: '50%', hintBottom: 300, arrow: false },
 ]
 
 export default function DashboardHintMoonCafe() {
@@ -13,13 +27,14 @@ export default function DashboardHintMoonCafe() {
   useEffect(() => {
     const handler = (e) => {
       if (e.data?.type === 'tour-customer-clicked' && step === 1) setStep(2)
+      if (e.data?.type === 'tour-can-send' && step === 2) setStep(3)
+      if (e.data?.type === 'tour-notification-sent' && step === 3) setStep(4)
     }
     window.addEventListener('message', handler)
     return () => window.removeEventListener('message', handler)
   }, [step])
 
   const current = STEPS[step]
-  const isLast = step === STEPS.length - 1
 
   return (
     <div
@@ -33,13 +48,13 @@ export default function DashboardHintMoonCafe() {
     >
       <div style={{ flex: 1, position: 'relative' }}>
         <iframe
-          key={step}
+          key={step === 3 ? 2 : step}
           src={current.iframe}
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
           title="Demo"
         />
 
-        {/* Hint balloon + arrow */}
+        {/* Hint balloon */}
         <div
           style={{
             position: 'fixed',
@@ -57,8 +72,8 @@ export default function DashboardHintMoonCafe() {
           <motion.div
             key={step}
             initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: [0, 10, 0] }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'easeInOut' }}
+            animate={{ opacity: 1, y: current.arrow ? [0, 10, 0] : 0 }}
+            transition={{ duration: 1, repeat: current.arrow ? Infinity : 0, ease: 'easeInOut' }}
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}
           >
             <span
@@ -76,11 +91,11 @@ export default function DashboardHintMoonCafe() {
             >
               {current.label}
             </span>
-            {!isLast && <span style={{ fontSize: 42, lineHeight: 1, color: '#eab308' }}>↓</span>}
+            {current.arrow && <span style={{ fontSize: 42, lineHeight: 1, color: '#eab308' }}>↓</span>}
           </motion.div>
         </div>
 
-        {/* Step 0: transparent click interceptor over Miembros button */}
+        {/* Step 0: interceptor over Miembros button */}
         {step === 0 && (
           <div
             onClick={() => setStep(1)}
