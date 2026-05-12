@@ -21,6 +21,7 @@ const STEPS = [
     title: 'Historial del miembro',
     desc: 'Podés ver sus visitas, sellos acumulados, premios canjeados y agregar un sello manualmente.',
     btn: 'Ver notificaciones →',
+    cardTop: true,
   },
   {
     iframe: '/notifications/mooncafe-demo',
@@ -91,7 +92,7 @@ export default function DashboardHintMoonCafe() {
           <div
             style={{
               position: 'fixed',
-              bottom: 80,
+              ...(current.cardTop ? { top: 70 } : { bottom: 80 }),
               left: 16,
               right: 16,
               background: '#fff',
