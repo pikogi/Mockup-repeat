@@ -62,7 +62,7 @@ export default function PublicCard() {
   const [pageLoadTs] = useState(() => Date.now())
   const [added, setAdded] = useState(false)
   const [, setCustomerCardId] = useState(null) // ID de la tarjeta del cliente
-  const [showSignUp, setShowSignUp] = useState(false)
+  const [showSignUp, setShowSignUp] = useState(() => urlParams.get('showform') === '1')
   const [signupData, setSignupData] = useState({ name: '', email: '', phone: '', birthday: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [walletType, setWalletType] = useState(null)

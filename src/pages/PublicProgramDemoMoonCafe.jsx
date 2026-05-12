@@ -2,11 +2,13 @@ import { useState } from 'react'
 
 const STEPS = [
   {
+    iframeSrc: '/publicprogram?demo=mooncafe',
     title: 'Escaneá para unirte',
     desc: 'El cliente escanea el QR del negocio y accede al formulario de registro.',
     btn: 'Ver formulario →',
   },
   {
+    iframeSrc: '/publicprogram?demo=mooncafe&showform=1',
     title: 'Completá el formulario',
     desc: 'Ingresá nombre y email para unirte al programa y recibir tu tarjeta digital.',
     btn: 'Siguiente paso →',
@@ -38,7 +40,8 @@ export default function PublicProgramDemoMoonCafe() {
     >
       <div style={{ flex: 1, position: 'relative' }}>
         <iframe
-          src="/publicprogram?demo=mooncafe"
+          key={step}
+          src={current.iframeSrc}
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
           title="Registro"
         />
