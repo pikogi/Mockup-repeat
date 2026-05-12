@@ -55,15 +55,14 @@ export default function PublicProgramDemoMoonCafe() {
         <div
           style={{
             position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
+            bottom: 80,
+            left: 16,
+            right: 16,
             background: '#fff',
-            borderRadius: '16px 16px 0 0',
-            padding: '14px 16px 28px',
-            boxShadow: '0 -4px 24px rgba(0,0,0,0.12)',
+            borderRadius: 16,
+            padding: '16px 16px 14px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
             border: '2px solid #eab308',
-            borderBottom: 'none',
             zIndex: 30,
           }}
         >
