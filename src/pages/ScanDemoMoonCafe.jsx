@@ -112,22 +112,42 @@ export default function ScanDemoMoonCafe() {
             <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>{currentStep.title}</p>
             <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 14px', lineHeight: 1.5 }}>{currentStep.desc}</p>
 
-            <button
-              onClick={handleBtn}
-              style={{
-                width: '100%',
-                padding: '10px 0',
-                background: '#eab308',
-                color: '#000',
-                fontWeight: 700,
-                fontSize: 14,
-                border: 'none',
-                borderRadius: 10,
-                cursor: 'pointer',
-              }}
-            >
-              {currentStep.btn}
-            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {stepIndex > 0 && (
+                <button
+                  onClick={() => setScanState('idle')}
+                  style={{
+                    padding: '10px 16px',
+                    background: '#f3f4f6',
+                    color: '#374151',
+                    fontWeight: 600,
+                    fontSize: 14,
+                    border: 'none',
+                    borderRadius: 10,
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                  }}
+                >
+                  ← Atrás
+                </button>
+              )}
+              <button
+                onClick={handleBtn}
+                style={{
+                  flex: 1,
+                  padding: '10px 0',
+                  background: '#eab308',
+                  color: '#000',
+                  fontWeight: 700,
+                  fontSize: 14,
+                  border: 'none',
+                  borderRadius: 10,
+                  cursor: 'pointer',
+                }}
+              >
+                {currentStep.btn}
+              </button>
+            </div>
           </div>
         )}
       </div>
