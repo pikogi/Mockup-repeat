@@ -1111,6 +1111,20 @@ export default function ScanQR() {
                     </div>
                   )}
 
+                  {isDemoStamps && (
+                    <div className="flex flex-col items-start mb-1 pointer-events-none">
+                      <motion.div
+                        animate={{ y: [0, 6, 0] }}
+                        transition={{ duration: 1, repeat: Infinity, ease: 'easeInOut' }}
+                        className="flex flex-col items-start gap-1"
+                      >
+                        <span className="text-xs font-bold text-gray-700 bg-yellow-50 border border-yellow-300 rounded-lg px-3 py-1.5">
+                          Volvé al dashboard
+                        </span>
+                        <span className="text-lg leading-none text-yellow-500 pl-3">↓</span>
+                      </motion.div>
+                    </div>
+                  )}
                   <div className="flex gap-3">
                     <Button variant="outline" className="flex-1" onClick={handleClose}>
                       {t('scanClose')}
