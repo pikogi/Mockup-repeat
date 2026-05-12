@@ -1,6 +1,6 @@
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'
 import { ArrowLeft, Monitor, RotateCcw, Smartphone } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 function IPhone({ url }) {
   const iframeRef = useRef(null)
@@ -224,13 +224,13 @@ function Laptop({ url, width = 1100 }) {
 const MOONCAFE_FLOW = [
   {
     type: 'phone',
-    url: '/publicprogram?demo=mooncafe',
+    url: '/publicprogram-demo/mooncafe',
     label: 'Registro',
     desc: 'El cliente escanea el QR y se une al programa de sellos.',
   },
   {
     type: 'phone',
-    url: '/wallet/mooncafe',
+    url: '/wallet-demo/mooncafe',
     label: 'Guardar Tarjeta',
     desc: 'El cliente guarda la tarjeta en la wallet de su celular.',
   },
@@ -279,6 +279,14 @@ const LEROMA_FLOW = [
 function DemoFlow({ flow }) {
   const [active, setActive] = useState(0)
   const screen = flow[active]
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.data?.type === 'demo-next') setActive((a) => Math.min(a + 1, flow.length - 1))
+    }
+    window.addEventListener('message', handler)
+    return () => window.removeEventListener('message', handler)
+  }, [flow.length])
 
   const LAPTOP_W = 1440
   const isMobile = window.innerWidth < 768
