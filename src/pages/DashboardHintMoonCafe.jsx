@@ -1,40 +1,52 @@
-import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+import { useState } from 'react'
 
 const STEPS = [
-  { iframe: '/dashboard/mooncafe-demo', label: 'Ver miembros', hintLeft: '35%', hintBottom: 100, arrow: true },
-  { iframe: '/customers/mooncafe-demo', label: 'Tocá un miembro', hintLeft: '50%', hintBottom: 240, arrow: true },
   {
-    iframe: '/notifications/mooncafe-demo',
-    label: 'Escribí un mensaje',
-    hintLeft: '50%',
-    hintBottom: 120,
-    arrow: false,
+    iframe: '/dashboard/mooncafe-demo',
+    title: 'Tu panel de control',
+    desc: 'Desde acá vas a ver métricas de tu programa: miembros, sellos otorgados y premios canjeados.',
+    btn: 'Ver miembros →',
+  },
+  {
+    iframe: '/customers/mooncafe-demo',
+    title: 'Tus miembros',
+    desc: 'Acá aparecen todos los clientes que se unieron a tu programa. Podés ver el historial de cada uno.',
+    btn: 'Ver notificaciones →',
   },
   {
     iframe: '/notifications/mooncafe-demo',
-    label: 'Enviá la notificación',
-    hintLeft: '50%',
-    hintBottom: 100,
-    arrow: true,
+    title: 'Notificaciones push',
+    desc: 'Escribí un título y un mensaje para enviarle una notificación a todos tus miembros.',
+    btn: 'Escribí algo y enviá',
   },
-  { iframe: '/dashboard/mooncafe-demo', label: '¡Tour completo! 🎉', hintLeft: '50%', hintBottom: 300, arrow: false },
+  {
+    iframe: '/notifications/mooncafe-demo',
+    title: '¡Notificación enviada!',
+    desc: 'Tus miembros la recibirán en Google Wallet y Apple Wallet. Ahora volvé al panel.',
+    btn: 'Volver al dashboard →',
+  },
+  {
+    iframe: '/dashboard/mooncafe-demo',
+    title: '¡Tour completo!',
+    desc: 'Ya conocés las funciones principales de Repeat. ¡Empezá a fidelizar a tus clientes!',
+    btn: 'Cerrar',
+  },
 ]
 
 export default function DashboardHintMoonCafe() {
   const [step, setStep] = useState(0)
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (e.data?.type === 'tour-customer-clicked' && step === 1) setStep(2)
-      if (e.data?.type === 'tour-can-send' && step === 2) setStep(3)
-      if (e.data?.type === 'tour-notification-sent' && step === 3) setStep(4)
-    }
-    window.addEventListener('message', handler)
-    return () => window.removeEventListener('message', handler)
-  }, [step])
+  const [closed, setClosed] = useState(false)
 
   const current = STEPS[step]
+  const isLast = step === STEPS.length - 1
+
+  const advance = () => {
+    if (isLast) {
+      setClosed(true)
+    } else {
+      setStep((s) => s + 1)
+    }
+  }
 
   return (
     <div
@@ -47,6 +59,7 @@ export default function DashboardHintMoonCafe() {
       }}
     >
       <div style={{ flex: 1, position: 'relative' }}>
+        {/* Keep notifications iframe alive across steps 2→3 */}
         <iframe
           key={step === 3 ? 2 : step}
           src={current.iframe}
@@ -54,63 +67,58 @@ export default function DashboardHintMoonCafe() {
           title="Demo"
         />
 
-        {/* Hint balloon */}
-        <div
-          style={{
-            position: 'fixed',
-            bottom: current.hintBottom,
-            left: current.hintLeft,
-            transform: 'translateX(-50%)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 6,
-            pointerEvents: 'none',
-            zIndex: 20,
-          }}
-        >
-          <motion.div
-            key={step}
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: current.arrow ? [0, 10, 0] : 0 }}
-            transition={{ duration: 1, repeat: current.arrow ? Infinity : 0, ease: 'easeInOut' }}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}
-          >
-            <span
-              style={{
-                fontSize: 17,
-                fontWeight: 800,
-                color: '#1c1c1e',
-                background: 'rgba(255,255,255,0.97)',
-                padding: '10px 20px',
-                borderRadius: 12,
-                whiteSpace: 'nowrap',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
-                border: '2.5px solid #eab308',
-              }}
-            >
-              {current.label}
-            </span>
-            {current.arrow && <span style={{ fontSize: 42, lineHeight: 1, color: '#eab308' }}>↓</span>}
-          </motion.div>
-        </div>
-
-        {/* Step 0: interceptor over Miembros button */}
-        {step === 0 && (
+        {/* Tour card */}
+        {!closed && (
           <div
-            onClick={() => setStep(1)}
             style={{
               position: 'fixed',
-              bottom: 10,
-              left: '35%',
-              transform: 'translateX(-50%)',
-              width: 64,
-              height: 64,
-              borderRadius: 8,
-              cursor: 'pointer',
-              zIndex: 10,
+              bottom: 80,
+              left: 16,
+              right: 16,
+              background: '#fff',
+              borderRadius: 16,
+              padding: '16px 16px 14px',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+              border: '2px solid #eab308',
+              zIndex: 30,
             }}
-          />
+          >
+            {/* Step indicator */}
+            <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+              {STEPS.map((_, i) => (
+                <div
+                  key={i}
+                  style={{
+                    height: 4,
+                    flex: 1,
+                    borderRadius: 2,
+                    background: i <= step ? '#eab308' : '#e5e7eb',
+                    transition: 'background 0.3s',
+                  }}
+                />
+              ))}
+            </div>
+
+            <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>{current.title}</p>
+            <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 14px', lineHeight: 1.5 }}>{current.desc}</p>
+
+            <button
+              onClick={advance}
+              style={{
+                width: '100%',
+                padding: '10px 0',
+                background: '#eab308',
+                color: '#000',
+                fontWeight: 700,
+                fontSize: 14,
+                border: 'none',
+                borderRadius: 10,
+                cursor: 'pointer',
+              }}
+            >
+              {current.btn}
+            </button>
+          </div>
         )}
       </div>
     </div>
