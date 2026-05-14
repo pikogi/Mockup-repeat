@@ -87,7 +87,23 @@ export default function Sidebar() {
     '/customers/mooncafe-demo',
     '/notifications/mooncafe-demo',
     '/scan-demo/mooncafe',
+    '/dashboard/mooncafe-points-demo',
+    '/customers/mooncafe-points-demo',
+    '/notifications/mooncafe-points-demo',
+    '/scan-demo/mooncafe-points',
   ]
+
+  const MOONCAFE_POINTS_DEMO_URLS = {
+    Dashboard: '/dashboard/mooncafe-points-demo',
+    Customers: '/customers/mooncafe-points-demo',
+    Notifications: '/notifications/mooncafe-points-demo',
+    MyPrograms: '/dashboard/mooncafe-points-demo',
+    CreateClub: '/dashboard/mooncafe-points-demo',
+    Stores: '/dashboard/mooncafe-points-demo',
+    Profile: '/dashboard/mooncafe-points-demo',
+    Team: '/dashboard/mooncafe-points-demo',
+    ScanQR: '/scan-demo/mooncafe-points',
+  }
 
   const currentPath = location.pathname
   const isBgMode = new URLSearchParams(location.search).get('bg') === '1'
@@ -95,8 +111,11 @@ export default function Sidebar() {
   const DEMO_PATH_PREFIXES = Object.values(DEMO_URLS).map((u) => u.split('?')[0])
   const isDemo = !user || isMoonCafeDemo || DEMO_PATH_PREFIXES.some((p) => currentPath.startsWith(p))
 
+  const isMoonCafePoints = MOONCAFE_PATHS.some((p) => currentPath.startsWith(p) && p.includes('points'))
+
   const resolveUrl = (page) => {
     if (!isDemo) return createPageUrl(page)
+    if (isMoonCafePoints) return MOONCAFE_POINTS_DEMO_URLS[page] ?? '/dashboard/mooncafe-points-demo'
     if (isMoonCafeDemo) return MOONCAFE_DEMO_URLS[page] ?? '/dashboard/mooncafe-demo'
     return DEMO_URLS[page] ?? createPageUrl(page)
   }

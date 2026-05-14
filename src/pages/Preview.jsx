@@ -249,6 +249,34 @@ const MOONCAFE_FLOW = [
   },
 ]
 
+const MOONCAFE_POINTS_FLOW = [
+  {
+    type: 'phone',
+    url: '/publicprogram-demo/mooncafe',
+    label: 'Registro',
+    desc: 'El cliente escanea el QR y se une al programa de puntos.',
+  },
+  {
+    type: 'phone',
+    url: '/wallet-demo/mooncafe-points',
+    label: 'Guardar Tarjeta',
+    desc: 'El cliente guarda la tarjeta de puntos en su wallet.',
+  },
+  {
+    type: 'phone',
+    url: '/scan-demo/mooncafe-points',
+    label: 'Scan',
+    desc: 'El operador escanea la tarjeta y suma 10 puntos.',
+  },
+  {
+    type: 'laptop',
+    url: '/dashboard/mooncafe-points-demo',
+    mobileUrl: '/dashboard-hint/mooncafe-points',
+    label: 'Dashboard',
+    desc: 'Panel de control con métricas del programa de puntos.',
+  },
+]
+
 const LEROMA_FLOW = [
   {
     type: 'phone',
@@ -423,7 +451,8 @@ export default function Preview() {
   const [view, setView] = useState('both')
 
   const isMoonCafe = location.pathname === '/demo-mooncafe'
-  const activeFlow = isMoonCafe ? MOONCAFE_FLOW : LEROMA_FLOW
+  const isMoonCafePoints = location.pathname === '/demo-mooncafe-points'
+  const activeFlow = isMoonCafePoints ? MOONCAFE_POINTS_FLOW : isMoonCafe ? MOONCAFE_FLOW : LEROMA_FLOW
   const isFlow = !url
 
   const showPhone = view === 'both' || view === 'phone'

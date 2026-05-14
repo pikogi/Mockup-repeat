@@ -56,6 +56,12 @@ const DashboardMoonCafe = lazy(() => import('./DashboardMoonCafe'))
 const NotificationsMoonCafe = lazy(() => import('./NotificationsMoonCafe'))
 const CustomersMoonCafe = lazy(() => import('./CustomersMoonCafe'))
 const DashboardHintMoonCafe = lazy(() => import('./DashboardHintMoonCafe'))
+const DashboardMoonCafePoints = lazy(() => import('./DashboardMoonCafePoints'))
+const CustomersMoonCafePoints = lazy(() => import('./CustomersMoonCafePoints'))
+const NotificationsMoonCafePoints = lazy(() => import('./NotificationsMoonCafePoints'))
+const ScanDemoMoonCafePoints = lazy(() => import('./ScanDemoMoonCafePoints'))
+const WalletDemoMoonCafePoints = lazy(() => import('./WalletDemoMoonCafePoints'))
+const DashboardHintMoonCafePoints = lazy(() => import('./DashboardHintMoonCafePoints'))
 
 function LayoutWrapper({ children }) {
   const location = useLocation()
@@ -89,11 +95,39 @@ export default function Pages() {
             <Route path="/demo" element={<Demo />} />
             <Route path="/demo-leroma" element={<Preview />} />
             <Route path="/demo-mooncafe" element={<Preview />} />
+            <Route path="/demo-mooncafe-points" element={<Preview />} />
             <Route path="/wallet/mooncafe" element={<WalletMoonCafe />} />
             <Route path="/publicprogram-demo/mooncafe" element={<PublicProgramDemoMoonCafe />} />
             <Route path="/wallet-demo/mooncafe" element={<WalletDemoMoonCafe />} />
             <Route path="/scan-demo/mooncafe" element={<ScanDemoMoonCafe />} />
             <Route path="/dashboard-hint/mooncafe" element={<DashboardHintMoonCafe />} />
+            <Route path="/scan-demo/mooncafe-points" element={<ScanDemoMoonCafePoints />} />
+            <Route path="/wallet-demo/mooncafe-points" element={<WalletDemoMoonCafePoints />} />
+            <Route path="/dashboard-hint/mooncafe-points" element={<DashboardHintMoonCafePoints />} />
+            <Route
+              path="/dashboard/mooncafe-points-demo"
+              element={
+                <LayoutWrapper>
+                  <DashboardMoonCafePoints />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/customers/mooncafe-points-demo"
+              element={
+                <LayoutWrapper>
+                  <CustomersMoonCafePoints />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/notifications/mooncafe-points-demo"
+              element={
+                <LayoutWrapper>
+                  <NotificationsMoonCafePoints />
+                </LayoutWrapper>
+              }
+            />
             <Route
               path="/customers/mooncafe-demo"
               element={
