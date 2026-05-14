@@ -266,7 +266,7 @@ const MOONCAFE_POINTS_FLOW = [
     type: 'phone',
     url: '/scan-demo/mooncafe-points',
     label: 'Scan',
-    desc: 'El operador escanea la tarjeta y suma 10 puntos.',
+    desc: 'El operador presiona el botón de escaneo para registrar la visita y sumar puntos.',
   },
   {
     type: 'laptop',
