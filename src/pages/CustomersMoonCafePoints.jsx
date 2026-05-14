@@ -8,7 +8,7 @@ import { CustomerCard, CustomerEmptyState } from '@/components/customers/Custome
 
 const PROGRAM = {
   program_name: 'Club de Puntos Moon Cafe',
-  program_rules: { stamps_required: 10 },
+  program_rules: { stamps_required: 100, unit_label: 'puntos' },
 }
 
 const makeCard = (id, balance, visits, rewardsCount) => ({

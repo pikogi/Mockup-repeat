@@ -44,6 +44,8 @@ export const CustomerCard = React.memo(function CustomerCard({ member, userData,
       {userData ? (
         userData.loyalty_cards?.map((lc) => {
           const stampsRequired = lc.program?.program_rules?.stamps_required ?? 20
+          const unitLabel = lc.program?.program_rules?.unit_label ?? 'sellos'
+          const isPoints = !!lc.program?.program_rules?.unit_label
           const currentStamps = lc.current_balance ?? 0
           const totalVisits = lc.total_visits ?? 0
           const rewardsRedeemed = lc.redemptions?.filter((r) => r.status === 'completed').length || 0
@@ -58,7 +60,7 @@ export const CustomerCard = React.memo(function CustomerCard({ member, userData,
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600 dark:text-gray-400 mb-2">
                 <span className="flex items-center gap-1">
                   <Stamp className="w-3.5 h-3.5 text-amber-500" />
-                  <strong>{currentStamps}</strong> sellos
+                  <strong>{currentStamps}</strong> {unitLabel}
                 </span>
                 <span className="flex items-center gap-1">
                   <TrendingUp className="w-3.5 h-3.5 text-blue-500" />
@@ -76,7 +78,8 @@ export const CustomerCard = React.memo(function CustomerCard({ member, userData,
                 />
               </div>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                {currentStamps}/{stampsRequired} sellos al próximo premio
+                {currentStamps}/{stampsRequired}{' '}
+                {isPoints ? `${unitLabel} al próximo premio` : 'sellos al próximo premio'}
               </p>
             </div>
           )

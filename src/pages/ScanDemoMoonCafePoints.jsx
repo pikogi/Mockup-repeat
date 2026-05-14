@@ -5,11 +5,11 @@ const STEPS = [
   {
     state: 'idle',
     title: 'Escaneá la tarjeta del cliente',
-    desc: 'El operador presiona el botón de escaneo para registrar la visita y sumar 10 puntos.',
+    desc: 'El operador presiona el botón de escaneo para registrar la visita y sumar puntos.',
   },
   {
     state: 'success',
-    title: '¡10 puntos registrados!',
+    title: '¡Puntos registrados!',
     desc: 'Los puntos se sumaron a la tarjeta. Al llegar a 100 puntos, el premio se otorga automáticamente.',
     btn: 'Siguiente paso →',
   },
@@ -92,7 +92,6 @@ export default function ScanDemoMoonCafePoints() {
               zIndex: 30,
             }}
           >
-            {/* Progress bar */}
             <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
               {STEPS.map((_, i) => (
                 <div

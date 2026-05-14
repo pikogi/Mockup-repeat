@@ -469,6 +469,14 @@ export default function ScanQR() {
     if (!cardData || !purchaseAmount) return
     setProcessing(true)
     const points = Math.max(1, Math.floor(parseFloat(purchaseAmount) / cardData.moneyPerPoint))
+    if (isDemo) {
+      await new Promise((r) => setTimeout(r, 600))
+      setResult({ success: true, customerName: cardData.card.customer?.full_name, points, isPoints: true })
+      setStep('success')
+      setProcessing(false)
+      window.parent?.postMessage({ type: 'scan-success' }, '*')
+      return
+    }
     try {
       await api.transactions.create(cardData.cardId, selectedStore, 'points_added', 'point', points)
       setResult({

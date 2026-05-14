@@ -128,6 +128,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
 
   const customerName = userData?.full_name || customer?.full_name || 'Cliente'
   const customerEmail = userData?.email || customer?.email || 'Sin correo registrado'
+  const isPointsProgram = !!activeCard?.program?.program_rules?.unit_label
   const customerPhone = userData?.phone || customer?.phone
   const customerCreatedAt = userData?.registered_at || customer?.created_at
   const customerBirthDate = userData?.birth_date
@@ -329,7 +330,9 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                     <p className="text-xl sm:text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">
                       {activeCard.current_balance ?? 0}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('customerCurrentStamps')}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {isPointsProgram ? 'Puntos Actuales' : t('customerCurrentStamps')}
+                    </p>
                   </Card>
                   <Card className="p-3 text-center">
                     <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto mb-2">
@@ -364,7 +367,8 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     {activeCard.current_balance ?? 0} {t('of')}{' '}
-                    {activeCard.program?.program_rules?.stamps_required ?? 10} {t('stampPlural')}
+                    {activeCard.program?.program_rules?.stamps_required ?? 10}{' '}
+                    {activeCard.program?.program_rules?.unit_label ?? t('stampPlural')}
                   </p>
                 </Card>
               </div>
@@ -462,14 +466,21 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                   ) : (
                     <Plus className="w-5 h-5 mr-2" />
                   )}
-                  {addStampMutation.isPending ? t('customerAdding') : t('customerAddStampManually')}
+                  {addStampMutation.isPending
+                    ? t('customerAdding')
+                    : isPointsProgram
+                      ? 'Agregar Puntos Manualmente'
+                      : t('customerAddStampManually')}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>{t('confirmAreYouSure')}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    {t('customerAddStampConfirmDesc')} {customerName}
+                    {isPointsProgram
+                      ? 'Estás a punto de agregar puntos manualmente a'
+                      : t('customerAddStampConfirmDesc')}{' '}
+                    {customerName}
                     {t('customerAddStampConfirmSuffix')}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
@@ -488,9 +499,11 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                     <CheckCircle2 className="h-6 w-6" />
                   </div>
                   <AlertDialogHeader>
-                    <AlertDialogTitle className="text-center text-xl">{t('customerStampDelivered')}</AlertDialogTitle>
+                    <AlertDialogTitle className="text-center text-xl">
+                      {isPointsProgram ? '¡Puntos Agregados!' : t('customerStampDelivered')}
+                    </AlertDialogTitle>
                     <AlertDialogDescription className="text-center">
-                      {t('customerStampAddedTo')} {customerName}.
+                      {isPointsProgram ? 'Se agregaron puntos a' : t('customerStampAddedTo')} {customerName}.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                 </div>
