@@ -68,7 +68,7 @@ export default function ScanDemoMoonCafePoints() {
               style={{ position: 'absolute', inset: 0 }}
             >
               <iframe
-                src="/scanqr-demo?demo=points&scan=1"
+                src="/scanqr-demo?demo=points-threshold&scan=1"
                 style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
                 title="Scan QR"
               />

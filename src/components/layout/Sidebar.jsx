@@ -17,8 +17,8 @@ import {
   ClipboardList,
   BookOpen,
   HelpCircle,
+  X,
 } from 'lucide-react'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
 import { useLanguage } from '@/components/auth/LanguageContext'
 import { api } from '@/api/client'
@@ -242,76 +242,109 @@ export default function Sidebar() {
         <h1 className="text-xl font-bold text-white">repeat</h1>
         <div className="flex items-center gap-1">
           {(user?.type_user === 'brand_admin' || isMoonCafeDemo) && !isBgMode && (
-            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <button className="text-white p-4 -mr-4 -my-3">
-                  <Menu className="w-6 h-6" />
-                </button>
-              </SheetTrigger>
-              <SheetContent side="right">
-                <nav className="flex flex-col gap-4 mt-8">
-                  <Link
-                    to={resolveUrl('Notifications')}
-                    className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                    onClick={() => setIsMobileMenuOpen(false)}
+            <>
+              <button className="text-white p-4 -mr-4 -my-3" onClick={() => setIsMobileMenuOpen(true)}>
+                <Menu className="w-6 h-6" />
+              </button>
+              {isMobileMenuOpen && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex' }}>
+                  <div style={{ flex: 1, background: 'rgba(0,0,0,0.5)' }} onClick={() => setIsMobileMenuOpen(false)} />
+                  <div
+                    style={{
+                      width: '75%',
+                      maxWidth: 320,
+                      background: 'white',
+                      height: '100%',
+                      padding: '24px 16px',
+                      position: 'relative',
+                      overflowY: 'auto',
+                    }}
                   >
-                    <Bell className="w-5 h-5" />
-                    {t('notifications')}
-                  </Link>
-                  <Link
-                    to={resolveUrl('MyPrograms')}
-                    className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <CreditCard className="w-5 h-5" />
-                    {t('myPrograms')}
-                  </Link>
-                  <Link
-                    to={resolveUrl('Survey')}
-                    className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <ClipboardList className="w-5 h-5" />
-                    {t('survey')}
-                  </Link>
-                  <Link
-                    to={resolveUrl('Menu')}
-                    className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <BookOpen className="w-5 h-5" />
-                    {t('menu')}
-                  </Link>
-
-                  <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4 flex flex-col gap-2">
-                    {isMoonCafeDemo ? (
-                      <button className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg text-gray-500 cursor-default w-full text-left">
-                        <HelpCircle className="w-5 h-5" />
-                        {t('support')}
-                      </button>
-                    ) : (
-                      <a
-                        href={whatsappUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                    <button
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      style={{
+                        position: 'absolute',
+                        right: 8,
+                        top: 8,
+                        opacity: 0.7,
+                        cursor: 'pointer',
+                        background: 'none',
+                        border: 'none',
+                        padding: 12,
+                        minWidth: 44,
+                        minHeight: 44,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                    <nav className="flex flex-col gap-4 mt-8">
+                      <Link
+                        to={resolveUrl('Notifications')}
                         className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
-                        <HelpCircle className="w-5 h-5" />
-                        {t('support')}
-                      </a>
-                    )}
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-950 text-red-600 dark:text-red-400 w-full text-left"
-                    >
-                      <LogOut className="w-5 h-5" />
-                      {t('logout')}
-                    </button>
+                        <Bell className="w-5 h-5" />
+                        {t('notifications')}
+                      </Link>
+                      <Link
+                        to={resolveUrl('MyPrograms')}
+                        className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <CreditCard className="w-5 h-5" />
+                        {t('myPrograms')}
+                      </Link>
+                      <Link
+                        to={resolveUrl('Survey')}
+                        className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <ClipboardList className="w-5 h-5" />
+                        {t('survey')}
+                      </Link>
+                      <Link
+                        to={resolveUrl('Menu')}
+                        className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <BookOpen className="w-5 h-5" />
+                        {t('menu')}
+                      </Link>
+
+                      <div className="border-t border-gray-200 pt-4 mt-4 flex flex-col gap-2">
+                        {isMoonCafeDemo ? (
+                          <button className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg text-gray-500 cursor-default w-full text-left">
+                            <HelpCircle className="w-5 h-5" />
+                            {t('support')}
+                          </button>
+                        ) : (
+                          <a
+                            href={whatsappUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            <HelpCircle className="w-5 h-5" />
+                            {t('support')}
+                          </a>
+                        )}
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-red-50 text-red-600 w-full text-left"
+                        >
+                          <LogOut className="w-5 h-5" />
+                          {t('logout')}
+                        </button>
+                      </div>
+                    </nav>
                   </div>
-                </nav>
-              </SheetContent>
-            </Sheet>
+                </div>
+              )}
+            </>
           )}
         </div>
       </header>

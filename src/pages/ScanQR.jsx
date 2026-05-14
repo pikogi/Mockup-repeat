@@ -51,7 +51,7 @@ export default function ScanQR() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const demoParam = searchParams.get('demo')
-  const isDemoPoints = demoParam === 'points' || demoParam === 'points-direct'
+  const isDemoPoints = demoParam === 'points' || demoParam === 'points-direct' || demoParam === 'points-threshold'
   const isDemoStamps = demoParam === 'stamps'
   const isDemoMembership = demoParam === 'membership'
   const isDemoCashback = demoParam === 'cashback'
@@ -94,23 +94,29 @@ export default function ScanQR() {
       setRedeemCodeInput('')
       setPointsToRedeem('')
 
-      if (demo === 'points' || demo === 'points-direct') {
+      if (demo === 'points' || demo === 'points-direct' || demo === 'points-threshold') {
         const isDirect = demo === 'points-direct'
+        const isThreshold = demo === 'points-threshold'
         setCardData({
           card: {
-            customer: { full_name: 'Valentina Gómez', email: 'vale.gomez@gmail.com' },
-            current_balance: 800,
+            customer: {
+              full_name: isThreshold ? 'Valentina López' : 'Valentina Gómez',
+              email: isThreshold ? 'vale.lopez@gmail.com' : 'vale.gomez@gmail.com',
+            },
+            current_balance: isThreshold ? 40 : 800,
             created_at: '2026-01-12T00:00:00Z',
-            redemptions: [
-              { id: 'r1', status: 'pending', benefit_name: 'Degustación de nuevos sabores', tier: 'Bronce' },
-              { id: 'r2', status: 'pending', benefit_name: '10% off en todos los helados', tier: 'Bronce' },
-            ],
+            redemptions: isThreshold
+              ? []
+              : [
+                  { id: 'r1', status: 'pending', benefit_name: 'Degustación de nuevos sabores', tier: 'Bronce' },
+                  { id: 'r2', status: 'pending', benefit_name: '10% off en todos los helados', tier: 'Bronce' },
+                ],
           },
           cardId: 'mock-points-card',
-          stampsRequired: 10,
+          stampsRequired: isThreshold ? 100 : 10,
           programTypeId: POINTS_PROGRAM_TYPE_ID,
-          moneyPerPoint: 1000,
-          redeemMode: isDirect ? 'direct' : 'catalog',
+          moneyPerPoint: isThreshold ? 100 : 1000,
+          redeemMode: isDirect ? 'direct' : isThreshold ? 'threshold' : 'catalog',
           moneyPerPointRedeem: 100,
         })
       } else if (demo === 'stamps') {
@@ -785,7 +791,9 @@ export default function ScanQR() {
                           </div>
 
                           {/* Tabs */}
-                          <div className="flex rounded-xl bg-gray-100 dark:bg-gray-800 p-1 mb-4">
+                          <div
+                            className={`flex rounded-xl bg-gray-100 dark:bg-gray-800 p-1 mb-4 ${redeemMode === 'threshold' ? 'hidden' : ''}`}
+                          >
                             {[
                               { key: 'add', label: 'Agregar puntos', icon: Plus },
                               redeemMode === 'direct'
@@ -899,10 +907,14 @@ export default function ScanQR() {
                                       $
                                     </span>
                                     <Input
-                                      type="number"
+                                      type="text"
+                                      inputMode="numeric"
                                       min="0"
-                                      value={purchaseAmount}
-                                      onChange={(e) => setPurchaseAmount(e.target.value)}
+                                      value={purchaseAmount ? Number(purchaseAmount).toLocaleString('es-AR') : ''}
+                                      onChange={(e) => {
+                                        const raw = e.target.value.replace(/\./g, '').replace(/,/g, '')
+                                        if (raw === '' || /^\d+$/.test(raw)) setPurchaseAmount(raw)
+                                      }}
                                       placeholder="0"
                                       className="pl-7 h-11 text-base font-semibold"
                                     />
