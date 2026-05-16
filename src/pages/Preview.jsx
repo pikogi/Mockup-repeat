@@ -277,6 +277,34 @@ const MOONCAFE_POINTS_FLOW = [
   },
 ]
 
+const GYM_FLOW = [
+  {
+    type: 'phone',
+    url: '/publicprogram-demo/mooncafe',
+    label: 'Registro',
+    desc: 'El alumno escanea el QR y se une al programa de fidelización del gym.',
+  },
+  {
+    type: 'phone',
+    url: '/wallet-demo/gym',
+    label: 'Mi Progreso',
+    desc: 'El alumno ve su nivel, XP acumulado, racha de asistencia y desafíos activos.',
+  },
+  {
+    type: 'phone',
+    url: '/scan-demo/gym',
+    label: 'Check-in',
+    desc: 'El operador registra la llegada del alumno. Suma XP y actualiza su racha.',
+  },
+  {
+    type: 'laptop',
+    url: '/dashboard/gym-demo',
+    mobileUrl: '/dashboard-hint/gym',
+    label: 'Dashboard',
+    desc: 'Panel de control con métricas, check-ins por día y distribución de niveles.',
+  },
+]
+
 const LEROMA_FLOW = [
   {
     type: 'phone',
@@ -452,7 +480,14 @@ export default function Preview() {
 
   const isMoonCafe = location.pathname === '/demo-mooncafe'
   const isMoonCafePoints = location.pathname === '/demo-mooncafe-points'
-  const activeFlow = isMoonCafePoints ? MOONCAFE_POINTS_FLOW : isMoonCafe ? MOONCAFE_FLOW : LEROMA_FLOW
+  const isGym = location.pathname === '/demo-gym'
+  const activeFlow = isMoonCafePoints
+    ? MOONCAFE_POINTS_FLOW
+    : isMoonCafe
+      ? MOONCAFE_FLOW
+      : isGym
+        ? GYM_FLOW
+        : LEROMA_FLOW
   const isFlow = !url
 
   const showPhone = view === 'both' || view === 'phone'

@@ -15,6 +15,19 @@ const COL_LEFT = [
     ],
   },
   {
+    title: 'Iron Club — Demo Gym Gamificado',
+    badge: 'bg-orange-100 text-orange-800',
+    links: [
+      {
+        label: 'Iron Club · Flow completo',
+        url: '/demo-gym',
+        desc: 'Registro, tarjeta de atleta con niveles y XP, check-in y dashboard gamificado.',
+        single: true,
+        mobile: false,
+      },
+    ],
+  },
+  {
     title: 'Crear programa',
     badge: 'bg-yellow-100 text-yellow-800',
     links: [

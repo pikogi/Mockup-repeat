@@ -62,6 +62,12 @@ const NotificationsMoonCafePoints = lazy(() => import('./NotificationsMoonCafePo
 const ScanDemoMoonCafePoints = lazy(() => import('./ScanDemoMoonCafePoints'))
 const WalletDemoMoonCafePoints = lazy(() => import('./WalletDemoMoonCafePoints'))
 const DashboardHintMoonCafePoints = lazy(() => import('./DashboardHintMoonCafePoints'))
+const WalletDemoGym = lazy(() => import('./WalletDemoGym'))
+const ScanDemoGym = lazy(() => import('./ScanDemoGym'))
+const DashboardGym = lazy(() => import('./DashboardGym'))
+const DashboardHintGym = lazy(() => import('./DashboardHintGym'))
+const CustomersGym = lazy(() => import('./CustomersGym'))
+const NotificationsGym = lazy(() => import('./NotificationsGym'))
 
 function LayoutWrapper({ children }) {
   const location = useLocation()
@@ -96,6 +102,7 @@ export default function Pages() {
             <Route path="/demo-leroma" element={<Preview />} />
             <Route path="/demo-mooncafe" element={<Preview />} />
             <Route path="/demo-mooncafe-points" element={<Preview />} />
+            <Route path="/demo-gym" element={<Preview />} />
             <Route path="/wallet/mooncafe" element={<WalletMoonCafe />} />
             <Route path="/publicprogram-demo/mooncafe" element={<PublicProgramDemoMoonCafe />} />
             <Route path="/wallet-demo/mooncafe" element={<WalletDemoMoonCafe />} />
@@ -104,6 +111,9 @@ export default function Pages() {
             <Route path="/scan-demo/mooncafe-points" element={<ScanDemoMoonCafePoints />} />
             <Route path="/wallet-demo/mooncafe-points" element={<WalletDemoMoonCafePoints />} />
             <Route path="/dashboard-hint/mooncafe-points" element={<DashboardHintMoonCafePoints />} />
+            <Route path="/wallet-demo/gym" element={<WalletDemoGym />} />
+            <Route path="/scan-demo/gym" element={<ScanDemoGym />} />
+            <Route path="/dashboard-hint/gym" element={<DashboardHintGym />} />
             <Route
               path="/dashboard/mooncafe-points-demo"
               element={
@@ -149,6 +159,30 @@ export default function Pages() {
               element={
                 <LayoutWrapper>
                   <DashboardMoonCafe />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/dashboard/gym-demo"
+              element={
+                <LayoutWrapper>
+                  <DashboardGym />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/customers/gym-demo"
+              element={
+                <LayoutWrapper>
+                  <CustomersGym />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/notifications/gym-demo"
+              element={
+                <LayoutWrapper>
+                  <NotificationsGym />
                 </LayoutWrapper>
               }
             />
