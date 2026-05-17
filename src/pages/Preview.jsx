@@ -252,7 +252,7 @@ const MOONCAFE_FLOW = [
 const MOONCAFE_POINTS_FLOW = [
   {
     type: 'phone',
-    url: '/publicprogram-demo/mooncafe',
+    url: '/publicprogram-demo/mooncafe-points',
     label: 'Registro',
     desc: 'El cliente escanea el QR y se une al programa de puntos.',
   },

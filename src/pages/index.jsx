@@ -50,6 +50,7 @@ const NotificationsLeroma = lazy(() => import('./NotificationsLeroma'))
 const PublicMembershipLeroma = lazy(() => import('./PublicMembershipLeroma'))
 const WalletMoonCafe = lazy(() => import('./WalletMoonCafe'))
 const PublicProgramDemoMoonCafe = lazy(() => import('./PublicProgramDemoMoonCafe'))
+const PublicProgramDemoMoonCafePoints = lazy(() => import('./PublicProgramDemoMoonCafePoints'))
 const WalletDemoMoonCafe = lazy(() => import('./WalletDemoMoonCafe'))
 const ScanDemoMoonCafe = lazy(() => import('./ScanDemoMoonCafe'))
 const DashboardMoonCafe = lazy(() => import('./DashboardMoonCafe'))
@@ -105,6 +106,7 @@ export default function Pages() {
             <Route path="/demo-gym" element={<Preview />} />
             <Route path="/wallet/mooncafe" element={<WalletMoonCafe />} />
             <Route path="/publicprogram-demo/mooncafe" element={<PublicProgramDemoMoonCafe />} />
+            <Route path="/publicprogram-demo/mooncafe-points" element={<PublicProgramDemoMoonCafePoints />} />
             <Route path="/wallet-demo/mooncafe" element={<WalletDemoMoonCafe />} />
             <Route path="/scan-demo/mooncafe" element={<ScanDemoMoonCafe />} />
             <Route path="/dashboard-hint/mooncafe" element={<DashboardHintMoonCafe />} />
