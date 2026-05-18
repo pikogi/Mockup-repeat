@@ -69,9 +69,9 @@ function StoreScene({ onNext }) {
         overflow: 'hidden',
       }}
     >
-      {/* Foto cafetería */}
+      {/* Foto cafetería con flyer de puntos */}
       <img
-        src="/cafe-mostrador.jpg"
+        src="/cafe-mostrador-points.png"
         alt=""
         style={{
           position: 'absolute',
@@ -82,90 +82,6 @@ function StoreScene({ onNext }) {
           objectPosition: 'center top',
         }}
       />
-
-      {/* Flyer overlay — reemplaza el flyer físico de la foto */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '22%',
-          left: '50%',
-          transform: 'translateX(-56%) rotate(-2deg)',
-          width: 160,
-          background: '#f5f0e8',
-          borderRadius: 8,
-          padding: '14px 12px 12px',
-          boxShadow: '0 4px 24px rgba(0,0,0,0.35)',
-          textAlign: 'center',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          zIndex: 5,
-        }}
-      >
-        <p
-          style={{
-            fontSize: 13,
-            fontWeight: 900,
-            color: '#1a3a1a',
-            margin: '0 0 6px',
-            letterSpacing: 0.5,
-            textTransform: 'uppercase',
-          }}
-        >
-          Recompensa
-        </p>
-        <p style={{ fontSize: 11, color: '#2d5a2d', margin: '0 0 6px', lineHeight: 1.4 }}>
-          Junta 100 puntos y canjealos por
-        </p>
-        <div
-          style={{
-            background: '#1a4a2e',
-            borderRadius: 4,
-            padding: '4px 8px',
-            marginBottom: 8,
-            display: 'inline-block',
-          }}
-        >
-          <p style={{ fontSize: 12, fontWeight: 800, color: '#fff', margin: 0 }}>un desayuno 🥐</p>
-        </div>
-        <div
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: '50%',
-            background: '#1a4a2e',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 6px',
-            fontSize: 18,
-          }}
-        >
-          ☕
-        </div>
-        <p style={{ fontSize: 10, fontWeight: 700, color: '#1a4a2e', margin: '0 0 2px' }}>Club de Puntos</p>
-        <p style={{ fontSize: 9, color: '#2d5a2d', margin: '0 0 8px' }}>Moon Cafe</p>
-        <div style={{ background: '#1a4a2e', borderRadius: 4, padding: '3px 6px', marginBottom: 8 }}>
-          <p style={{ fontSize: 9, color: '#fff', margin: 0 }}>Escaneá y unite gratis</p>
-        </div>
-        <div
-          style={{
-            width: 60,
-            height: 60,
-            background: '#fff',
-            margin: '0 auto 4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: 4,
-          }}
-        >
-          <img
-            src="https://api.qrserver.com/v1/create-qr-code/?size=56x56&data=repeat.la"
-            alt="QR"
-            style={{ width: 56, height: 56 }}
-          />
-        </div>
-        <p style={{ fontSize: 8, color: '#999', margin: 0 }}>Powered by Repeat.la</p>
-      </div>
 
       {/* Tour card */}
       <div
