@@ -67,7 +67,7 @@ function StoreScene({ onNext }) {
         fontFamily: 'system-ui, -apple-system, sans-serif',
         position: 'relative',
         overflow: 'hidden',
-        background: '#1a1a1a',
+        background: '#2a1e14',
       }}
     >
       {/* Foto cafetería con flyer de puntos */}
@@ -79,7 +79,7 @@ function StoreScene({ onNext }) {
           inset: 0,
           width: '100%',
           height: '100%',
-          objectFit: 'cover',
+          objectFit: 'contain',
           objectPosition: 'center top',
         }}
       />
