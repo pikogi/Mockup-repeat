@@ -69,6 +69,9 @@ const DashboardGym = lazy(() => import('./DashboardGym'))
 const DashboardHintGym = lazy(() => import('./DashboardHintGym'))
 const CustomersGym = lazy(() => import('./CustomersGym'))
 const NotificationsGym = lazy(() => import('./NotificationsGym'))
+const ComercioAmigoBarber = lazy(() => import('./ComercioAmigoBarber'))
+const DashboardBarber = lazy(() => import('./DashboardBarber'))
+const DashboardHintBarber = lazy(() => import('./DashboardHintBarber'))
 
 function LayoutWrapper({ children }) {
   const location = useLocation()
@@ -116,6 +119,9 @@ export default function Pages() {
             <Route path="/wallet-demo/gym" element={<WalletDemoGym />} />
             <Route path="/scan-demo/gym" element={<ScanDemoGym />} />
             <Route path="/dashboard-hint/gym" element={<DashboardHintGym />} />
+            <Route path="/demo-barber" element={<Preview />} />
+            <Route path="/comercio-amigo/barber-demo" element={<ComercioAmigoBarber />} />
+            <Route path="/dashboard-hint/barber" element={<DashboardHintBarber />} />
             <Route
               path="/dashboard/mooncafe-points-demo"
               element={
@@ -185,6 +191,14 @@ export default function Pages() {
               element={
                 <LayoutWrapper>
                   <NotificationsGym />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/dashboard/barber-demo"
+              element={
+                <LayoutWrapper>
+                  <DashboardBarber />
                 </LayoutWrapper>
               }
             />

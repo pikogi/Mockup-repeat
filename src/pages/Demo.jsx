@@ -28,6 +28,19 @@ const COL_LEFT = [
     ],
   },
   {
+    title: 'Barber Club — Red de Comercios',
+    badge: 'bg-stone-100 text-stone-800',
+    links: [
+      {
+        label: 'Barber Club · Flow completo',
+        url: '/demo-barber',
+        desc: 'Membresía con niveles, validación en comercios aliados y dashboard de la red.',
+        single: true,
+        mobile: false,
+      },
+    ],
+  },
+  {
     title: 'Crear programa',
     badge: 'bg-yellow-100 text-yellow-800',
     links: [

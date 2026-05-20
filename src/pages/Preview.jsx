@@ -305,6 +305,28 @@ const GYM_FLOW = [
   },
 ]
 
+const BARBER_FLOW = [
+  {
+    type: 'phone',
+    url: '/membership/barber-membership-demo',
+    label: 'Tarjeta de Miembro',
+    desc: 'El cliente accede a su tarjeta digital con su nivel y los beneficios en comercios aliados.',
+  },
+  {
+    type: 'phone',
+    url: '/comercio-amigo/barber-demo',
+    label: 'Comercio Aliado',
+    desc: 'El comercio aliado escanea el QR del cliente y valida el descuento al instante.',
+  },
+  {
+    type: 'laptop',
+    url: '/dashboard/barber-demo',
+    mobileUrl: '/dashboard-hint/barber',
+    label: 'Dashboard',
+    desc: 'El dueño gestiona la red de comercios aliados y ve las métricas de uso.',
+  },
+]
+
 const LEROMA_FLOW = [
   {
     type: 'phone',
@@ -481,13 +503,16 @@ export default function Preview() {
   const isMoonCafe = location.pathname === '/demo-mooncafe'
   const isMoonCafePoints = location.pathname === '/demo-mooncafe-points'
   const isGym = location.pathname === '/demo-gym'
+  const isBarber = location.pathname === '/demo-barber'
   const activeFlow = isMoonCafePoints
     ? MOONCAFE_POINTS_FLOW
     : isMoonCafe
       ? MOONCAFE_FLOW
       : isGym
         ? GYM_FLOW
-        : LEROMA_FLOW
+        : isBarber
+          ? BARBER_FLOW
+          : LEROMA_FLOW
   const isFlow = !url
 
   const showPhone = view === 'both' || view === 'phone'
