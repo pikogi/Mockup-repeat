@@ -305,6 +305,62 @@ const GYM_FLOW = [
   },
 ]
 
+const GLOW_FLOW = [
+  {
+    type: 'phone',
+    url: '/publicprogram-demo/glow',
+    label: 'Registro',
+    desc: 'La clienta escanea el QR y se une al programa de sellos de Glow Estética.',
+  },
+  {
+    type: 'phone',
+    url: '/wallet-demo/glow',
+    label: 'Guardar Tarjeta',
+    desc: 'La clienta guarda la tarjeta de sellos en la wallet de su celular.',
+  },
+  {
+    type: 'phone',
+    url: '/scan-demo/glow',
+    label: 'Scan',
+    desc: 'El operador escanea la tarjeta y agrega un sello.',
+  },
+  {
+    type: 'laptop',
+    url: '/dashboard/glow-demo',
+    mobileUrl: '/dashboard-hint/glow',
+    label: 'Dashboard',
+    desc: 'Panel de control con métricas del programa de sellos.',
+  },
+]
+
+const GLOW_POINTS_FLOW = [
+  {
+    type: 'phone',
+    url: '/publicprogram-demo/glow-points',
+    label: 'Registro',
+    desc: 'La clienta escanea el QR y se une al programa de puntos de Glow Estética.',
+  },
+  {
+    type: 'phone',
+    url: '/wallet-demo/glow-points',
+    label: 'Guardar Tarjeta',
+    desc: 'La clienta guarda la tarjeta de puntos en la wallet de su celular.',
+  },
+  {
+    type: 'phone',
+    url: '/scan-demo/glow-points',
+    label: 'Scan',
+    desc: 'El operador presiona el botón de escaneo para registrar la visita y sumar puntos.',
+  },
+  {
+    type: 'laptop',
+    url: '/dashboard/glow-points-demo',
+    mobileUrl: '/dashboard-hint/glow-points',
+    label: 'Dashboard',
+    desc: 'Panel de control con métricas del programa de puntos.',
+  },
+]
+
 const BARBER_FLOW = [
   {
     type: 'phone',
@@ -504,6 +560,8 @@ export default function Preview() {
   const isMoonCafePoints = location.pathname === '/demo-mooncafe-points'
   const isGym = location.pathname === '/demo-gym'
   const isBarber = location.pathname === '/demo-barber'
+  const isGlow = location.pathname === '/demo-glow'
+  const isGlowPoints = location.pathname === '/demo-glow-points'
   const activeFlow = isMoonCafePoints
     ? MOONCAFE_POINTS_FLOW
     : isMoonCafe
@@ -512,7 +570,11 @@ export default function Preview() {
         ? GYM_FLOW
         : isBarber
           ? BARBER_FLOW
-          : LEROMA_FLOW
+          : isGlow
+            ? GLOW_FLOW
+            : isGlowPoints
+              ? GLOW_POINTS_FLOW
+              : LEROMA_FLOW
   const isFlow = !url
 
   const showPhone = view === 'both' || view === 'phone'

@@ -2,13 +2,20 @@ import { ExternalLink, Smartphone } from 'lucide-react'
 
 const COL_LEFT = [
   {
-    title: 'Café Moon — Demo Sellos',
+    title: 'Café Moon',
     badge: 'bg-green-100 text-green-800',
     links: [
       {
-        label: 'Café Moon · Flow completo',
+        label: 'Café Moon · Sellos',
         url: '/demo-mooncafe',
         desc: 'Registro, wallet, scan interactivo y dashboard de sellos.',
+        single: true,
+        mobile: false,
+      },
+      {
+        label: 'Café Moon · Puntos',
+        url: '/demo-mooncafe-points',
+        desc: 'Registro, wallet de puntos, scan interactivo y dashboard de puntos.',
         single: true,
         mobile: false,
       },
@@ -22,6 +29,26 @@ const COL_LEFT = [
         label: 'Iron Club · Flow completo',
         url: '/demo-gym',
         desc: 'Registro, tarjeta de atleta con niveles y XP, check-in y dashboard gamificado.',
+        single: true,
+        mobile: false,
+      },
+    ],
+  },
+  {
+    title: 'Glow Estética',
+    badge: 'bg-fuchsia-100 text-fuchsia-800',
+    links: [
+      {
+        label: 'Glow · Sellos',
+        url: '/demo-glow',
+        desc: 'Registro, tarjeta de sellos, scan y dashboard. Estética & belleza.',
+        single: true,
+        mobile: false,
+      },
+      {
+        label: 'Glow · Puntos',
+        url: '/demo-glow-points',
+        desc: 'Registro, tarjeta de puntos, scan y dashboard. Estética & belleza.',
         single: true,
         mobile: false,
       },

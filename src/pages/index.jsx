@@ -72,6 +72,20 @@ const NotificationsGym = lazy(() => import('./NotificationsGym'))
 const ComercioAmigoBarber = lazy(() => import('./ComercioAmigoBarber'))
 const DashboardBarber = lazy(() => import('./DashboardBarber'))
 const DashboardHintBarber = lazy(() => import('./DashboardHintBarber'))
+const PublicProgramDemoGlow = lazy(() => import('./PublicProgramDemoGlow'))
+const PublicProgramDemoGlowPoints = lazy(() => import('./PublicProgramDemoGlowPoints'))
+const WalletDemoGlow = lazy(() => import('./WalletDemoGlow'))
+const WalletDemoGlowPoints = lazy(() => import('./WalletDemoGlowPoints'))
+const ScanDemoGlow = lazy(() => import('./ScanDemoGlow'))
+const ScanDemoGlowPoints = lazy(() => import('./ScanDemoGlowPoints'))
+const DashboardGlow = lazy(() => import('./DashboardGlow'))
+const DashboardGlowPoints = lazy(() => import('./DashboardGlowPoints'))
+const DashboardHintGlow = lazy(() => import('./DashboardHintGlow'))
+const DashboardHintGlowPoints = lazy(() => import('./DashboardHintGlowPoints'))
+const CustomersGlow = lazy(() => import('./CustomersGlow'))
+const CustomersGlowPoints = lazy(() => import('./CustomersGlowPoints'))
+const NotificationsGlow = lazy(() => import('./NotificationsGlow'))
+const NotificationsGlowPoints = lazy(() => import('./NotificationsGlowPoints'))
 
 function LayoutWrapper({ children }) {
   const location = useLocation()
@@ -122,6 +136,16 @@ export default function Pages() {
             <Route path="/demo-barber" element={<Preview />} />
             <Route path="/comercio-amigo/barber-demo" element={<ComercioAmigoBarber />} />
             <Route path="/dashboard-hint/barber" element={<DashboardHintBarber />} />
+            <Route path="/demo-glow" element={<Preview />} />
+            <Route path="/demo-glow-points" element={<Preview />} />
+            <Route path="/publicprogram-demo/glow" element={<PublicProgramDemoGlow />} />
+            <Route path="/publicprogram-demo/glow-points" element={<PublicProgramDemoGlowPoints />} />
+            <Route path="/wallet-demo/glow" element={<WalletDemoGlow />} />
+            <Route path="/wallet-demo/glow-points" element={<WalletDemoGlowPoints />} />
+            <Route path="/scan-demo/glow" element={<ScanDemoGlow />} />
+            <Route path="/scan-demo/glow-points" element={<ScanDemoGlowPoints />} />
+            <Route path="/dashboard-hint/glow" element={<DashboardHintGlow />} />
+            <Route path="/dashboard-hint/glow-points" element={<DashboardHintGlowPoints />} />
             <Route
               path="/dashboard/mooncafe-points-demo"
               element={
@@ -199,6 +223,54 @@ export default function Pages() {
               element={
                 <LayoutWrapper>
                   <DashboardBarber />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/dashboard/glow-demo"
+              element={
+                <LayoutWrapper>
+                  <DashboardGlow />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/dashboard/glow-points-demo"
+              element={
+                <LayoutWrapper>
+                  <DashboardGlowPoints />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/customers/glow-demo"
+              element={
+                <LayoutWrapper>
+                  <CustomersGlow />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/customers/glow-points-demo"
+              element={
+                <LayoutWrapper>
+                  <CustomersGlowPoints />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/notifications/glow-demo"
+              element={
+                <LayoutWrapper>
+                  <NotificationsGlow />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/notifications/glow-points-demo"
+              element={
+                <LayoutWrapper>
+                  <NotificationsGlowPoints />
                 </LayoutWrapper>
               }
             />
