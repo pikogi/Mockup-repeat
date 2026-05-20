@@ -203,9 +203,9 @@ export default function CustomersGlowPoints() {
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <Users className="w-8 h-8 text-gray-700 dark:text-gray-300" />
-            <h1 className="text-4xl font-bold leading-tight text-foreground">Clientas</h1>
+            <h1 className="text-4xl font-bold leading-tight text-foreground">Miembros</h1>
           </div>
-          <p className="text-gray-600 dark:text-gray-400">Gestioná y conocé a las clientas de tu programa de puntos.</p>
+          <p className="text-gray-600 dark:text-gray-400">Gestioná y conocé a las miembros de tu programa de puntos.</p>
         </motion.div>
 
         <motion.div
@@ -250,7 +250,7 @@ export default function CustomersGlowPoints() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="mb-6">
           <p className="text-gray-600 dark:text-gray-400">
             Mostrando <span className="font-semibold text-gray-900 dark:text-gray-100">{sorted.length}</span> de{' '}
-            <span className="font-semibold text-gray-900 dark:text-gray-100">{MEMBERS.length}</span> clientas
+            <span className="font-semibold text-gray-900 dark:text-gray-100">{MEMBERS.length}</span> miembros
           </p>
         </motion.div>
 

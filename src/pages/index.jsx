@@ -48,6 +48,11 @@ const CustomersLeroma = lazy(() => import('./CustomersLeroma'))
 const MyProgramsLeroma = lazy(() => import('./MyProgramsLeroma'))
 const NotificationsLeroma = lazy(() => import('./NotificationsLeroma'))
 const PublicMembershipLeroma = lazy(() => import('./PublicMembershipLeroma'))
+const DashboardDelPilar = lazy(() => import('./DashboardDelPilar'))
+const CustomersDelPilar = lazy(() => import('./CustomersDelPilar'))
+const MyProgramsDelPilar = lazy(() => import('./MyProgramsDelPilar'))
+const NotificationsDelPilar = lazy(() => import('./NotificationsDelPilar'))
+const PublicMembershipDelPilar = lazy(() => import('./PublicMembershipDelPilar'))
 const WalletMoonCafe = lazy(() => import('./WalletMoonCafe'))
 const PublicProgramDemoMoonCafe = lazy(() => import('./PublicProgramDemoMoonCafe'))
 const PublicProgramDemoMoonCafePoints = lazy(() => import('./PublicProgramDemoMoonCafePoints'))
@@ -114,10 +119,12 @@ export default function Pages() {
             <Route path="/store/:storeId" element={<PublicStore />} />
             <Route path="/catalog/:programId" element={<PublicCatalog />} />
             <Route path="/membership/leroma-membership-demo" element={<PublicMembershipLeroma />} />
+            <Route path="/membership/del-pilar-membership-demo" element={<PublicMembershipDelPilar />} />
             <Route path="/membership/:programId" element={<PublicMembership />} />
             <Route path="/cashback/:programId" element={<PublicCashback />} />
             <Route path="/demo" element={<Demo />} />
             <Route path="/demo-leroma" element={<Preview />} />
+            <Route path="/demo-del-pilar" element={<Preview />} />
             <Route path="/demo-mooncafe" element={<Preview />} />
             <Route path="/demo-mooncafe-points" element={<Preview />} />
             <Route path="/demo-gym" element={<Preview />} />
@@ -304,6 +311,38 @@ export default function Pages() {
               element={
                 <LayoutWrapper>
                   <NotificationsLeroma />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/dashboard/del-pilar-demo"
+              element={
+                <LayoutWrapper>
+                  <DashboardDelPilar />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/customers/del-pilar-demo"
+              element={
+                <LayoutWrapper>
+                  <CustomersDelPilar />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/myprograms/del-pilar-demo"
+              element={
+                <LayoutWrapper>
+                  <MyProgramsDelPilar />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/notifications/del-pilar-demo"
+              element={
+                <LayoutWrapper>
+                  <NotificationsDelPilar />
                 </LayoutWrapper>
               }
             />

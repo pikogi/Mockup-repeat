@@ -1,20 +1,20 @@
 import { useEffect, useState } from 'react'
 
-const ACCENT = '#e879f9'
+const ACCENT = '#eab308'
 
 const STEPS = [
   {
     iframe: '/dashboard/glow-demo',
     iframeKey: 0,
     title: 'Tu panel de control',
-    desc: 'Desde acá vas a ver métricas de tu programa: clientas, sellos otorgados y premios canjeados.',
-    btn: 'Ver clientas →',
+    desc: 'Desde acá vas a ver métricas de tu programa: miembros, sellos otorgados y premios canjeados.',
+    btn: 'Ver miembros →',
   },
   {
     iframe: '/customers/glow-demo',
     iframeKey: 1,
-    title: 'Tus clientas',
-    desc: 'Acá aparecen todas las clientas que se unieron a tu programa. Tocá una para ver su historial.',
+    title: 'Tus miembros',
+    desc: 'Acá aparecen todas las miembros que se unieron a tu programa. Tocá uno para ver su historial.',
     btn: null,
   },
   {
@@ -30,21 +30,21 @@ const STEPS = [
     iframe: '/notifications/glow-demo',
     iframeKey: 3,
     title: 'Notificaciones push',
-    desc: 'Escribí un título y un mensaje para enviarle una notificación a todas tus clientas.',
+    desc: 'Escribí un título y un mensaje para enviarle una notificación a todas tus miembros.',
     btn: 'Escribí algo y enviá',
   },
   {
     iframe: '/notifications/glow-demo',
     iframeKey: 3,
     title: '¡Notificación enviada!',
-    desc: 'Tus clientas la recibirán en Google Wallet y Apple Wallet. Ahora volvé al panel.',
+    desc: 'Tus miembros la recibirán en Google Wallet y Apple Wallet. Ahora volvé al panel.',
     btn: 'Volver al dashboard →',
   },
   {
     iframe: '/dashboard/glow-demo',
     iframeKey: 5,
     title: '¡Tour completo!',
-    desc: 'Ya conocés las funciones principales de Repeat. ¡Empezá a fidelizar a tus clientas!',
+    desc: 'Ya conocés las funciones principales de Repeat. ¡Empezá a fidelizar a tus miembros!',
     btn: 'Cerrar',
   },
 ]
@@ -157,7 +157,7 @@ export default function DashboardHintGlow() {
                     flex: 1,
                     padding: '10px 0',
                     background: ACCENT,
-                    color: '#fff',
+                    color: '#000',
                     fontWeight: 700,
                     fontSize: 14,
                     border: 'none',

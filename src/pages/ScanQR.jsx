@@ -122,7 +122,7 @@ export default function ScanQR() {
       } else if (demo === 'stamps') {
         setCardData({
           card: {
-            customer: { full_name: 'Carlos Martínez', email: 'carlos@gmail.com' },
+            customer: { full_name: 'Valentina Gómez', email: 'valentina@gmail.com' },
             current_balance: 4,
             created_at: '2024-01-15T00:00:00Z',
             redemptions: [],

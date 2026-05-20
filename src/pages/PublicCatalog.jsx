@@ -554,6 +554,147 @@ const MOCK_ACTIVITY_HELADERIA = [
   { id: 5, type: 'earned', label: 'Visita', points: 80, date: '28 mar 2026' },
 ]
 
+const MOCK_PROGRAM_DEL_PILAR = {
+  name: 'Del Pilar',
+  logo_url: '/del-pilar-logo.jpg',
+  brand_color: '#3b1f0a',
+  money_per_point: 500,
+  money_per_point_redeem: 50,
+}
+
+const MOCK_ITEMS_DEL_PILAR = [
+  {
+    id: 1,
+    name: 'Café del día gratis',
+    points_cost: 40,
+    image_url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Un café cortado, americano o con leche a elección.',
+  },
+  {
+    id: 2,
+    name: 'Medialunas x2',
+    points_cost: 25,
+    image_url: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Dos medialunas de manteca recién horneadas.',
+  },
+  {
+    id: 3,
+    name: 'Alfajor artesanal',
+    points_cost: 30,
+    image_url: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400&h=400&fit=crop&q=80',
+    stock_enabled: true,
+    stock: 10,
+    description: 'Alfajor de maicena con dulce de leche artesanal.',
+  },
+  {
+    id: 4,
+    name: 'Combo café + factura',
+    points_cost: 60,
+    image_url: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Café a elección más una factura dulce o salada.',
+  },
+  {
+    id: 5,
+    name: 'Caja de medialunas (12u)',
+    points_cost: 100,
+    image_url: 'https://images.unsplash.com/photo-1571115177098-24ec42ed204d?w=400&h=400&fit=crop&q=80',
+    stock_enabled: true,
+    stock: 5,
+    description: 'Docena de medialunas de manteca para llevar.',
+  },
+  {
+    id: 6,
+    name: 'Pan de campo (1 kg)',
+    points_cost: 150,
+    image_url: 'https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Pan de campo artesanal horneado en horno a leña.',
+  },
+  {
+    id: 7,
+    name: 'Descuento 20%',
+    points_cost: 80,
+    image_url: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Aplicable a cualquier compra en una sola visita.',
+  },
+  {
+    id: 8,
+    name: 'Torta de cumpleaños',
+    points_cost: 350,
+    image_url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop&q=80',
+    stock_enabled: true,
+    stock: 2,
+    description: 'Torta de 1 kg a elección. Reservar con 48hs de anticipación.',
+  },
+]
+
+const MOCK_POSTS_DEL_PILAR = [
+  {
+    id: 1,
+    type: 'promo',
+    title: '2x1 en medialunas los martes',
+    body: 'Todos los martes presentá tu tarjeta y llevate dos medialunas al precio de una. Recién horneadas.',
+    image_url: 'https://images.unsplash.com/photo-1571115177098-24ec42ed204d?w=600&h=400&fit=crop&q=80',
+    date: '2 may',
+  },
+  {
+    id: 2,
+    type: 'novedad',
+    title: 'Nuevo: Croissant de almendras',
+    body: 'Masa hojaldrada con almendras tostadas y miel artesanal. Disponible a partir del sábado.',
+    image_url: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600&h=400&fit=crop&q=80',
+    date: '28 abr',
+  },
+  {
+    id: 3,
+    type: 'evento',
+    title: 'Taller de pan artesanal — sáb 10',
+    body: 'Aprendé a hacer pan de campo con el maestro panadero. Cupos limitados, inscripción en el local.',
+    image_url: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=600&h=400&fit=crop&q=80',
+    date: '25 abr',
+  },
+  {
+    id: 4,
+    type: 'promo',
+    title: 'Tortas de cumpleaños -15% en mayo',
+    body: 'Durante todo mayo las tortas de encargo tienen 15% de descuento para miembros del club.',
+    image_url: 'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=600&h=400&fit=crop&q=80',
+    date: '20 abr',
+  },
+]
+
+const MOCK_ACTIVITY_DEL_PILAR = [
+  { id: 1, type: 'earned', label: 'Visita', points: 75, date: '2 may 2026' },
+  { id: 6, type: 'referral', label: 'Referido — Sofía Herrera', points: 150, date: '28 abr 2026' },
+  {
+    id: 2,
+    type: 'redeemed',
+    label: 'Café del día gratis',
+    points: 40,
+    date: '2 may 2026',
+    image_url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=80&h=80&fit=crop&q=80',
+  },
+  { id: 3, type: 'earned', label: 'Visita', points: 60, date: '18 abr 2026' },
+  {
+    id: 4,
+    type: 'redeemed',
+    label: 'Medialunas x2',
+    points: 25,
+    date: '10 abr 2026',
+    image_url: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=80&h=80&fit=crop&q=80',
+  },
+  { id: 5, type: 'earned', label: 'Visita', points: 85, date: '2 abr 2026' },
+]
+
 const BADGE_STYLES = {
   promo: { label: 'Promo', bg: 'bg-rose-500', icon: Tag },
   novedad: { label: 'Novedad', bg: 'bg-violet-500', icon: Megaphone },
@@ -1539,6 +1680,7 @@ export default function PublicCatalog() {
   const isBeauty = programId === 'beauty-demo'
   const isBarber = programId === 'barber-demo'
   const isHeladeria = programId === 'heladeria-demo'
+  const isDelPilar = programId === 'del-pilar-demo'
 
   const program = isBarber
     ? MOCK_PROGRAM_BARBER
@@ -1546,28 +1688,36 @@ export default function PublicCatalog() {
       ? MOCK_PROGRAM_BEAUTY
       : isHeladeria
         ? MOCK_PROGRAM_HELADERIA
-        : MOCK_PROGRAM
+        : isDelPilar
+          ? MOCK_PROGRAM_DEL_PILAR
+          : MOCK_PROGRAM
   const items = isBarber
     ? MOCK_ITEMS_BARBER
     : isBeauty
       ? MOCK_ITEMS_BEAUTY
       : isHeladeria
         ? MOCK_ITEMS_HELADERIA
-        : MOCK_ITEMS
+        : isDelPilar
+          ? MOCK_ITEMS_DEL_PILAR
+          : MOCK_ITEMS
   const posts = isBarber
     ? MOCK_POSTS_BARBER
     : isBeauty
       ? MOCK_POSTS_BEAUTY
       : isHeladeria
         ? MOCK_POSTS_HELADERIA
-        : MOCK_POSTS
+        : isDelPilar
+          ? MOCK_POSTS_DEL_PILAR
+          : MOCK_POSTS
   const activity = isBarber
     ? MOCK_ACTIVITY_BARBER
     : isBeauty
       ? MOCK_ACTIVITY_BEAUTY
       : isHeladeria
         ? MOCK_ACTIVITY_HELADERIA
-        : MOCK_ACTIVITY_CAFE
+        : isDelPilar
+          ? MOCK_ACTIVITY_DEL_PILAR
+          : MOCK_ACTIVITY_CAFE
 
   const [selectedItem, setSelectedItem] = useState(null)
   const [showSurvey, setShowSurvey] = useState(false)

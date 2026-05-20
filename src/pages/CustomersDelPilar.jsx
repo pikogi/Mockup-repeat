@@ -6,13 +6,14 @@ import { motion } from 'framer-motion'
 import CustomerDetailModal from '../components/customers/CustomerDetailModal'
 import { CustomerCard, CustomerEmptyState } from '@/components/customers/CustomersSections'
 
+// ─── Mock data shaped to match the real API structure ─────────────────────────
 const PROGRAM = {
-  program_name: 'Club de Fidelidad Glow',
-  program_rules: { stamps_required: 8 },
+  program_name: 'Club Del Pilar',
+  program_rules: { stamps_required: 500 },
 }
 
 const makeCard = (id, balance, visits, rewardsCount) => ({
-  card_id: `gl${id}`,
+  card_id: `dp${id}`,
   current_balance: balance,
   total_visits: visits,
   redemptions: Array.from({ length: rewardsCount }, (_, i) => ({ status: 'completed', id: i })),
@@ -25,130 +26,108 @@ const RAW_MEMBERS = [
     name: 'Valentina Gómez',
     email: 'vale.gomez@gmail.com',
     joined: '2026-01-10',
-    balance: 6,
-    visits: 18,
-    rewards: 2,
-    phone: '+54 9 351 412-3344',
-    birthday: '1993-04-12',
+    balance: 420,
+    visits: 34,
+    rewards: 4,
   },
   {
     id: 2,
-    name: 'Sofía Ríos',
-    email: 'sofi.rios@gmail.com',
-    joined: '2026-01-18',
-    balance: 4,
-    visits: 14,
-    rewards: 1,
-    phone: '+54 9 351 508-7621',
-    birthday: '1997-09-05',
+    name: 'Matías Rodríguez',
+    email: 'mati.rdz@hotmail.com',
+    joined: '2026-02-05',
+    balance: 275,
+    visits: 22,
+    rewards: 2,
   },
   {
     id: 3,
-    name: 'Camila Torres',
-    email: 'cami.torres@hotmail.com',
-    joined: '2026-02-03',
-    balance: 0,
+    name: 'Lucía Fernández',
+    email: 'luciafe@gmail.com',
+    joined: '2026-01-18',
+    balance: 95,
     visits: 8,
-    rewards: 1,
-    phone: '+54 9 351 623-0198',
-    birthday: '1990-11-20',
+    rewards: 0,
   },
   {
     id: 4,
-    name: 'Luciana Pérez',
-    email: 'lu.perez@icloud.com',
-    joined: '2026-02-14',
-    balance: 5,
-    visits: 6,
-    rewards: 0,
-    phone: '+54 9 351 741-5530',
-    birthday: '1998-02-28',
+    name: 'Santiago Martínez',
+    email: 'santi.mtz@gmail.com',
+    joined: '2026-03-11',
+    balance: 540,
+    visits: 43,
+    rewards: 5,
   },
   {
     id: 5,
-    name: 'Marina López',
-    email: 'mari.lopez@gmail.com',
-    joined: '2026-02-22',
-    balance: 2,
-    visits: 5,
-    rewards: 0,
-    phone: '+54 9 351 899-2267',
-    birthday: '1995-06-14',
+    name: 'Camila Torres',
+    email: 'cami.torres@icloud.com',
+    joined: '2026-02-20',
+    balance: 185,
+    visits: 15,
+    rewards: 1,
   },
   {
     id: 6,
-    name: 'Florencia Castro',
-    email: 'flor.castro@gmail.com',
-    joined: '2026-03-05',
-    balance: 7,
-    visits: 12,
-    rewards: 1,
-    phone: '+54 9 351 312-4480',
-    birthday: '1991-07-30',
+    name: 'Ignacio López',
+    email: 'nacho.lpz@gmail.com',
+    joined: '2026-04-07',
+    balance: 70,
+    visits: 6,
+    rewards: 0,
   },
   {
     id: 7,
-    name: 'Agustina Ramos',
-    email: 'agus.ramos@yahoo.com',
-    joined: '2026-03-14',
-    balance: 3,
-    visits: 4,
-    rewards: 0,
-    birthday: '2000-03-18',
+    name: 'Agustina Pérez',
+    email: 'agus.pz@yahoo.com',
+    joined: '2026-01-22',
+    balance: 620,
+    visits: 50,
+    rewards: 6,
   },
   {
     id: 8,
-    name: 'Clara Medina',
-    email: 'clara.m@gmail.com',
-    joined: '2026-03-27',
-    balance: 1,
-    visits: 3,
-    rewards: 0,
-    phone: '+54 9 351 487-9915',
-    birthday: '1994-10-07',
+    name: 'Nicolás Silva',
+    email: 'nico.silva@gmail.com',
+    joined: '2026-03-14',
+    balance: 160,
+    visits: 13,
+    rewards: 1,
   },
   {
     id: 9,
-    name: 'Julia Fernández',
-    email: 'juli.fdz@gmail.com',
-    joined: '2026-04-06',
-    balance: 4,
+    name: 'Florencia Díaz',
+    email: 'flor.diaz@gmail.com',
+    joined: '2026-04-22',
+    balance: 45,
     visits: 4,
     rewards: 0,
-    phone: '+54 9 351 556-1023',
-    birthday: '1999-01-25',
   },
   {
     id: 10,
-    name: 'Daniela Sosa',
-    email: 'dani.sosa@hotmail.com',
-    joined: '2026-04-15',
-    balance: 2,
-    visits: 2,
-    rewards: 0,
-    birthday: '1996-12-03',
+    name: 'Tomás García',
+    email: 'tomas.g@hotmail.com',
+    joined: '2026-02-08',
+    balance: 350,
+    visits: 28,
+    rewards: 3,
   },
   {
     id: 11,
-    name: 'Antonella Ruiz',
-    email: 'anto.ruiz@gmail.com',
-    joined: '2026-04-24',
-    balance: 3,
-    visits: 3,
-    rewards: 0,
-    phone: '+54 9 351 730-6642',
-    birthday: '1992-08-16',
+    name: 'Sofía Herrera',
+    email: 'sofi.herrera@gmail.com',
+    joined: '2026-01-30',
+    balance: 480,
+    visits: 39,
+    rewards: 4,
   },
   {
     id: 12,
-    name: 'Paula Díaz',
-    email: 'pau.diaz@gmail.com',
-    joined: '2026-05-02',
-    balance: 1,
-    visits: 1,
-    rewards: 0,
-    phone: '+54 9 351 621-8874',
-    birthday: '1997-05-09',
+    name: 'Benjamín Castro',
+    email: 'benja.castro@outlook.com',
+    joined: '2026-03-28',
+    balance: 120,
+    visits: 10,
+    rewards: 1,
   },
 ]
 
@@ -161,25 +140,15 @@ const MEMBERS = RAW_MEMBERS.map((m) => ({
 }))
 
 const USER_STATS_MAP = Object.fromEntries(
-  RAW_MEMBERS.map((m) => [
-    m.id,
-    {
-      loyalty_cards: [makeCard(m.id, m.balance, m.visits, m.rewards)],
-      ...(m.phone && { phone: m.phone }),
-      ...(m.birthday && { birth_date: m.birthday }),
-    },
-  ]),
+  RAW_MEMBERS.map((m) => [m.id, { loyalty_cards: [makeCard(m.id, m.balance, m.visits, m.rewards)] }]),
 )
 
-export default function CustomersGlow() {
+export default function CustomersDelPilar() {
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('date')
   const [selectedCustomer, setSelectedCustomer] = useState(null)
 
-  const handleCustomerClick = useCallback((member) => {
-    setSelectedCustomer(member)
-    window.parent?.postMessage({ type: 'tour-customer-clicked' }, '*')
-  }, [])
+  const handleCustomerClick = useCallback((member) => setSelectedCustomer(member), [])
 
   const filtered = MEMBERS.filter(
     (m) =>
@@ -200,14 +169,16 @@ export default function CustomersGlow() {
   return (
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
+        {/* Header */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <Users className="w-8 h-8 text-gray-700 dark:text-gray-300" />
             <h1 className="text-4xl font-bold leading-tight text-foreground">Miembros</h1>
           </div>
-          <p className="text-gray-600 dark:text-gray-400">Gestioná y conocé a las miembros de tu programa.</p>
+          <p className="text-gray-600 dark:text-gray-400">Gestioná y conocé a los clientes de tu programa.</p>
         </motion.div>
 
+        {/* Filters */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -231,7 +202,7 @@ export default function CustomersGlow() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos los programas</SelectItem>
-              <SelectItem value="glow">Club de Fidelidad Glow</SelectItem>
+              <SelectItem value="delpilar">Club Del Pilar</SelectItem>
             </SelectContent>
           </Select>
 
@@ -247,6 +218,7 @@ export default function CustomersGlow() {
           </Select>
         </motion.div>
 
+        {/* Count */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="mb-6">
           <p className="text-gray-600 dark:text-gray-400">
             Mostrando <span className="font-semibold text-gray-900 dark:text-gray-100">{sorted.length}</span> de{' '}
@@ -254,6 +226,7 @@ export default function CustomersGlow() {
           </p>
         </motion.div>
 
+        {/* List */}
         {sorted.length === 0 ? (
           <CustomerEmptyState />
         ) : (
@@ -266,6 +239,7 @@ export default function CustomersGlow() {
           </div>
         )}
 
+        {/* Detail modal */}
         {selectedCustomer && (
           <CustomerDetailModal
             customer={selectedCustomer}

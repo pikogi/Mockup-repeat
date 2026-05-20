@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 
-const ACCENT = '#e879f9'
+const ACCENT = '#eab308'
 
 const STEPS = [
   {
@@ -149,7 +149,7 @@ export default function ScanDemoGlow() {
                     flex: 1,
                     padding: '10px 0',
                     background: ACCENT,
-                    color: '#fff',
+                    color: '#000',
                     fontWeight: 700,
                     fontSize: 14,
                     border: 'none',

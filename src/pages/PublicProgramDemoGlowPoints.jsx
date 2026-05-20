@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
-const ACCENT = '#e879f9'
+const BRAND = '#e879f9'
+const TOUR = '#eab308'
 
 function IntroScreen({ onStart }) {
   return (
@@ -43,8 +44,8 @@ function IntroScreen({ onStart }) {
           width: '100%',
           maxWidth: 300,
           padding: '16px 0',
-          background: ACCENT,
-          color: '#fff',
+          background: TOUR,
+          color: '#000',
           fontWeight: 800,
           fontSize: 16,
           border: 'none',
@@ -130,7 +131,7 @@ function StoreScene({ onNext }) {
         >
           <div
             style={{
-              color: ACCENT,
+              color: BRAND,
               fontSize: 12,
               fontWeight: 700,
               letterSpacing: 1.5,
@@ -178,12 +179,12 @@ function StoreScene({ onNext }) {
           borderRadius: 16,
           padding: '16px 16px 14px',
           boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
-          border: `2px solid ${ACCENT}`,
+          border: `2px solid ${TOUR}`,
           zIndex: 30,
         }}
       >
         <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
-          <div style={{ height: 4, flex: 1, borderRadius: 2, background: ACCENT }} />
+          <div style={{ height: 4, flex: 1, borderRadius: 2, background: TOUR }} />
           <div style={{ height: 4, flex: 1, borderRadius: 2, background: '#e5e7eb' }} />
         </div>
         <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Escaneá el QR para unirte</p>
@@ -195,8 +196,8 @@ function StoreScene({ onNext }) {
           style={{
             width: '100%',
             padding: '10px 0',
-            background: ACCENT,
-            color: '#fff',
+            background: TOUR,
+            color: '#000',
             fontWeight: 700,
             fontSize: 14,
             border: 'none',
@@ -239,13 +240,13 @@ function PublicCardScene({ scene }) {
             borderRadius: 16,
             padding: '16px 16px 14px',
             boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
-            border: `2px solid ${ACCENT}`,
+            border: `2px solid ${TOUR}`,
             zIndex: 30,
           }}
         >
           <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
-            <div style={{ height: 4, flex: 1, borderRadius: 2, background: ACCENT }} />
-            <div style={{ height: 4, flex: 1, borderRadius: 2, background: scene === 'form' ? ACCENT : '#e5e7eb' }} />
+            <div style={{ height: 4, flex: 1, borderRadius: 2, background: TOUR }} />
+            <div style={{ height: 4, flex: 1, borderRadius: 2, background: scene === 'form' ? TOUR : '#e5e7eb' }} />
           </div>
 
           {scene === 'publiccard' ? (
@@ -274,8 +275,8 @@ function PublicCardScene({ scene }) {
               style={{
                 width: '100%',
                 padding: '10px 0',
-                background: ACCENT,
-                color: '#fff',
+                background: TOUR,
+                color: '#000',
                 fontWeight: 700,
                 fontSize: 14,
                 border: 'none',

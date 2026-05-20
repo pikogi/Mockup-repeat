@@ -1,4 +1,5 @@
-const ACCENT = '#e879f9'
+const BRAND = '#e879f9'
+const TOUR = '#eab308'
 
 const STEPS = [
   {
@@ -106,9 +107,9 @@ export default function WalletDemoGlowPoints() {
                 style={{
                   height: '100%',
                   width: `${pct}%`,
-                  background: `linear-gradient(90deg, ${ACCENT}, #a855f7)`,
+                  background: `linear-gradient(90deg, ${BRAND}, #a855f7)`,
                   borderRadius: 3,
-                  boxShadow: `0 0 8px ${ACCENT}`,
+                  boxShadow: `0 0 8px ${BRAND}`,
                 }}
               />
             </div>
@@ -123,10 +124,10 @@ export default function WalletDemoGlowPoints() {
               background: 'rgba(232,121,249,0.1)',
               borderRadius: 12,
               padding: '10px 14px',
-              borderLeft: `3px solid ${ACCENT}`,
+              borderLeft: `3px solid ${BRAND}`,
             }}
           >
-            <div style={{ color: ACCENT, fontSize: 11, fontWeight: 700, marginBottom: 2 }}>Premio</div>
+            <div style={{ color: BRAND, fontSize: 11, fontWeight: 700, marginBottom: 2 }}>Premio</div>
             <div style={{ color: '#fff', fontSize: 12, fontWeight: 600 }}>Tratamiento de hidratación profunda</div>
           </div>
         </div>
@@ -173,13 +174,13 @@ export default function WalletDemoGlowPoints() {
           borderRadius: 16,
           padding: '16px 16px 14px',
           boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
-          border: `2px solid ${ACCENT}`,
+          border: `2px solid ${TOUR}`,
           zIndex: 30,
         }}
       >
         <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
           {STEPS.map((_, i) => (
-            <div key={i} style={{ height: 4, flex: 1, borderRadius: 2, background: ACCENT }} />
+            <div key={i} style={{ height: 4, flex: 1, borderRadius: 2, background: TOUR }} />
           ))}
         </div>
         <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>{STEPS[0].title}</p>
@@ -189,8 +190,8 @@ export default function WalletDemoGlowPoints() {
           style={{
             width: '100%',
             padding: '10px 0',
-            background: ACCENT,
-            color: '#fff',
+            background: TOUR,
+            color: '#000',
             fontWeight: 700,
             fontSize: 14,
             border: 'none',

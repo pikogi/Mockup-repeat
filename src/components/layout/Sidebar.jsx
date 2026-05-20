@@ -105,18 +105,55 @@ export default function Sidebar() {
     ScanQR: '/scan-demo/mooncafe-points',
   }
 
+  const GLOW_PATHS = [
+    '/dashboard/glow-demo',
+    '/customers/glow-demo',
+    '/notifications/glow-demo',
+    '/dashboard/glow-points-demo',
+    '/customers/glow-points-demo',
+    '/notifications/glow-points-demo',
+  ]
+
+  const GLOW_DEMO_URLS = {
+    Dashboard: '/dashboard/glow-demo',
+    Customers: '/customers/glow-demo',
+    Notifications: '/notifications/glow-demo',
+    MyPrograms: null,
+    CreateClub: null,
+    Stores: null,
+    Profile: null,
+    Team: null,
+    ScanQR: null,
+  }
+
+  const GLOW_POINTS_DEMO_URLS = {
+    Dashboard: '/dashboard/glow-points-demo',
+    Customers: '/customers/glow-points-demo',
+    Notifications: '/notifications/glow-points-demo',
+    MyPrograms: null,
+    CreateClub: null,
+    Stores: null,
+    Profile: null,
+    Team: null,
+    ScanQR: null,
+  }
+
   const currentPath = location.pathname
   const isBgMode = new URLSearchParams(location.search).get('bg') === '1'
   const isMoonCafeDemo = MOONCAFE_PATHS.some((p) => currentPath.startsWith(p))
+  const isGlowDemo = GLOW_PATHS.some((p) => currentPath.startsWith(p))
   const DEMO_PATH_PREFIXES = Object.values(DEMO_URLS).map((u) => u.split('?')[0])
-  const isDemo = !user || isMoonCafeDemo || DEMO_PATH_PREFIXES.some((p) => currentPath.startsWith(p))
+  const isDemo = !user || isMoonCafeDemo || isGlowDemo || DEMO_PATH_PREFIXES.some((p) => currentPath.startsWith(p))
 
   const isMoonCafePoints = MOONCAFE_PATHS.some((p) => currentPath.startsWith(p) && p.includes('points'))
+  const isGlowPoints = GLOW_PATHS.some((p) => currentPath.startsWith(p) && p.includes('points'))
 
   const resolveUrl = (page) => {
     if (!isDemo) return createPageUrl(page)
     if (isMoonCafePoints) return MOONCAFE_POINTS_DEMO_URLS[page] ?? '/dashboard/mooncafe-points-demo'
     if (isMoonCafeDemo) return MOONCAFE_DEMO_URLS[page] ?? '/dashboard/mooncafe-demo'
+    if (isGlowPoints) return GLOW_POINTS_DEMO_URLS[page] ?? '/dashboard/glow-points-demo'
+    if (isGlowDemo) return GLOW_DEMO_URLS[page] ?? '/dashboard/glow-demo'
     return DEMO_URLS[page] ?? createPageUrl(page)
   }
 
@@ -173,10 +210,22 @@ export default function Sidebar() {
                 </div>
               )
             }
+            const url = resolveUrl(item.page)
+            if (url === null) {
+              return (
+                <div
+                  key={item.name}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 dark:text-gray-600 cursor-default select-none"
+                >
+                  <item.icon className="w-5 h-5" />
+                  <span className="font-medium">{item.name}</span>
+                </div>
+              )
+            }
             return (
               <Link
                 key={item.name}
-                to={resolveUrl(item.page)}
+                to={url}
                 className={cn(
                   'flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200',
                   isActive
@@ -189,18 +238,25 @@ export default function Sidebar() {
               </Link>
             )
           })}
-          <Link
-            to={resolveUrl(primaryAction.page)}
-            className="flex items-center gap-3 px-4 py-3 mt-4 rounded-xl transition-all duration-200 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg hover:shadow-xl hover:from-yellow-500 hover:to-yellow-600"
-          >
-            <primaryAction.icon className="w-5 h-5" />
-            <span className="font-medium">{primaryAction.name}</span>
-          </Link>
+          {resolveUrl(primaryAction.page) === null ? (
+            <div className="flex items-center gap-3 px-4 py-3 mt-4 rounded-xl bg-gradient-to-r from-yellow-400 to-yellow-500 text-black opacity-40 cursor-default select-none">
+              <primaryAction.icon className="w-5 h-5" />
+              <span className="font-medium">{primaryAction.name}</span>
+            </div>
+          ) : (
+            <Link
+              to={resolveUrl(primaryAction.page)}
+              className="flex items-center gap-3 px-4 py-3 mt-4 rounded-xl transition-all duration-200 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg hover:shadow-xl hover:from-yellow-500 hover:to-yellow-600"
+            >
+              <primaryAction.icon className="w-5 h-5" />
+              <span className="font-medium">{primaryAction.name}</span>
+            </Link>
+          )}
         </nav>
 
         {/* Profile + Soporte */}
         <div className="p-4 border-t border-gray-100 dark:border-gray-800 flex items-center gap-2">
-          {isMoonCafeDemo ? (
+          {isMoonCafeDemo || isGlowDemo ? (
             <button className="flex flex-1 items-center gap-3 px-4 py-3 rounded-xl text-gray-600 dark:text-gray-400 cursor-default">
               <User className="w-5 h-5" />
               <span className="font-medium">{t('profile')}</span>
@@ -219,7 +275,7 @@ export default function Sidebar() {
               <span className="font-medium">{t('profile')}</span>
             </Link>
           )}
-          {isMoonCafeDemo ? (
+          {isMoonCafeDemo || isGlowDemo ? (
             <button className="p-3 rounded-xl text-gray-500 dark:text-gray-400 flex-shrink-0 cursor-default">
               <HelpCircle className="w-5 h-5" />
             </button>
@@ -241,7 +297,7 @@ export default function Sidebar() {
       <header className="lg:hidden fixed top-0 left-0 right-0 bg-black z-40 px-4 py-3 flex items-center justify-between">
         <h1 className="text-xl font-bold text-white">repeat</h1>
         <div className="flex items-center gap-1">
-          {(user?.type_user === 'brand_admin' || isMoonCafeDemo) && !isBgMode && (
+          {(user?.type_user === 'brand_admin' || isMoonCafeDemo || isGlowDemo) && !isBgMode && (
             <>
               <button className="text-white p-4 -mr-4 -my-3" onClick={() => setIsMobileMenuOpen(true)}>
                 <Menu className="w-6 h-6" />
@@ -315,7 +371,7 @@ export default function Sidebar() {
                       </Link>
 
                       <div className="border-t border-gray-200 pt-4 mt-4 flex flex-col gap-2">
-                        {isMoonCafeDemo ? (
+                        {isMoonCafeDemo || isGlowDemo ? (
                           <button className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg text-gray-500 cursor-default w-full text-left">
                             <HelpCircle className="w-5 h-5" />
                             {t('support')}
@@ -389,18 +445,22 @@ export default function Sidebar() {
             >
               <QrCode className="w-7 h-7 text-white" />
             </button>
-          ) : (
+          ) : resolveUrl('ScanQR') ? (
             <Link
               to={resolveUrl('ScanQR')}
               className="flex items-center justify-center w-14 h-14 -mt-6 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full shadow-lg"
             >
               <QrCode className="w-7 h-7 text-white" />
             </Link>
+          ) : (
+            <button className="flex items-center justify-center w-14 h-14 -mt-6 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full shadow-lg opacity-40 cursor-default border-0">
+              <QrCode className="w-7 h-7 text-white" />
+            </button>
           )}
 
           {/* Right side: Profile & Stores */}
           <div className="flex items-center gap-4 flex-1 justify-end">
-            {isMoonCafeDemo ? (
+            {isMoonCafeDemo || isGlowDemo ? (
               <>
                 <button className="flex flex-col items-center justify-center gap-0.5 py-2 min-w-[52px] rounded-xl text-gray-500 dark:text-gray-400 cursor-default">
                   <User className="w-5 h-5" />
