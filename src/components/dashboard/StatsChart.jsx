@@ -1,9 +1,21 @@
 import React from 'react'
 import { Card } from '@/components/ui/card'
 import { motion } from 'framer-motion'
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import { AreaChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 
-const StatsChart = React.memo(function StatsChart({ title, data, color = '#3B82F6', dataKey, loading }) {
+const PREV_LABEL = {
+  prevAdds: 'Miembros (ant.)',
+  prevScans: 'Sellos (ant.)',
+  prevRedemptions: 'Premios (ant.)',
+}
+
+const CURR_LABEL = {
+  adds: 'Miembros',
+  scans: 'Sellos',
+  redemptions: 'Premios',
+}
+
+const StatsChart = React.memo(function StatsChart({ title, data, color = '#3B82F6', dataKey, prevDataKey, loading }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -59,16 +71,7 @@ const StatsChart = React.memo(function StatsChart({ title, data, color = '#3B82F
                   labelStyle={{ color: 'hsl(var(--tooltip-label))', fontWeight: 600, marginBottom: 4 }}
                   itemStyle={{ color: color }}
                   labelFormatter={(label, payload) => payload?.[0]?.payload?.fullDate ?? label}
-                  formatter={(value, name) => [
-                    value,
-                    name === 'redemptions'
-                      ? 'Premios'
-                      : name === 'adds'
-                        ? 'Miembros'
-                        : name === 'scans'
-                          ? 'Sellos'
-                          : name,
-                  ]}
+                  formatter={(value, name) => [value, CURR_LABEL[name] ?? PREV_LABEL[name] ?? name]}
                   cursor={{ stroke: 'hsl(var(--border))', strokeWidth: 1, strokeDasharray: '4 4' }}
                 />
                 <Area
@@ -80,6 +83,18 @@ const StatsChart = React.memo(function StatsChart({ title, data, color = '#3B82F
                   dot={{ r: 3, fill: color, strokeWidth: 0 }}
                   activeDot={{ r: 5, fill: color, stroke: 'white', strokeWidth: 2 }}
                 />
+                {prevDataKey && (
+                  <Line
+                    type="monotone"
+                    dataKey={prevDataKey}
+                    stroke="#94a3b8"
+                    strokeWidth={1.5}
+                    strokeDasharray="4 4"
+                    dot={false}
+                    activeDot={{ r: 3, fill: '#94a3b8', stroke: 'white', strokeWidth: 2 }}
+                    legendType="none"
+                  />
+                )}
               </AreaChart>
             </ResponsiveContainer>
           )}

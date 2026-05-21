@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import { CreditCard, Users, QrCode, Gift, Percent } from 'lucide-react'
+import { Activity, CreditCard, Users, QrCode, Gift, Percent } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useLanguage } from '@/components/auth/LanguageContext'
 import { createPageUrl } from '@/utils'
@@ -24,6 +24,12 @@ export default function DashboardHome({ brandId }) {
     stampsCount,
     rewardsCount,
     redemptionRate,
+    visitasCount,
+    membersTrend,
+    stampsTrend,
+    rewardsTrend,
+    redemptionRateTrend,
+    visitasTrend,
     chartData,
     statsLoading,
   } = useDashboardHome(brandId)
@@ -48,7 +54,7 @@ export default function DashboardHome({ brandId }) {
           />
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-12">
           <MetricCard
             title={t('Miembros')}
             value={membersCount}
@@ -56,6 +62,15 @@ export default function DashboardHome({ brandId }) {
             gradient="bg-gradient-to-br from-blue-500 to-blue-600"
             href={createPageUrl('Customers')}
             loading={statsLoading}
+            trend={membersTrend}
+          />
+          <MetricCard
+            title={t('Visitas')}
+            value={visitasCount}
+            icon={Activity}
+            gradient="bg-gradient-to-br from-cyan-500 to-cyan-600"
+            loading={statsLoading}
+            trend={visitasTrend}
           />
           <MetricCard
             title={t('Clubs Activos')}
@@ -71,6 +86,7 @@ export default function DashboardHome({ brandId }) {
             icon={QrCode}
             gradient="bg-gradient-to-br from-amber-500 to-orange-500"
             loading={statsLoading}
+            trend={stampsTrend}
           />
           <MetricCard
             title={t('rewards')}
@@ -78,6 +94,7 @@ export default function DashboardHome({ brandId }) {
             icon={Gift}
             gradient="bg-gradient-to-br from-purple-500 to-purple-600"
             loading={statsLoading}
+            trend={rewardsTrend}
           />
           <MetricCard
             title={t('redemptionRate')}
@@ -86,6 +103,7 @@ export default function DashboardHome({ brandId }) {
             gradient="bg-gradient-to-br from-pink-500 to-rose-500"
             loading={statsLoading}
             suffix="%"
+            trend={redemptionRateTrend}
           />
         </div>
 
@@ -94,6 +112,7 @@ export default function DashboardHome({ brandId }) {
             title={t('membersChartTitle')}
             data={chartData}
             dataKey="adds"
+            prevDataKey="prevAdds"
             color="#3B82F6"
             loading={statsLoading}
           />
@@ -101,6 +120,7 @@ export default function DashboardHome({ brandId }) {
             title={t('stampsChartTitle')}
             data={chartData}
             dataKey="scans"
+            prevDataKey="prevScans"
             color="#F59E0B"
             loading={statsLoading}
           />
@@ -108,6 +128,7 @@ export default function DashboardHome({ brandId }) {
             title={t('rewardsChartTitle')}
             data={chartData}
             dataKey="redemptions"
+            prevDataKey="prevRedemptions"
             color="#8B5CF6"
             loading={statsLoading}
           />
