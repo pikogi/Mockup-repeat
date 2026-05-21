@@ -1,4 +1,3 @@
-const BRAND = '#e879f9'
 const TOUR = '#eab308'
 
 const STEPS = [
@@ -8,9 +7,6 @@ const STEPS = [
     btn: 'Siguiente paso →',
   },
 ]
-
-const STAMPS_TOTAL = 8
-const STAMPS_DONE = 3
 
 export default function WalletDemoGlow() {
   const handleBtn = () => {
@@ -27,130 +23,30 @@ export default function WalletDemoGlow() {
         fontFamily: 'system-ui, -apple-system, sans-serif',
       }}
     >
-      {/* Simulated Apple Wallet card */}
       <div
         style={{
           flex: 1,
-          background: 'linear-gradient(160deg, #1a0027 0%, #2d0a3e 60%, #1a0027 100%)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'flex-start',
-          padding: '48px 24px 160px',
-          position: 'relative',
-          overflow: 'hidden',
+          padding: '40px 24px 160px',
         }}
       >
-        {/* Glow blobs */}
-        <div
-          style={{
-            position: 'absolute',
-            top: -60,
-            left: -60,
-            width: 240,
-            height: 240,
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(232,121,249,0.2) 0%, transparent 70%)',
-            pointerEvents: 'none',
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 100,
-            right: -40,
-            width: 200,
-            height: 200,
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(168,85,247,0.15) 0%, transparent 70%)',
-            pointerEvents: 'none',
-          }}
-        />
-
-        {/* Wallet card */}
-        <div
+        <img
+          src="/glow-wallet-card.png"
+          alt="Glow Beauty Club wallet card"
           style={{
             width: '100%',
             maxWidth: 340,
-            background: 'linear-gradient(135deg, rgba(232,121,249,0.15) 0%, rgba(168,85,247,0.1) 100%)',
-            border: '1px solid rgba(232,121,249,0.3)',
-            borderRadius: 24,
-            padding: '24px 22px',
-            backdropFilter: 'blur(16px)',
-            boxShadow: '0 16px 64px rgba(0,0,0,0.4)',
+            borderRadius: 20,
+            boxShadow: '0 16px 48px rgba(0,0,0,0.18)',
+            display: 'block',
+            objectFit: 'contain',
           }}
-        >
-          {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-            <div>
-              <div style={{ color: '#fff', fontSize: 20, fontWeight: 900, letterSpacing: -0.3 }}>Glow</div>
-              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11 }}>Club de fidelidad</div>
-            </div>
-            <div
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 14,
-                background: 'linear-gradient(135deg, #e879f9, #a855f7)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 22,
-                boxShadow: '0 4px 16px rgba(232,121,249,0.4)',
-              }}
-            >
-              ✨
-            </div>
-          </div>
+        />
 
-          {/* Member name */}
-          <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginBottom: 4 }}>Valentina Gómez</div>
-
-          {/* Stamps grid */}
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, marginBottom: 10 }}>
-              Progreso — {STAMPS_DONE}/{STAMPS_TOTAL} visitas
-            </div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {Array.from({ length: STAMPS_TOTAL }).map((_, i) => (
-                <div
-                  key={i}
-                  style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: 10,
-                    background:
-                      i < STAMPS_DONE ? 'linear-gradient(135deg, #e879f9, #a855f7)' : 'rgba(255,255,255,0.08)',
-                    border: i < STAMPS_DONE ? 'none' : '1px solid rgba(255,255,255,0.15)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 16,
-                    boxShadow: i < STAMPS_DONE ? '0 2px 8px rgba(232,121,249,0.4)' : 'none',
-                  }}
-                >
-                  {i < STAMPS_DONE ? '✨' : ''}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Reward */}
-          <div
-            style={{
-              background: 'rgba(232,121,249,0.1)',
-              borderRadius: 12,
-              padding: '10px 14px',
-              borderLeft: `3px solid ${BRAND}`,
-            }}
-          >
-            <div style={{ color: BRAND, fontSize: 11, fontWeight: 700, marginBottom: 2 }}>Premio</div>
-            <div style={{ color: '#fff', fontSize: 12, fontWeight: 600 }}>Sesión de lifting facial gratis</div>
-          </div>
-        </div>
-
-        {/* Wallet buttons */}
-        <div style={{ width: '100%', maxWidth: 340, marginTop: 28, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ width: '100%', maxWidth: 340, marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div
             style={{
               background: '#000',
@@ -159,7 +55,6 @@ export default function WalletDemoGlow() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 8,
               cursor: 'default',
             }}
           >
@@ -173,7 +68,6 @@ export default function WalletDemoGlow() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 8,
               cursor: 'default',
             }}
           >
