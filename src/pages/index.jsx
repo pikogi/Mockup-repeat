@@ -91,6 +91,14 @@ const CustomersGlow = lazy(() => import('./CustomersGlow'))
 const CustomersGlowPoints = lazy(() => import('./CustomersGlowPoints'))
 const NotificationsGlow = lazy(() => import('./NotificationsGlow'))
 const NotificationsGlowPoints = lazy(() => import('./NotificationsGlowPoints'))
+const PublicProgramDemoDelPilar = lazy(() => import('./PublicProgramDemoDelPilar'))
+const PublicProgramDemoDelPilarPoints = lazy(() => import('./PublicProgramDemoDelPilarPoints'))
+const WalletDemoDelPilar = lazy(() => import('./WalletDemoDelPilar'))
+const WalletDemoDelPilarPoints = lazy(() => import('./WalletDemoDelPilarPoints'))
+const ScanDemoDelPilar = lazy(() => import('./ScanDemoDelPilar'))
+const ScanDemoDelPilarPoints = lazy(() => import('./ScanDemoDelPilarPoints'))
+const DashboardHintDelPilar = lazy(() => import('./DashboardHintDelPilar'))
+const DashboardHintDelPilarPoints = lazy(() => import('./DashboardHintDelPilarPoints'))
 
 function LayoutWrapper({ children }) {
   const location = useLocation()
@@ -125,6 +133,7 @@ export default function Pages() {
             <Route path="/demo" element={<Demo />} />
             <Route path="/demo-leroma" element={<Preview />} />
             <Route path="/demo-del-pilar" element={<Preview />} />
+            <Route path="/demo-del-pilar-points" element={<Preview />} />
             <Route path="/demo-mooncafe" element={<Preview />} />
             <Route path="/demo-mooncafe-points" element={<Preview />} />
             <Route path="/demo-gym" element={<Preview />} />
@@ -153,6 +162,14 @@ export default function Pages() {
             <Route path="/scan-demo/glow-points" element={<ScanDemoGlowPoints />} />
             <Route path="/dashboard-hint/glow" element={<DashboardHintGlow />} />
             <Route path="/dashboard-hint/glow-points" element={<DashboardHintGlowPoints />} />
+            <Route path="/publicprogram-demo/del-pilar" element={<PublicProgramDemoDelPilar />} />
+            <Route path="/publicprogram-demo/del-pilar-points" element={<PublicProgramDemoDelPilarPoints />} />
+            <Route path="/wallet-demo/del-pilar" element={<WalletDemoDelPilar />} />
+            <Route path="/wallet-demo/del-pilar-points" element={<WalletDemoDelPilarPoints />} />
+            <Route path="/scan-demo/del-pilar" element={<ScanDemoDelPilar />} />
+            <Route path="/scan-demo/del-pilar-points" element={<ScanDemoDelPilarPoints />} />
+            <Route path="/dashboard-hint/del-pilar" element={<DashboardHintDelPilar />} />
+            <Route path="/dashboard-hint/del-pilar-points" element={<DashboardHintDelPilarPoints />} />
             <Route
               path="/dashboard/mooncafe-points-demo"
               element={
@@ -340,6 +357,30 @@ export default function Pages() {
             />
             <Route
               path="/notifications/del-pilar-demo"
+              element={
+                <LayoutWrapper>
+                  <NotificationsDelPilar />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/dashboard/del-pilar-points-demo"
+              element={
+                <LayoutWrapper>
+                  <DashboardDelPilar />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/customers/del-pilar-points-demo"
+              element={
+                <LayoutWrapper>
+                  <CustomersDelPilar />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/notifications/del-pilar-points-demo"
               element={
                 <LayoutWrapper>
                   <NotificationsDelPilar />

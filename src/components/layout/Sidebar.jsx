@@ -18,6 +18,8 @@ import {
   BookOpen,
   HelpCircle,
   X,
+  Gift,
+  Ticket,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLanguage } from '@/components/auth/LanguageContext'
@@ -114,6 +116,39 @@ export default function Sidebar() {
     '/notifications/glow-points-demo',
   ]
 
+  const DEL_PILAR_PATHS = [
+    '/dashboard/del-pilar-demo',
+    '/customers/del-pilar-demo',
+    '/notifications/del-pilar-demo',
+    '/dashboard/del-pilar-points-demo',
+    '/customers/del-pilar-points-demo',
+    '/notifications/del-pilar-points-demo',
+  ]
+
+  const DEL_PILAR_DEMO_URLS = {
+    Dashboard: '/dashboard/del-pilar-demo',
+    Customers: '/customers/del-pilar-demo',
+    Notifications: '/notifications/del-pilar-demo',
+    MyPrograms: null,
+    CreateClub: null,
+    Stores: null,
+    Profile: null,
+    Team: null,
+    ScanQR: null,
+  }
+
+  const DEL_PILAR_POINTS_DEMO_URLS = {
+    Dashboard: '/dashboard/del-pilar-points-demo',
+    Customers: '/customers/del-pilar-points-demo',
+    Notifications: '/notifications/del-pilar-points-demo',
+    MyPrograms: null,
+    CreateClub: null,
+    Stores: null,
+    Profile: null,
+    Team: null,
+    ScanQR: null,
+  }
+
   const GLOW_DEMO_URLS = {
     Dashboard: '/dashboard/glow-demo',
     Customers: '/customers/glow-demo',
@@ -142,11 +177,14 @@ export default function Sidebar() {
   const isBgMode = new URLSearchParams(location.search).get('bg') === '1'
   const isMoonCafeDemo = MOONCAFE_PATHS.some((p) => currentPath.startsWith(p))
   const isGlowDemo = GLOW_PATHS.some((p) => currentPath.startsWith(p))
+  const isDelPilarDemo = DEL_PILAR_PATHS.some((p) => currentPath.startsWith(p))
   const DEMO_PATH_PREFIXES = Object.values(DEMO_URLS).map((u) => u.split('?')[0])
-  const isDemo = !user || isMoonCafeDemo || isGlowDemo || DEMO_PATH_PREFIXES.some((p) => currentPath.startsWith(p))
+  const isDemo =
+    !user || isMoonCafeDemo || isGlowDemo || isDelPilarDemo || DEMO_PATH_PREFIXES.some((p) => currentPath.startsWith(p))
 
   const isMoonCafePoints = MOONCAFE_PATHS.some((p) => currentPath.startsWith(p) && p.includes('points'))
   const isGlowPoints = GLOW_PATHS.some((p) => currentPath.startsWith(p) && p.includes('points'))
+  const isDelPilarPoints = DEL_PILAR_PATHS.some((p) => currentPath.startsWith(p) && p.includes('points'))
 
   const resolveUrl = (page) => {
     if (!isDemo) return createPageUrl(page)
@@ -154,6 +192,8 @@ export default function Sidebar() {
     if (isMoonCafeDemo) return MOONCAFE_DEMO_URLS[page] ?? '/dashboard/mooncafe-demo'
     if (isGlowPoints) return GLOW_POINTS_DEMO_URLS[page] ?? '/dashboard/glow-points-demo'
     if (isGlowDemo) return GLOW_DEMO_URLS[page] ?? '/dashboard/glow-demo'
+    if (isDelPilarPoints) return DEL_PILAR_POINTS_DEMO_URLS[page] ?? '/dashboard/del-pilar-points-demo'
+    if (isDelPilarDemo) return DEL_PILAR_DEMO_URLS[page] ?? '/dashboard/del-pilar-demo'
     return DEMO_URLS[page] ?? createPageUrl(page)
   }
 
@@ -163,6 +203,12 @@ export default function Sidebar() {
     { name: t('notifications'), icon: Bell, page: 'Notifications' },
     { name: t('myPrograms'), icon: CreditCard, page: 'MyPrograms' },
     { name: 'Encuesta', icon: ClipboardList, noNav: true },
+    ...(isGlowDemo || isMoonCafeDemo || isDelPilarDemo
+      ? [
+          { name: 'Catálogo', icon: Gift, noNav: true },
+          { name: 'Sorteo', icon: Ticket, noNav: true },
+        ]
+      : []),
     ...(!isDemo ? [{ name: t('menu'), icon: BookOpen, page: 'Menu' }] : []),
     ...(user?.type_user === 'brand_admin' ? [{ name: t('stores'), icon: Store, page: 'Stores' }] : []),
   ]
@@ -256,7 +302,7 @@ export default function Sidebar() {
 
         {/* Profile + Soporte */}
         <div className="p-4 border-t border-gray-100 dark:border-gray-800 flex items-center gap-2">
-          {isMoonCafeDemo || isGlowDemo ? (
+          {isMoonCafeDemo || isGlowDemo || isDelPilarDemo ? (
             <button className="flex flex-1 items-center gap-3 px-4 py-3 rounded-xl text-gray-600 dark:text-gray-400 cursor-default">
               <User className="w-5 h-5" />
               <span className="font-medium">{t('profile')}</span>
@@ -275,7 +321,7 @@ export default function Sidebar() {
               <span className="font-medium">{t('profile')}</span>
             </Link>
           )}
-          {isMoonCafeDemo || isGlowDemo ? (
+          {isMoonCafeDemo || isGlowDemo || isDelPilarDemo ? (
             <button className="p-3 rounded-xl text-gray-500 dark:text-gray-400 flex-shrink-0 cursor-default">
               <HelpCircle className="w-5 h-5" />
             </button>
@@ -297,7 +343,7 @@ export default function Sidebar() {
       <header className="lg:hidden fixed top-0 left-0 right-0 bg-black z-40 px-4 py-3 flex items-center justify-between">
         <h1 className="text-xl font-bold text-white">repeat</h1>
         <div className="flex items-center gap-1">
-          {(user?.type_user === 'brand_admin' || isMoonCafeDemo || isGlowDemo) && !isBgMode && (
+          {(user?.type_user === 'brand_admin' || isMoonCafeDemo || isGlowDemo || isDelPilarDemo) && !isBgMode && (
             <>
               <button className="text-white p-4 -mr-4 -my-3" onClick={() => setIsMobileMenuOpen(true)}>
                 <Menu className="w-6 h-6" />
@@ -371,7 +417,7 @@ export default function Sidebar() {
                       </Link>
 
                       <div className="border-t border-gray-200 pt-4 mt-4 flex flex-col gap-2">
-                        {isMoonCafeDemo || isGlowDemo ? (
+                        {isMoonCafeDemo || isGlowDemo || isDelPilarDemo ? (
                           <button className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg text-gray-500 cursor-default w-full text-left">
                             <HelpCircle className="w-5 h-5" />
                             {t('support')}
@@ -460,7 +506,7 @@ export default function Sidebar() {
 
           {/* Right side: Profile & Stores */}
           <div className="flex items-center gap-4 flex-1 justify-end">
-            {isMoonCafeDemo || isGlowDemo ? (
+            {isMoonCafeDemo || isGlowDemo || isDelPilarDemo ? (
               <>
                 <button className="flex flex-col items-center justify-center gap-0.5 py-2 min-w-[52px] rounded-xl text-gray-500 dark:text-gray-400 cursor-default">
                   <User className="w-5 h-5" />

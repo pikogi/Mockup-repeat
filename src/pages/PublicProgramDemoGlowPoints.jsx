@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 
-const BRAND = '#e879f9'
 const TOUR = '#eab308'
 
 function IntroScreen({ onStart }) {
@@ -65,7 +64,6 @@ function StoreScene({ onNext }) {
     <div
       style={{
         minHeight: '100vh',
-        background: 'linear-gradient(160deg, #1a0027 0%, #2d0a3e 50%, #1a0027 100%)',
         fontFamily: 'system-ui, -apple-system, sans-serif',
         position: 'relative',
         overflow: 'hidden',
@@ -73,100 +71,19 @@ function StoreScene({ onNext }) {
         flexDirection: 'column',
       }}
     >
-      <div
-        style={{
-          position: 'absolute',
-          top: -80,
-          right: -80,
-          width: 300,
-          height: 300,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(232,121,249,0.25) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        }}
-      />
-
-      <div
-        style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '40px 24px 160px',
-        }}
-      >
-        <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <div
-            style={{
-              width: 80,
-              height: 80,
-              borderRadius: 24,
-              background: 'linear-gradient(135deg, #e879f9, #a855f7)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 36,
-              margin: '0 auto 16px',
-              boxShadow: '0 0 32px rgba(232,121,249,0.4)',
-            }}
-          >
-            ✨
-          </div>
-          <div style={{ color: '#fff', fontSize: 28, fontWeight: 900, letterSpacing: -0.5 }}>Glow</div>
-          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, marginTop: 2 }}>Estética & Belleza</div>
-        </div>
-
-        <div
+      <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+        <img
+          src="/glow-store.png"
+          alt="Glow store"
           style={{
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(232,121,249,0.3)',
-            borderRadius: 20,
-            padding: '24px 20px',
+            position: 'absolute',
+            inset: 0,
             width: '100%',
-            maxWidth: 300,
-            backdropFilter: 'blur(12px)',
-            textAlign: 'center',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center',
           }}
-        >
-          <div
-            style={{
-              color: BRAND,
-              fontSize: 12,
-              fontWeight: 700,
-              letterSpacing: 1.5,
-              marginBottom: 12,
-              textTransform: 'uppercase',
-            }}
-          >
-            Club de puntos
-          </div>
-          <div style={{ color: '#fff', fontSize: 20, fontWeight: 800, marginBottom: 8, lineHeight: 1.3 }}>
-            Juntá 150 puntos y canjeálos por un tratamiento de hidratación profunda
-          </div>
-          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, marginBottom: 20 }}>
-            Escanea el QR para unirte al club
-          </div>
-          <div
-            style={{
-              width: 90,
-              height: 90,
-              background: '#fff',
-              borderRadius: 10,
-              margin: '0 auto',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              overflow: 'hidden',
-            }}
-          >
-            <img
-              src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=glow-points-demo&color=2d0a3e"
-              alt="QR"
-              style={{ width: 80, height: 80 }}
-            />
-          </div>
-        </div>
+        />
       </div>
 
       <div

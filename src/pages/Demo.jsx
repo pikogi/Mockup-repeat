@@ -55,6 +55,26 @@ const COL_LEFT = [
     ],
   },
   {
+    title: 'Del Pilar — Panadería Artesanal',
+    badge: 'bg-amber-100 text-amber-800',
+    links: [
+      {
+        label: 'Del Pilar · Sellos',
+        url: '/demo-del-pilar',
+        desc: 'Registro, wallet, scan interactivo y dashboard de sellos.',
+        single: true,
+        mobile: false,
+      },
+      {
+        label: 'Del Pilar · Puntos',
+        url: '/demo-del-pilar-points',
+        desc: 'Registro, wallet de puntos, scan interactivo y dashboard de puntos.',
+        single: true,
+        mobile: false,
+      },
+    ],
+  },
+  {
     title: 'Barber Club — Red de Comercios',
     badge: 'bg-stone-100 text-stone-800',
     links: [

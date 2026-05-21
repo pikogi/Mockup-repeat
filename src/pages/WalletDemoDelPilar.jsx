@@ -1,14 +1,12 @@
-const TOUR = '#eab308'
-
 const STEPS = [
   {
-    title: 'Guardá tu tarjeta de puntos',
-    desc: 'La clienta agrega la tarjeta de puntos a su Google Wallet o Apple Wallet.',
+    title: 'Guardá tu tarjeta',
+    desc: 'El cliente agrega la tarjeta de sellos a su Google Wallet o Apple Wallet.',
     btn: 'Siguiente paso →',
   },
 ]
 
-export default function WalletDemoGlowPoints() {
+export default function WalletDemoDelPilar() {
   const handleBtn = () => {
     window.parent?.postMessage({ type: 'demo-next' }, '*')
   }
@@ -25,8 +23,8 @@ export default function WalletDemoGlowPoints() {
     >
       <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
         <img
-          src="/glow-wallet-card.png"
-          alt="Glow Beauty Club wallet card"
+          src="/moon-cafe-wallet.png"
+          alt="Tarjeta de sellos Del Pilar"
           style={{
             position: 'absolute',
             inset: 0,
@@ -35,27 +33,30 @@ export default function WalletDemoGlowPoints() {
             objectFit: 'cover',
             objectPosition: 'top',
           }}
+          onError={(e) => {
+            e.target.style.display = 'none'
+            e.target.parentNode.style.background = '#3b1f0a'
+          }}
         />
       </div>
 
-      {/* Tour card */}
       <div
         style={{
           position: 'fixed',
-          bottom: 80,
+          bottom: 110,
           left: 16,
           right: 16,
           background: '#fff',
           borderRadius: 16,
           padding: '16px 16px 14px',
           boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
-          border: `2px solid ${TOUR}`,
+          border: '2px solid #eab308',
           zIndex: 30,
         }}
       >
         <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
           {STEPS.map((_, i) => (
-            <div key={i} style={{ height: 4, flex: 1, borderRadius: 2, background: TOUR }} />
+            <div key={i} style={{ height: 4, flex: 1, borderRadius: 2, background: '#eab308' }} />
           ))}
         </div>
         <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>{STEPS[0].title}</p>
@@ -65,7 +66,7 @@ export default function WalletDemoGlowPoints() {
           style={{
             width: '100%',
             padding: '10px 0',
-            background: TOUR,
+            background: '#eab308',
             color: '#000',
             fontWeight: 700,
             fontSize: 14,

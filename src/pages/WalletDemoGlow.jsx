@@ -23,57 +23,19 @@ export default function WalletDemoGlow() {
         fontFamily: 'system-ui, -apple-system, sans-serif',
       }}
     >
-      <div
-        style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'flex-start',
-          padding: '40px 24px 160px',
-        }}
-      >
+      <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
         <img
           src="/glow-wallet-card.png"
           alt="Glow Beauty Club wallet card"
           style={{
+            position: 'absolute',
+            inset: 0,
             width: '100%',
-            maxWidth: 340,
-            borderRadius: 20,
-            boxShadow: '0 16px 48px rgba(0,0,0,0.18)',
-            display: 'block',
-            objectFit: 'contain',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'top',
           }}
         />
-
-        <div style={{ width: '100%', maxWidth: 340, marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div
-            style={{
-              background: '#000',
-              borderRadius: 14,
-              padding: '13px 0',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'default',
-            }}
-          >
-            <span style={{ color: '#fff', fontSize: 14, fontWeight: 600 }}>🍎 Agregar a Apple Wallet</span>
-          </div>
-          <div
-            style={{
-              background: '#1a73e8',
-              borderRadius: 14,
-              padding: '13px 0',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'default',
-            }}
-          >
-            <span style={{ color: '#fff', fontSize: 14, fontWeight: 600 }}>G Agregar a Google Wallet</span>
-          </div>
-        </div>
       </div>
 
       {/* Tour card */}

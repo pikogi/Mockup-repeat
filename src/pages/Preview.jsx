@@ -383,6 +383,62 @@ const BARBER_FLOW = [
   },
 ]
 
+const DEL_PILAR_FLOW = [
+  {
+    type: 'phone',
+    url: '/publicprogram-demo/del-pilar',
+    label: 'Registro',
+    desc: 'El cliente escanea el QR y se une al programa de sellos de Del Pilar.',
+  },
+  {
+    type: 'phone',
+    url: '/wallet-demo/del-pilar',
+    label: 'Guardar Tarjeta',
+    desc: 'El cliente guarda la tarjeta de sellos en la wallet de su celular.',
+  },
+  {
+    type: 'phone',
+    url: '/scan-demo/del-pilar',
+    label: 'Scan',
+    desc: 'El operador escanea la tarjeta y agrega un sello.',
+  },
+  {
+    type: 'laptop',
+    url: '/dashboard/del-pilar-demo',
+    mobileUrl: '/dashboard-hint/del-pilar',
+    label: 'Dashboard',
+    desc: 'Panel de control con métricas del programa de sellos.',
+  },
+]
+
+const DEL_PILAR_POINTS_FLOW = [
+  {
+    type: 'phone',
+    url: '/publicprogram-demo/del-pilar-points',
+    label: 'Registro',
+    desc: 'El cliente escanea el QR y se une al programa de puntos de Del Pilar.',
+  },
+  {
+    type: 'phone',
+    url: '/wallet-demo/del-pilar-points',
+    label: 'Guardar Tarjeta',
+    desc: 'El cliente guarda la tarjeta de puntos en la wallet de su celular.',
+  },
+  {
+    type: 'phone',
+    url: '/scan-demo/del-pilar-points',
+    label: 'Scan',
+    desc: 'El operador presiona el botón de escaneo para registrar la visita y sumar puntos.',
+  },
+  {
+    type: 'laptop',
+    url: '/dashboard/del-pilar-points-demo',
+    mobileUrl: '/dashboard-hint/del-pilar-points',
+    label: 'Dashboard',
+    desc: 'Panel de control con métricas del programa de puntos.',
+  },
+]
+
 const LEROMA_FLOW = [
   {
     type: 'phone',
@@ -562,6 +618,8 @@ export default function Preview() {
   const isBarber = location.pathname === '/demo-barber'
   const isGlow = location.pathname === '/demo-glow'
   const isGlowPoints = location.pathname === '/demo-glow-points'
+  const isDelPilar = location.pathname === '/demo-del-pilar'
+  const isDelPilarPoints = location.pathname === '/demo-del-pilar-points'
   const activeFlow = isMoonCafePoints
     ? MOONCAFE_POINTS_FLOW
     : isMoonCafe
@@ -574,7 +632,11 @@ export default function Preview() {
             ? GLOW_FLOW
             : isGlowPoints
               ? GLOW_POINTS_FLOW
-              : LEROMA_FLOW
+              : isDelPilar
+                ? DEL_PILAR_FLOW
+                : isDelPilarPoints
+                  ? DEL_PILAR_POINTS_FLOW
+                  : LEROMA_FLOW
   const isFlow = !url
 
   const showPhone = view === 'both' || view === 'phone'

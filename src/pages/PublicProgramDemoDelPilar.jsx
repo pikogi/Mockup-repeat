@@ -67,26 +67,25 @@ function StoreScene({ onNext }) {
         fontFamily: 'system-ui, -apple-system, sans-serif',
         position: 'relative',
         overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
       }}
     >
-      <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-        <img
-          src="/glow-store.png"
-          alt="Glow store"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            objectPosition: 'center',
-          }}
-        />
-      </div>
+      <img
+        src="/cafe-mostrador-points.png"
+        alt="Del Pilar"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          objectPosition: 'center top',
+        }}
+        onError={(e) => {
+          e.target.style.display = 'none'
+          e.target.parentNode.style.background = 'linear-gradient(160deg, #3b1f0a 0%, #5c300f 50%, #3b1f0a 100%)'
+        }}
+      />
 
-      {/* Tour card */}
       <div
         style={{
           position: 'fixed',
@@ -107,7 +106,7 @@ function StoreScene({ onNext }) {
         </div>
         <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Escaneá el QR para unirte</p>
         <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 14px', lineHeight: 1.5 }}>
-          La clienta escanea el QR y accede al formulario de registro del programa.
+          El cliente escanea el QR y accede al formulario de registro del programa.
         </p>
         <button
           onClick={onNext}
@@ -143,7 +142,7 @@ function PublicCardScene({ scene }) {
     >
       <div style={{ flex: 1, position: 'relative' }}>
         <iframe
-          src="/publicprogram?demo=glow"
+          src="/publicprogram?demo=del-pilar"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
           title="Registro"
         />
@@ -211,7 +210,7 @@ function PublicCardScene({ scene }) {
   )
 }
 
-export default function PublicProgramDemoGlow() {
+export default function PublicProgramDemoDelPilar() {
   const [scene, setScene] = useState('intro')
 
   useEffect(() => {
