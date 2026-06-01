@@ -206,7 +206,7 @@ export default function Sidebar() {
     ...(isGlowDemo || isMoonCafeDemo || isDelPilarDemo
       ? [
           { name: 'Catálogo', icon: Gift, noNav: true },
-          { name: 'Sorteo', icon: Ticket, noNav: true },
+          { name: 'Sorteo', icon: Ticket, page: 'Sorteo' },
         ]
       : []),
     ...(!isDemo ? [{ name: t('menu'), icon: BookOpen, page: 'Menu' }] : []),

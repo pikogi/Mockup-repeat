@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Search, Users, CreditCard, ArrowUpDown } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { Activity, ArrowUpDown, CreditCard, Filter, Gift, QrCode, Search, Trophy, UserPlus, Users } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
 import CustomerDetailModal from '../components/customers/CustomerDetailModal'
 import { CustomerCard, CustomerEmptyState } from '@/components/customers/CustomersSections'
 
@@ -152,6 +152,72 @@ const RAW_MEMBERS = [
   },
 ]
 
+const ACTIVITY_EVENTS = (() => {
+  const now = new Date()
+  const events = []
+  const types = ['stamp', 'stamp', 'stamp', 'new_user', 'reward', 'completed']
+  RAW_MEMBERS.forEach((m, mi) => {
+    const count = Math.min(m.visits, 5)
+    for (let i = 0; i < count; i++) {
+      const daysAgo = Math.floor((mi * 3 + i * 2) % 14)
+      const d = new Date(now)
+      d.setUTCDate(d.getUTCDate() - daysAgo)
+      const dateKey = d.toISOString().split('T')[0]
+      const hour = 9 + ((mi * 5 + i * 3) % 10)
+      const min = (mi * 7 + i * 13) % 60
+      const time = `${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}`
+      const type = types[(mi + i) % types.length]
+      events.push({ id: `${m.id}-${i}`, type, userName: m.name, email: m.email, time, dateKey })
+    }
+  })
+  return events.sort((a, b) => b.dateKey.localeCompare(a.dateKey) || b.time.localeCompare(a.time))
+})()
+
+const EVENT_META = {
+  stamp: {
+    label: 'Sello entregado',
+    detail: '+1 sello',
+    icon: QrCode,
+    bg: 'bg-amber-50 dark:bg-amber-900/20',
+    color: 'text-amber-500',
+  },
+  new_user: {
+    label: 'Nuevo miembro',
+    detail: 'Se unió',
+    icon: UserPlus,
+    bg: 'bg-indigo-50 dark:bg-indigo-900/20',
+    color: 'text-indigo-500',
+  },
+  reward: {
+    label: 'Premio canjeado',
+    detail: 'Premio canjeado',
+    icon: Gift,
+    bg: 'bg-purple-50 dark:bg-purple-900/20',
+    color: 'text-purple-500',
+  },
+  completed: {
+    label: 'Tarjeta completada',
+    detail: 'Tarjeta completa',
+    icon: Trophy,
+    bg: 'bg-green-50 dark:bg-green-900/20',
+    color: 'text-green-500',
+  },
+}
+
+const TYPE_FILTERS = [
+  { key: 'all', label: 'Todos los tipos' },
+  { key: 'stamp', label: 'Sellos' },
+  { key: 'reward', label: 'Premios' },
+  { key: 'new_user', label: 'Nuevos' },
+  { key: 'completed', label: 'Completadas' },
+]
+
+function formatEventDate(dateKey, time) {
+  const d = new Date(dateKey + 'T00:00:00Z')
+  const dateStr = d.toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' })
+  return `${dateStr}, ${time}`
+}
+
 const MEMBERS = RAW_MEMBERS.map((m) => ({
   user_id: m.id,
   full_name: m.name,
@@ -171,10 +237,17 @@ const USER_STATS_MAP = Object.fromEntries(
   ]),
 )
 
+const TABS = [
+  { key: 'members', label: 'Miembros', icon: Users },
+  { key: 'activity', label: 'Actividad', icon: Activity },
+]
+
 export default function CustomersMoonCafe() {
+  const [activeView, setActiveView] = useState('members')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('date')
   const [selectedCustomer, setSelectedCustomer] = useState(null)
+  const [typeFilter, setTypeFilter] = useState('all')
 
   const handleCustomerClick = useCallback((member) => {
     setSelectedCustomer(member)
@@ -201,7 +274,7 @@ export default function CustomersMoonCafe() {
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <div className="flex items-center gap-3 mb-2">
             <Users className="w-8 h-8 text-gray-700 dark:text-gray-300" />
             <h1 className="text-4xl font-bold leading-tight text-foreground">Miembros</h1>
@@ -209,66 +282,166 @@ export default function CustomersMoonCafe() {
           <p className="text-gray-600 dark:text-gray-400">Gestioná y conocé a los clientes de tu programa.</p>
         </motion.div>
 
-        {/* Filters */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="flex flex-wrap items-end gap-4 mb-8"
-        >
-          <div className="relative w-full md:w-64">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <Input
-              placeholder="Buscar por email o nombre"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 rounded-xl border-gray-200 dark:border-gray-700"
-            />
-          </div>
+        {/* Tabs */}
+        <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl w-fit mb-6">
+          {TABS.map(({ key, label, icon: Icon }) => (
+            <button
+              key={key}
+              onClick={() => setActiveView(key)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                activeView === key
+                  ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+            </button>
+          ))}
+        </div>
 
-          <Select defaultValue="all">
-            <SelectTrigger className="h-10 rounded-xl w-full sm:w-40">
-              <CreditCard className="w-4 h-4 mr-2 text-gray-400" />
-              <SelectValue placeholder="Programa" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los programas</SelectItem>
-              <SelectItem value="mooncafe">Club de Fidelidad Moon Cafe</SelectItem>
-            </SelectContent>
-          </Select>
+        <AnimatePresence mode="wait">
+          {activeView === 'activity' ? (
+            <motion.div
+              key="activity"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-5"
+            >
+              {/* Filters */}
+              <div className="flex flex-wrap items-center gap-3">
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                  <SelectTrigger className="h-10 rounded-xl w-full sm:w-48">
+                    <Filter className="w-4 h-4 mr-2 text-gray-400" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TYPE_FILTERS.map((f) => (
+                      <SelectItem key={f.key} value={f.key}>
+                        {f.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="h-10 rounded-xl w-full sm:w-44">
-              <ArrowUpDown className="w-4 h-4 mr-2 text-gray-400" />
-              <span className="text-sm">Ordenar por</span>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="date">Fecha de ingreso</SelectItem>
-              <SelectItem value="visits">Visitas</SelectItem>
-            </SelectContent>
-          </Select>
-        </motion.div>
+              {/* Count */}
+              {(() => {
+                const filtered =
+                  typeFilter === 'all' ? ACTIVITY_EVENTS : ACTIVITY_EVENTS.filter((e) => e.type === typeFilter)
+                return (
+                  <>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Mostrando{' '}
+                      <span className="font-semibold text-gray-900 dark:text-gray-100">{filtered.length}</span> de{' '}
+                      <span className="font-semibold text-gray-900 dark:text-gray-100">{ACTIVITY_EVENTS.length}</span>{' '}
+                      transacciones
+                    </p>
+                    <div className="space-y-3">
+                      {filtered.map((ev) => {
+                        const meta = EVENT_META[ev.type] ?? EVENT_META.stamp
+                        const Icon = meta.icon
+                        return (
+                          <div
+                            key={ev.id}
+                            className="flex items-start gap-4 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-gray-200 dark:hover:border-gray-700 transition-colors"
+                          >
+                            <div
+                              className={`w-10 h-10 rounded-full ${meta.bg} flex items-center justify-center flex-shrink-0`}
+                            >
+                              <Icon className={`w-5 h-5 ${meta.color}`} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-semibold text-gray-900 dark:text-gray-100">{meta.detail}</span>
+                                <span className="text-sm text-gray-500 dark:text-gray-400">{meta.label}</span>
+                              </div>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
+                                {ev.userName} · {ev.email}
+                              </p>
+                              <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">{PROGRAM.program_name}</p>
+                            </div>
+                            <p className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0 tabular-nums">
+                              {formatEventDate(ev.dateKey, ev.time)}
+                            </p>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </>
+                )
+              })()}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="members"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              {/* Filters */}
+              <div className="flex flex-wrap items-end gap-4 mb-8">
+                <div className="relative w-full md:w-64">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Input
+                    placeholder="Buscar por email o nombre"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 h-10 rounded-xl border-gray-200 dark:border-gray-700"
+                  />
+                </div>
 
-        {/* Count */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="mb-6">
-          <p className="text-gray-600 dark:text-gray-400">
-            Mostrando <span className="font-semibold text-gray-900 dark:text-gray-100">{sorted.length}</span> de{' '}
-            <span className="font-semibold text-gray-900 dark:text-gray-100">{MEMBERS.length}</span> miembros
-          </p>
-        </motion.div>
+                <Select defaultValue="all">
+                  <SelectTrigger className="h-10 rounded-xl w-full sm:w-40">
+                    <CreditCard className="w-4 h-4 mr-2 text-gray-400" />
+                    <SelectValue placeholder="Programa" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los programas</SelectItem>
+                    <SelectItem value="mooncafe">Club de Fidelidad Moon Cafe</SelectItem>
+                  </SelectContent>
+                </Select>
 
-        {/* List */}
-        {sorted.length === 0 ? (
-          <CustomerEmptyState />
-        ) : (
-          <div className="space-y-3">
-            {sorted.map((member) => (
-              <motion.div key={member.user_id} layout transition={{ layout: { duration: 0.2 } }}>
-                <CustomerCard member={member} userData={USER_STATS_MAP[member.user_id]} onClick={handleCustomerClick} />
-              </motion.div>
-            ))}
-          </div>
-        )}
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="h-10 rounded-xl w-full sm:w-44">
+                    <ArrowUpDown className="w-4 h-4 mr-2 text-gray-400" />
+                    <span className="text-sm">Ordenar por</span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="date">Fecha de ingreso</SelectItem>
+                    <SelectItem value="visits">Visitas</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Count */}
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Mostrando <span className="font-semibold text-gray-900 dark:text-gray-100">{sorted.length}</span> de{' '}
+                <span className="font-semibold text-gray-900 dark:text-gray-100">{MEMBERS.length}</span> miembros
+              </p>
+
+              {/* List */}
+              {sorted.length === 0 ? (
+                <CustomerEmptyState />
+              ) : (
+                <div className="space-y-3">
+                  {sorted.map((member) => (
+                    <motion.div key={member.user_id} layout transition={{ layout: { duration: 0.2 } }}>
+                      <CustomerCard
+                        member={member}
+                        userData={USER_STATS_MAP[member.user_id]}
+                        onClick={handleCustomerClick}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Detail modal */}
         {selectedCustomer && (

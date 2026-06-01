@@ -39,16 +39,18 @@ const ForgotPassword = lazy(() => import('./ForgotPassword'))
 const ResetPassword = lazy(() => import('./ResetPassword'))
 const Onboarding = lazy(() => import('./Onboarding'))
 const Survey = lazy(() => import('./Survey'))
+const Sorteo = lazy(() => import('./Sorteo'))
 const Menu = lazy(() => import('./Menu'))
 const ShortUrlRedirect = lazy(() => import('./ShortUrlRedirect'))
 const Preview = lazy(() => import('./Preview'))
 const PublicNetwork = lazy(() => import('./PublicNetwork'))
+const DashboardHome = lazy(() => import('./DashboardHome'))
 const DashboardLeroma = lazy(() => import('./DashboardLeroma'))
 const CustomersLeroma = lazy(() => import('./CustomersLeroma'))
 const MyProgramsLeroma = lazy(() => import('./MyProgramsLeroma'))
 const NotificationsLeroma = lazy(() => import('./NotificationsLeroma'))
 const PublicMembershipLeroma = lazy(() => import('./PublicMembershipLeroma'))
-const DashboardDelPilar = lazy(() => import('./DashboardDelPilar'))
+// const DashboardDelPilar = lazy(() => import('./DashboardDelPilar'))
 const CustomersDelPilar = lazy(() => import('./CustomersDelPilar'))
 const MyProgramsDelPilar = lazy(() => import('./MyProgramsDelPilar'))
 const NotificationsDelPilar = lazy(() => import('./NotificationsDelPilar'))
@@ -58,11 +60,11 @@ const PublicProgramDemoMoonCafe = lazy(() => import('./PublicProgramDemoMoonCafe
 const PublicProgramDemoMoonCafePoints = lazy(() => import('./PublicProgramDemoMoonCafePoints'))
 const WalletDemoMoonCafe = lazy(() => import('./WalletDemoMoonCafe'))
 const ScanDemoMoonCafe = lazy(() => import('./ScanDemoMoonCafe'))
-const DashboardMoonCafe = lazy(() => import('./DashboardMoonCafe'))
+// const DashboardMoonCafe = lazy(() => import('./DashboardMoonCafe'))
 const NotificationsMoonCafe = lazy(() => import('./NotificationsMoonCafe'))
 const CustomersMoonCafe = lazy(() => import('./CustomersMoonCafe'))
 const DashboardHintMoonCafe = lazy(() => import('./DashboardHintMoonCafe'))
-const DashboardMoonCafePoints = lazy(() => import('./DashboardMoonCafePoints'))
+// const DashboardMoonCafePoints = lazy(() => import('./DashboardMoonCafePoints'))
 const CustomersMoonCafePoints = lazy(() => import('./CustomersMoonCafePoints'))
 const NotificationsMoonCafePoints = lazy(() => import('./NotificationsMoonCafePoints'))
 const ScanDemoMoonCafePoints = lazy(() => import('./ScanDemoMoonCafePoints'))
@@ -70,12 +72,12 @@ const WalletDemoMoonCafePoints = lazy(() => import('./WalletDemoMoonCafePoints')
 const DashboardHintMoonCafePoints = lazy(() => import('./DashboardHintMoonCafePoints'))
 const WalletDemoGym = lazy(() => import('./WalletDemoGym'))
 const ScanDemoGym = lazy(() => import('./ScanDemoGym'))
-const DashboardGym = lazy(() => import('./DashboardGym'))
+// const DashboardGym = lazy(() => import('./DashboardGym'))
 const DashboardHintGym = lazy(() => import('./DashboardHintGym'))
 const CustomersGym = lazy(() => import('./CustomersGym'))
 const NotificationsGym = lazy(() => import('./NotificationsGym'))
 const ComercioAmigoBarber = lazy(() => import('./ComercioAmigoBarber'))
-const DashboardBarber = lazy(() => import('./DashboardBarber'))
+// const DashboardBarber = lazy(() => import('./DashboardBarber'))
 const DashboardHintBarber = lazy(() => import('./DashboardHintBarber'))
 const PublicProgramDemoGlow = lazy(() => import('./PublicProgramDemoGlow'))
 const PublicProgramDemoGlowPoints = lazy(() => import('./PublicProgramDemoGlowPoints'))
@@ -83,8 +85,8 @@ const WalletDemoGlow = lazy(() => import('./WalletDemoGlow'))
 const WalletDemoGlowPoints = lazy(() => import('./WalletDemoGlowPoints'))
 const ScanDemoGlow = lazy(() => import('./ScanDemoGlow'))
 const ScanDemoGlowPoints = lazy(() => import('./ScanDemoGlowPoints'))
-const DashboardGlow = lazy(() => import('./DashboardGlow'))
-const DashboardGlowPoints = lazy(() => import('./DashboardGlowPoints'))
+// const DashboardGlow = lazy(() => import('./DashboardGlow'))
+// const DashboardGlowPoints = lazy(() => import('./DashboardGlowPoints'))
 const DashboardHintGlow = lazy(() => import('./DashboardHintGlow'))
 const DashboardHintGlowPoints = lazy(() => import('./DashboardHintGlowPoints'))
 const CustomersGlow = lazy(() => import('./CustomersGlow'))
@@ -174,7 +176,7 @@ export default function Pages() {
               path="/dashboard/mooncafe-points-demo"
               element={
                 <LayoutWrapper>
-                  <DashboardMoonCafePoints />
+                  <DashboardHome demo demoTitle="Moon Café" demoLogo="/moon-cafe-logo.png" />
                 </LayoutWrapper>
               }
             />
@@ -214,7 +216,7 @@ export default function Pages() {
               path="/dashboard/mooncafe-demo"
               element={
                 <LayoutWrapper>
-                  <DashboardMoonCafe />
+                  <DashboardHome demo demoTitle="Moon Café" demoLogo="/moon-cafe-logo.png" />
                 </LayoutWrapper>
               }
             />
@@ -222,7 +224,7 @@ export default function Pages() {
               path="/dashboard/gym-demo"
               element={
                 <LayoutWrapper>
-                  <DashboardGym />
+                  <DashboardHome demo demoTitle="FitClub Gym" demoLogo="/gym-logo.png" />
                 </LayoutWrapper>
               }
             />
@@ -246,7 +248,7 @@ export default function Pages() {
               path="/dashboard/barber-demo"
               element={
                 <LayoutWrapper>
-                  <DashboardBarber />
+                  <DashboardHome demo demoTitle="Barber Club" demoLogo="/barber-logo.png" />
                 </LayoutWrapper>
               }
             />
@@ -254,7 +256,7 @@ export default function Pages() {
               path="/dashboard/glow-demo"
               element={
                 <LayoutWrapper>
-                  <DashboardGlow />
+                  <DashboardHome demo demoTitle="Glow Estética" demoLogo="/glow-logo.png" />
                 </LayoutWrapper>
               }
             />
@@ -262,7 +264,7 @@ export default function Pages() {
               path="/dashboard/glow-points-demo"
               element={
                 <LayoutWrapper>
-                  <DashboardGlowPoints />
+                  <DashboardHome demo demoTitle="Glow Estética" demoLogo="/glow-logo.png" />
                 </LayoutWrapper>
               }
             />
@@ -335,7 +337,7 @@ export default function Pages() {
               path="/dashboard/del-pilar-demo"
               element={
                 <LayoutWrapper>
-                  <DashboardDelPilar />
+                  <DashboardHome demo demoTitle="Del Pilar" demoLogo="/del-pilar-logo.jpg" />
                 </LayoutWrapper>
               }
             />
@@ -367,7 +369,7 @@ export default function Pages() {
               path="/dashboard/del-pilar-points-demo"
               element={
                 <LayoutWrapper>
-                  <DashboardDelPilar />
+                  <DashboardHome demo demoTitle="Del Pilar" demoLogo="/del-pilar-logo.jpg" />
                 </LayoutWrapper>
               }
             />
@@ -487,6 +489,14 @@ export default function Pages() {
               element={
                 <LayoutWrapper>
                   <Survey />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/sorteo"
+              element={
+                <LayoutWrapper>
+                  <Sorteo />
                 </LayoutWrapper>
               }
             />
