@@ -128,7 +128,7 @@ function StoreScene({ onNext }) {
 }
 
 /* ─── Pantalla del programa público ─── */
-function PublicCardScene({ scene }) {
+function PublicCardScene({ scene, isShell }) {
   return (
     <div
       style={{
@@ -146,68 +146,70 @@ function PublicCardScene({ scene }) {
           title="Registro"
         />
 
-        {/* Tour card */}
-        <div
-          style={{
-            position: 'fixed',
-            bottom: 80,
-            left: 16,
-            right: 16,
-            background: '#fff',
-            borderRadius: 16,
-            padding: '16px 16px 14px',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
-            border: '2px solid #eab308',
-            zIndex: 30,
-          }}
-        >
-          {/* Progress bar */}
-          <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
-            <div style={{ height: 4, flex: 1, borderRadius: 2, background: '#eab308' }} />
-            <div
-              style={{ height: 4, flex: 1, borderRadius: 2, background: scene === 'form' ? '#eab308' : '#e5e7eb' }}
-            />
+        {/* Tour card — hidden in shell mode */}
+        {!isShell && (
+          <div
+            style={{
+              position: 'fixed',
+              bottom: 80,
+              left: 16,
+              right: 16,
+              background: '#fff',
+              borderRadius: 16,
+              padding: '16px 16px 14px',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+              border: '2px solid #eab308',
+              zIndex: 30,
+            }}
+          >
+            {/* Progress bar */}
+            <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+              <div style={{ height: 4, flex: 1, borderRadius: 2, background: '#eab308' }} />
+              <div
+                style={{ height: 4, flex: 1, borderRadius: 2, background: scene === 'form' ? '#eab308' : '#e5e7eb' }}
+              />
+            </div>
+
+            {scene === 'publiccard' ? (
+              <>
+                <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>
+                  Agrega la tarjeta al wallet
+                </p>
+                <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 14px', lineHeight: 1.5 }}>
+                  Toca el botón de Google Wallet o Apple Wallet para guardar tu tarjeta digital.
+                </p>
+              </>
+            ) : (
+              <>
+                <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>
+                  Completa el formulario
+                </p>
+                <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 14px', lineHeight: 1.5 }}>
+                  Ingresa nombre y email para unirte y recibir tu tarjeta digital.
+                </p>
+              </>
+            )}
+
+            {scene === 'form' && (
+              <button
+                onClick={() => window.parent?.postMessage({ type: 'demo-next' }, '*')}
+                style={{
+                  width: '100%',
+                  padding: '10px 0',
+                  background: '#eab308',
+                  color: '#000',
+                  fontWeight: 700,
+                  fontSize: 14,
+                  border: 'none',
+                  borderRadius: 10,
+                  cursor: 'pointer',
+                }}
+              >
+                Siguiente paso →
+              </button>
+            )}
           </div>
-
-          {scene === 'publiccard' ? (
-            <>
-              <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>
-                Agrega la tarjeta al wallet
-              </p>
-              <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 14px', lineHeight: 1.5 }}>
-                Toca el botón de Google Wallet o Apple Wallet para guardar tu tarjeta digital.
-              </p>
-            </>
-          ) : (
-            <>
-              <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>
-                Completa el formulario
-              </p>
-              <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 14px', lineHeight: 1.5 }}>
-                Ingresa nombre y email para unirte y recibir tu tarjeta digital.
-              </p>
-            </>
-          )}
-
-          {scene === 'form' && (
-            <button
-              onClick={() => window.parent?.postMessage({ type: 'demo-next' }, '*')}
-              style={{
-                width: '100%',
-                padding: '10px 0',
-                background: '#eab308',
-                color: '#000',
-                fontWeight: 700,
-                fontSize: 14,
-                border: 'none',
-                borderRadius: 10,
-                cursor: 'pointer',
-              }}
-            >
-              Siguiente paso →
-            </button>
-          )}
-        </div>
+        )}
       </div>
     </div>
   )
@@ -215,7 +217,8 @@ function PublicCardScene({ scene }) {
 
 /* ─── Componente principal ─── */
 export default function PublicProgramDemoMoonCafe() {
-  const [scene, setScene] = useState('intro')
+  const isShell = new URLSearchParams(window.location.search).has('shell')
+  const [scene, setScene] = useState(isShell ? 'publiccard' : 'intro')
 
   useEffect(() => {
     const handler = (e) => {
@@ -227,5 +230,5 @@ export default function PublicProgramDemoMoonCafe() {
 
   if (scene === 'intro') return <IntroScreen onStart={() => setScene('store')} />
   if (scene === 'store') return <StoreScene onNext={() => setScene('publiccard')} />
-  return <PublicCardScene scene={scene} />
+  return <PublicCardScene scene={scene} isShell={isShell} />
 }

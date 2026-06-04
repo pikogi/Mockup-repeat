@@ -34,6 +34,7 @@ const PublicCatalog = lazy(() => import('./PublicCatalog'))
 const PublicMembership = lazy(() => import('./PublicMembership'))
 const PublicCashback = lazy(() => import('./PublicCashback'))
 const Demo = lazy(() => import('./Demo'))
+const DemoShell = lazy(() => import('./DemoShell'))
 const VerifyEmail = lazy(() => import('./VerifyEmail'))
 const ForgotPassword = lazy(() => import('./ForgotPassword'))
 const ResetPassword = lazy(() => import('./ResetPassword'))
@@ -136,8 +137,8 @@ export default function Pages() {
             <Route path="/demo-leroma" element={<Preview />} />
             <Route path="/demo-del-pilar" element={<Preview />} />
             <Route path="/demo-del-pilar-points" element={<Preview />} />
-            <Route path="/demo-mooncafe" element={<Preview />} />
-            <Route path="/demo-mooncafe-points" element={<Preview />} />
+            <Route path="/demo-mooncafe" element={<DemoShell flow="mooncafe" />} />
+            <Route path="/demo-mooncafe-points" element={<DemoShell flow="mooncafe-points" />} />
             <Route path="/demo-gym" element={<Preview />} />
             <Route path="/wallet/mooncafe" element={<WalletMoonCafe />} />
             <Route path="/publicprogram-demo/mooncafe" element={<PublicProgramDemoMoonCafe />} />

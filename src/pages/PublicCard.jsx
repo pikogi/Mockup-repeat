@@ -27,7 +27,7 @@ const DEMO_PROGRAMS = {
     collect_phone: false,
     collect_birthday: false,
     is_active: true,
-    terms: `The Club es el programa de fidelidad de Café Moon. Al registrarte aceptás los siguientes términos:\n\n• Por cada café comprado acumulás 1 sello.\n• Al completar 5 sellos obtenés 1 café gratis.\n• Los sellos no son transferibles ni canjeables por dinero.\n• Café Moon se reserva el derecho de modificar los beneficios con previo aviso.\n• La membresía es personal e intransferible.`,
+    terms: `Al registrarte en este programa de fidelidad aceptás los Términos y Condiciones de Repeat (repeat.la).\n\n• Repeat es la plataforma tecnológica que gestiona el programa. Los beneficios son definidos y otorgados por el comercio.\n• Tus datos personales serán utilizados exclusivamente para administrar tu membresía.\n• Los sellos y recompensas no son transferibles ni canjeables por dinero.\n• El comercio puede modificar los beneficios con previo aviso.\n• Podés solicitar la baja de tu cuenta en cualquier momento escribiendo a hola@repeat.la.`,
     contact_email: '',
     contact_phone: '',
     website: 'cafemoon.com.ar',
@@ -47,7 +47,7 @@ const DEMO_PROGRAMS = {
     collect_phone: false,
     collect_birthday: false,
     is_active: true,
-    terms: `Club de Puntos Moon Cafe es el programa de fidelidad de Café Moon. Al registrarte aceptás los siguientes términos:\n\n• Por cada compra acumulás puntos según el monto gastado.\n• Al llegar a 100 puntos obtenés un desayuno gratis.\n• Los puntos no son transferibles ni canjeables por dinero.\n• Café Moon se reserva el derecho de modificar los beneficios con previo aviso.\n• La membresía es personal e intransferible.`,
+    terms: `Al registrarte en este programa de fidelidad aceptás los Términos y Condiciones de Repeat (repeat.la).\n\n• Repeat es la plataforma tecnológica que gestiona el programa. Los beneficios son definidos y otorgados por el comercio.\n• Tus datos personales serán utilizados exclusivamente para administrar tu membresía.\n• Los puntos no son transferibles ni canjeables por dinero.\n• El comercio puede modificar los beneficios con previo aviso.\n• Podés solicitar la baja de tu cuenta en cualquier momento escribiendo a hola@repeat.la.`,
     contact_email: '',
     contact_phone: '',
     website: 'cafemoon.com.ar',
@@ -559,7 +559,7 @@ export default function PublicCard() {
                       onClick={() => handleAddToWallet('apple')}
                     >
                       <Apple className="w-6 h-6" />
-                      Agregar a Apple Wallet
+                      Unirme al Club
                     </Button>
                   )}
 
@@ -570,7 +570,7 @@ export default function PublicCard() {
                       onClick={() => handleAddToWallet('google')}
                     >
                       <Smartphone className="w-6 h-6" />
-                      Agregar a Google Wallet
+                      Unirme al Club
                     </Button>
                   )}
 

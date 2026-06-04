@@ -7,6 +7,7 @@ const STEPS = [
 ]
 
 export default function WalletDemoMoonCafe() {
+  const isShell = new URLSearchParams(window.location.search).has('shell')
   const handleBtn = () => {
     window.parent?.postMessage({ type: 'demo-next' }, '*')
   }
@@ -28,48 +29,50 @@ export default function WalletDemoMoonCafe() {
           title="Wallet"
         />
 
-        {/* Tour card */}
-        <div
-          style={{
-            position: 'fixed',
-            bottom: 110,
-            left: 16,
-            right: 16,
-            background: '#fff',
-            borderRadius: 16,
-            padding: '16px 16px 14px',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
-            border: '2px solid #eab308',
-            zIndex: 30,
-          }}
-        >
-          {/* Progress bar — single filled segment */}
-          <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
-            {STEPS.map((_, i) => (
-              <div key={i} style={{ height: 4, flex: 1, borderRadius: 2, background: '#eab308' }} />
-            ))}
-          </div>
-
-          <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>{STEPS[0].title}</p>
-          <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 14px', lineHeight: 1.5 }}>{STEPS[0].desc}</p>
-
-          <button
-            onClick={handleBtn}
+        {/* Tour card — hidden in shell mode */}
+        {!isShell && (
+          <div
             style={{
-              width: '100%',
-              padding: '10px 0',
-              background: '#eab308',
-              color: '#000',
-              fontWeight: 700,
-              fontSize: 14,
-              border: 'none',
-              borderRadius: 10,
-              cursor: 'pointer',
+              position: 'fixed',
+              bottom: 110,
+              left: 16,
+              right: 16,
+              background: '#fff',
+              borderRadius: 16,
+              padding: '16px 16px 14px',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+              border: '2px solid #eab308',
+              zIndex: 30,
             }}
           >
-            {STEPS[0].btn}
-          </button>
-        </div>
+            {/* Progress bar — single filled segment */}
+            <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+              {STEPS.map((_, i) => (
+                <div key={i} style={{ height: 4, flex: 1, borderRadius: 2, background: '#eab308' }} />
+              ))}
+            </div>
+
+            <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>{STEPS[0].title}</p>
+            <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 14px', lineHeight: 1.5 }}>{STEPS[0].desc}</p>
+
+            <button
+              onClick={handleBtn}
+              style={{
+                width: '100%',
+                padding: '10px 0',
+                background: '#eab308',
+                color: '#000',
+                fontWeight: 700,
+                fontSize: 14,
+                border: 'none',
+                borderRadius: 10,
+                cursor: 'pointer',
+              }}
+            >
+              {STEPS[0].btn}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -17,6 +17,7 @@ const STEPS = [
 ]
 
 export default function ScanDemoMoonCafe() {
+  const isShell = new URLSearchParams(window.location.search).has('shell')
   const [scanState, setScanState] = useState('idle')
 
   useEffect(() => {
@@ -77,8 +78,8 @@ export default function ScanDemoMoonCafe() {
           )}
         </AnimatePresence>
 
-        {/* Tour card — oculto solo durante el escaneo */}
-        {scanState !== 'found' && (
+        {/* Tour card — oculto en shell mode y durante el escaneo */}
+        {!isShell && scanState !== 'found' && (
           <div
             style={{
               position: 'fixed',
