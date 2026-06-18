@@ -4,7 +4,19 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
-import { Loader2, Upload, Plus, Trash2, ImageIcon, Package, ArrowRightLeft, Users } from 'lucide-react'
+import {
+  Loader2,
+  Upload,
+  Plus,
+  Trash2,
+  ImageIcon,
+  Package,
+  ArrowRightLeft,
+  Users,
+  Zap,
+  Check,
+  CheckCircle2,
+} from 'lucide-react'
 import { useLanguage } from '@/components/auth/LanguageContext'
 
 export function StoreSelector({ stores, formData, setFormData }) {
@@ -134,7 +146,7 @@ export function BasicInfoFields({ formData, setFormData, setIsFlipped }) {
         />
       </div>
 
-      {!isPoints && !isCoupon && !isMembership && !isCashback && (
+      {!isCoupon && !isMembership && !isCashback && (
         <div className="space-y-2">
           <Label htmlFor="reward_text">{t('rewardOffer')} *</Label>
           <Input
@@ -191,25 +203,57 @@ export function BasicInfoFields({ formData, setFormData, setIsFlipped }) {
   )
 }
 
-function AccumulationField({ formData, setFormData }) {
-  const moneyPerPoint = formData.money_per_point ?? 1000
+function CurrencyInput({ id, value, onChange }) {
+  return (
+    <div className="relative flex-1">
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 dark:text-gray-400">$</span>
+      <Input id={id} type="number" min="1" value={value} onChange={onChange} className="h-12 pl-7" />
+    </div>
+  )
+}
+
+function ThresholdRedeemFields({ formData, setFormData }) {
+  const pointsThreshold = formData.points_threshold ?? 100
+
   return (
     <div className="space-y-2">
-      <Label htmlFor="money_per_point">Acumulación</Label>
-      <p className="text-xs text-gray-500 dark:text-gray-400">
-        ¿Cuánto tiene que gastar el cliente para ganar 1 punto?
-      </p>
-      <div className="flex items-center gap-3">
+      <Label htmlFor="points_threshold">Puntos requeridos</Label>
+      <p className="text-xs text-gray-500 dark:text-gray-400">Cantidad de puntos para obtener la recompensa</p>
+      <div className="flex items-center gap-3 max-w-[200px]">
         <Input
-          id="money_per_point"
+          id="points_threshold"
           type="number"
           min="1"
+          value={pointsThreshold}
+          onChange={(e) => {
+            const v = parseInt(e.target.value)
+            if (!isNaN(v) && v >= 1) setFormData((prev) => ({ ...prev, points_threshold: v }))
+          }}
+          className="h-12"
+        />
+      </div>
+      <p className="text-xs text-gray-500 dark:text-gray-400">
+        En este modo la recompensa es fija. Definila en el campo &quot;Recompensa&quot;.
+      </p>
+    </div>
+  )
+}
+
+function AccumulationField({ formData, setFormData }) {
+  const moneyPerPoint = formData.money_per_point ?? 1000
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Acumulación</p>
+      <p className="text-xs text-gray-500 dark:text-gray-400">Monto en moneda necesario para ganar 1 punto</p>
+      <div className="flex items-center gap-3">
+        <CurrencyInput
+          id="money_per_point"
           value={moneyPerPoint}
           onChange={(e) => {
             const v = parseInt(e.target.value)
             if (!isNaN(v) && v >= 1) setFormData((prev) => ({ ...prev, money_per_point: v }))
           }}
-          className="h-12 flex-1"
         />
         <span className="text-sm font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">= 1 punto</span>
       </div>
@@ -217,7 +261,32 @@ function AccumulationField({ formData, setFormData }) {
   )
 }
 
-function DirectRedeemFields({ formData, setFormData }) {
+function ThresholdValueSection({ formData, setFormData }) {
+  const moneyPerPoint = formData.money_per_point ?? 1000
+  const pointsThreshold = formData.points_threshold ?? 100
+  const totalSpendForReward = moneyPerPoint * pointsThreshold
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Valor del punto</h4>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Tasa para convertir importe en puntos. La recompensa al alcanzar el umbral es fija.
+        </p>
+      </div>
+
+      <AccumulationField formData={formData} setFormData={setFormData} />
+
+      <p className="text-sm text-gray-500 dark:text-gray-400">
+        Ej: Gasta <strong className="text-gray-700 dark:text-gray-300">${totalSpendForReward.toLocaleString()}</strong>{' '}
+        → gana <strong className="text-gray-700 dark:text-gray-300">{pointsThreshold} puntos</strong>. Recibe la
+        recompensa automáticamente.
+      </p>
+    </div>
+  )
+}
+
+function PointsValueSection({ formData, setFormData }) {
   const moneyPerPoint = formData.money_per_point ?? 1000
   const moneyPerPointRedeem = formData.money_per_point_redeem ?? 100
   const exampleSpend = moneyPerPoint * 5
@@ -225,53 +294,42 @@ function DirectRedeemFields({ formData, setFormData }) {
   const redeemValue = earnedPoints * moneyPerPointRedeem
 
   return (
-    <>
+    <div className="space-y-5">
+      <div>
+        <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Valor del punto</h4>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Definí la tasa a la que ganan y canjean los puntos.</p>
+      </div>
+
+      <AccumulationField formData={formData} setFormData={setFormData} />
+
       <div className="space-y-2">
-        <Label htmlFor="money_per_point_redeem">Valor de canje</Label>
-        <p className="text-xs text-gray-500 dark:text-gray-400">¿Cuánto vale 1 punto cuando el cliente lo canjea?</p>
+        <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          Valor de canje
+        </p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">Valor en moneda al canjear cada punto</p>
         <div className="flex items-center gap-3">
           <span className="text-sm font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">1 punto =</span>
-          <Input
+          <CurrencyInput
             id="money_per_point_redeem"
-            type="number"
-            min="1"
             value={moneyPerPointRedeem}
             onChange={(e) => {
               const v = parseInt(e.target.value)
               if (!isNaN(v) && v >= 1) setFormData((prev) => ({ ...prev, money_per_point_redeem: v }))
             }}
-            className="h-12 flex-1"
           />
         </div>
       </div>
 
-      <div className="rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/40 p-4 space-y-2">
-        <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wider">
-          Ejemplo con estos valores
-        </p>
-        <div className="space-y-2 text-sm text-blue-900 dark:text-blue-200">
-          <div className="flex items-center gap-2">
-            <span className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
-              1
-            </span>
-            <span>
-              Gasta <strong>{exampleSpend.toLocaleString()}</strong> → gana{' '}
-              <strong>
-                {earnedPoints} {earnedPoints === 1 ? 'punto' : 'puntos'}
-              </strong>
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
-              2
-            </span>
-            <span>
-              Al canjear obtiene <strong>{redeemValue.toLocaleString()}</strong> de descuento o crédito
-            </span>
-          </div>
-        </div>
-      </div>
-    </>
+      <p className="text-sm text-gray-500 dark:text-gray-400">
+        Ej: Gasta <strong className="text-gray-700 dark:text-gray-300">${exampleSpend.toLocaleString()}</strong> → gana{' '}
+        <strong className="text-gray-700 dark:text-gray-300">
+          {earnedPoints} {earnedPoints === 1 ? 'punto' : 'puntos'}
+        </strong>
+        . Al canjear obtiene{' '}
+        <strong className="text-gray-700 dark:text-gray-300">${redeemValue.toLocaleString()}</strong> de descuento o
+        crédito.
+      </p>
+    </div>
   )
 }
 
@@ -471,11 +529,33 @@ function CatalogFields({ formData, setFormData }) {
   )
 }
 
+const REDEEM_MODES = [
+  {
+    value: 'threshold',
+    icon: Zap,
+    title: 'Umbral automático',
+    desc: 'Al alcanzar la cantidad de puntos se entrega la recompensa',
+  },
+  {
+    value: 'direct',
+    icon: ArrowRightLeft,
+    title: 'Conversión directa',
+    desc: 'Staff canjea puntos por dinero o crédito en caja',
+  },
+  {
+    value: 'catalog',
+    icon: Package,
+    title: 'Catálogo',
+    desc: 'El cliente elige un producto o servicio',
+    comingSoon: true,
+  },
+]
+
 export function PointsConversionSection({ formData, setFormData }) {
   const redeemMode = formData.redeem_mode || 'direct'
 
   return (
-    <div className="border-t pt-6 pb-6 space-y-5">
+    <div className="border-t pt-6 pb-6 space-y-6">
       <div>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Configuración de puntos</h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -483,53 +563,62 @@ export function PointsConversionSection({ formData, setFormData }) {
         </p>
       </div>
 
-      {/* Acumulación — siempre visible */}
-      <AccumulationField formData={formData} setFormData={setFormData} />
-
       {/* Modo de canje */}
       <div className="space-y-3">
         <Label>Modo de canje</Label>
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            {
-              value: 'direct',
-              icon: ArrowRightLeft,
-              title: 'Conversión directa',
-              desc: 'Los puntos se convierten en dinero o crédito',
-            },
-            {
-              value: 'catalog',
-              icon: Package,
-              title: 'Catálogo',
-              desc: 'El cliente elige un producto o servicio',
-            },
-          ].map((opt) => {
+        <div className="grid grid-cols-3 gap-3">
+          {REDEEM_MODES.map((opt) => {
             const Icon = opt.icon
             const isSelected = redeemMode === opt.value
+            const isDisabled = !!opt.comingSoon
             return (
               <button
                 key={opt.value}
                 type="button"
-                onClick={() => setFormData((prev) => ({ ...prev, redeem_mode: opt.value }))}
-                className={`flex flex-col items-start gap-1.5 p-3 rounded-xl border-2 transition-all text-left ${
+                disabled={isDisabled}
+                onClick={() => !isDisabled && setFormData((prev) => ({ ...prev, redeem_mode: opt.value }))}
+                className={`flex flex-col items-start gap-2 p-4 rounded-xl border-2 bg-white dark:bg-gray-900 transition-all text-left ${
                   isSelected
-                    ? 'border-blue-400 bg-blue-50 dark:bg-blue-950/40'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    ? 'border-gray-900 dark:border-gray-100'
+                    : isDisabled
+                      ? 'border-gray-200 dark:border-gray-700 cursor-not-allowed'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                 }`}
               >
                 <div
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                    isSelected ? 'bg-blue-500' : 'bg-gray-100 dark:bg-gray-800'
+                  className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                    isSelected ? 'bg-gray-900 dark:bg-gray-100' : 'bg-gray-100 dark:bg-gray-800'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-gray-400'}`} />
+                  <Icon
+                    className={`w-4 h-4 ${
+                      isSelected
+                        ? 'text-white dark:text-gray-900'
+                        : isDisabled
+                          ? 'text-gray-300 dark:text-gray-600'
+                          : 'text-gray-400'
+                    }`}
+                  />
                 </div>
                 <p
-                  className={`text-xs font-semibold ${isSelected ? 'text-foreground' : 'text-gray-500 dark:text-gray-400'}`}
+                  className={`text-sm font-semibold ${
+                    isDisabled ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-100'
+                  }`}
                 >
                   {opt.title}
                 </p>
-                <p className="text-xs text-gray-400 dark:text-gray-500 leading-tight">{opt.desc}</p>
+                <p
+                  className={`text-xs leading-tight ${
+                    isDisabled ? 'text-gray-300 dark:text-gray-600' : 'text-gray-400 dark:text-gray-500'
+                  }`}
+                >
+                  {opt.desc}
+                </p>
+                {opt.comingSoon && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400">
+                    Próximamente
+                  </span>
+                )}
               </button>
             )
           })}
@@ -537,7 +626,13 @@ export function PointsConversionSection({ formData, setFormData }) {
       </div>
 
       {/* Campos según modo */}
-      {redeemMode === 'direct' && <DirectRedeemFields formData={formData} setFormData={setFormData} />}
+      {redeemMode === 'threshold' && (
+        <>
+          <ThresholdRedeemFields formData={formData} setFormData={setFormData} />
+          <ThresholdValueSection formData={formData} setFormData={setFormData} />
+        </>
+      )}
+      {redeemMode === 'direct' && <PointsValueSection formData={formData} setFormData={setFormData} />}
       {redeemMode === 'catalog' && <CatalogFields formData={formData} setFormData={setFormData} />}
     </div>
   )
@@ -717,6 +812,157 @@ export function ValiditySection({ formData, setFormData, getValidityTermsText })
   )
 }
 
+function AlwaysCollectedBadge() {
+  return (
+    <div className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400 flex-shrink-0">
+      <CheckCircle2 className="w-4 h-4" />
+      Siempre se recolecta
+    </div>
+  )
+}
+
+function ToggleCheckbox({ checked, onChange }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 transition-colors ${
+        checked ? 'bg-yellow-400' : 'bg-gray-200 dark:bg-gray-700'
+      }`}
+    >
+      {checked && <Check className="w-4 h-4 text-black" />}
+    </button>
+  )
+}
+
+function slugify(text) {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .replace(/^(?=[0-9])/, 'campo_')
+}
+
+const IDENTIFIER_PATTERN = /^[a-z][a-z0-9_]*$/
+
+function CustomFieldRow({ field, onChange, onRemove }) {
+  const labelError = !field.label.trim() ? 'La etiqueta del campo personalizado es requerida.' : null
+  const identifierError = !IDENTIFIER_PATTERN.test(field.identifier)
+    ? 'Identificador inválido. Solo minúsculas, números y guiones bajos, empezando con letra.'
+    : null
+
+  const handleLabelChange = (value) => {
+    const next = { ...field, label: value }
+    if (!field.identifierTouched) next.identifier = slugify(value)
+    onChange(next)
+  }
+
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4 space-y-3">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <Label className="text-sm">Etiqueta</Label>
+          <Input
+            value={field.label}
+            onChange={(e) => handleLabelChange(e.target.value)}
+            className={labelError ? 'border-red-500 focus-visible:ring-red-500' : ''}
+          />
+          {labelError && <p className="text-xs text-red-500">{labelError}</p>}
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-sm">Identificador</Label>
+          <Input
+            value={field.identifier}
+            onChange={(e) => onChange({ ...field, identifier: e.target.value, identifierTouched: true })}
+            className={identifierError ? 'border-red-500 focus-visible:ring-red-500' : ''}
+          />
+          {identifierError && <p className="text-xs text-red-500">{identifierError}</p>}
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <ToggleCheckbox checked={field.required} onChange={(v) => onChange({ ...field, required: v })} />
+          <span className="text-sm text-gray-700 dark:text-gray-300">Obligatorio</span>
+        </label>
+        <button
+          type="button"
+          onClick={onRemove}
+          className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function CustomFieldsSection({ formData, setFormData }) {
+  const customFields = formData.custom_fields || []
+  const canAddMore = customFields.length < 10
+
+  const handleAdd = () => {
+    if (!canAddMore) return
+    setFormData((prev) => ({
+      ...prev,
+      custom_fields: [
+        ...(prev.custom_fields || []),
+        { id: Date.now(), label: '', identifier: '', identifierTouched: false, required: true },
+      ],
+    }))
+  }
+
+  const handleChange = (id, next) => {
+    setFormData((prev) => ({
+      ...prev,
+      custom_fields: prev.custom_fields.map((f) => (f.id === id ? next : f)),
+    }))
+  }
+
+  const handleRemove = (id) => {
+    setFormData((prev) => ({ ...prev, custom_fields: prev.custom_fields.filter((f) => f.id !== id) }))
+  }
+
+  return (
+    <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl space-y-3">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="text-base font-medium text-gray-900 dark:text-gray-100">Campos personalizados</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Solicita información adicional al cliente. Hasta 10 campos.
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="gap-2 flex-shrink-0"
+          onClick={handleAdd}
+          disabled={!canAddMore}
+        >
+          <Plus className="w-4 h-4" />
+          Agregar campo
+        </Button>
+      </div>
+
+      {customFields.length > 0 && (
+        <div className="space-y-3 pt-1">
+          {customFields.map((field) => (
+            <CustomFieldRow
+              key={field.id}
+              field={field}
+              onChange={(next) => handleChange(field.id, next)}
+              onRemove={() => handleRemove(field.id)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function CustomerDataFields({ formData, setFormData }) {
   const { t } = useLanguage()
 
@@ -724,7 +970,7 @@ export function CustomerDataFields({ formData, setFormData }) {
     <div className="border-t pt-6 pb-6">
       <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('formCustomerData')}</h3>
       <div className="grid gap-4">
-        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl opacity-75">
+        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
           <div className="space-y-0.5">
             <Label className="text-base">
               {t('formNameLabel')}{' '}
@@ -732,27 +978,25 @@ export function CustomerDataFields({ formData, setFormData }) {
             </Label>
             <p className="text-sm text-gray-500 dark:text-gray-400">{t('formRequestName')}</p>
           </div>
-          <Input type="checkbox" checked={true} disabled className="w-6 h-6 accent-yellow-500 cursor-not-allowed" />
+          <AlwaysCollectedBadge />
         </div>
-        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl opacity-75">
+        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
           <div className="space-y-0.5">
             <Label className="text-base">
               Email <span className="text-xs text-gray-400 dark:text-gray-500">({t('formRequired')})</span>
             </Label>
             <p className="text-sm text-gray-500 dark:text-gray-400">{t('formRequestEmail')}</p>
           </div>
-          <Input type="checkbox" checked={true} disabled className="w-6 h-6 accent-yellow-500 cursor-not-allowed" />
+          <AlwaysCollectedBadge />
         </div>
         <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
           <div className="space-y-0.5">
             <Label className="text-base">{t('formPhoneLabel')}</Label>
             <p className="text-sm text-gray-500 dark:text-gray-400">{t('formRequestPhone')}</p>
           </div>
-          <Input
-            type="checkbox"
+          <ToggleCheckbox
             checked={formData.collect_phone}
-            onChange={(e) => setFormData((prev) => ({ ...prev, collect_phone: e.target.checked }))}
-            className="w-6 h-6 accent-yellow-500"
+            onChange={(v) => setFormData((prev) => ({ ...prev, collect_phone: v }))}
           />
         </div>
         <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
@@ -760,13 +1004,12 @@ export function CustomerDataFields({ formData, setFormData }) {
             <Label className="text-base">{t('formBirthdayLabel')}</Label>
             <p className="text-sm text-gray-500 dark:text-gray-400">{t('formRequestBirthday')}</p>
           </div>
-          <Input
-            type="checkbox"
+          <ToggleCheckbox
             checked={formData.collect_birthday}
-            onChange={(e) => setFormData((prev) => ({ ...prev, collect_birthday: e.target.checked }))}
-            className="w-6 h-6 accent-yellow-500"
+            onChange={(v) => setFormData((prev) => ({ ...prev, collect_birthday: v }))}
           />
         </div>
+        <CustomFieldsSection formData={formData} setFormData={setFormData} />
       </div>
     </div>
   )

@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 
 const STEPS = [
   {
     state: 'idle',
-    title: 'Escaneá la tarjeta del cliente',
-    desc: 'El operador presiona el botón de escaneo para registrar la visita y sumar puntos.',
+    title: 'Escanear la tarjeta del cliente',
+    desc: 'Toca el botón amarillo para registrar la visita y sumar puntos al instante.',
   },
   {
     state: 'success',
@@ -18,15 +18,36 @@ const STEPS = [
 export default function ScanDemoMoonCafePoints() {
   const isShell = new URLSearchParams(window.location.search).has('shell')
   const [scanState, setScanState] = useState('idle')
+  const [demoSubStep, setDemoSubStep] = useState(1)
+  const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 1024)
+  const innerIframeRef = useRef(null)
 
   useEffect(() => {
     const handler = (e) => {
-      if (e.data?.type === 'demo-close') setScanState('idle')
+      if (e.data?.type === 'demo-close') {
+        setScanState('idle')
+        window.parent?.postMessage({ type: 'scan-closed' }, '*')
+      }
       if (e.data?.type === 'scan-success') setScanState('success')
       if (e.data?.type === 'demo-scan') setScanState('found')
+      if (e.data?.type === 'scan-opened') {
+        setScanState('hidden')
+        window.parent?.postMessage({ type: 'scan-opened' }, '*')
+      }
+      if (e.data?.type === 'demo-substep') setDemoSubStep(e.data.subStep)
+      if (e.data?.type === 'demo-rescan') {
+        innerIframeRef.current?.contentWindow?.location?.replace('/scanqr-demo?demo=selector&scan=1')
+      }
     }
     window.addEventListener('message', handler)
     return () => window.removeEventListener('message', handler)
+  }, [])
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)')
+    const onChange = (e) => setIsDesktop(e.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
   }, [])
 
   const currentStep = STEPS.find((s) => s.state === scanState) ?? STEPS[0]
@@ -53,7 +74,8 @@ export default function ScanDemoMoonCafePoints() {
       <div style={{ flex: 1, position: 'relative' }}>
         {/* Dashboard as background */}
         <iframe
-          src="/dashboard/mooncafe-points-demo?bg=1"
+          ref={innerIframeRef}
+          src="/dashboard-demo/mooncafe-points"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
           title="Dashboard"
         />
@@ -76,6 +98,78 @@ export default function ScanDemoMoonCafePoints() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Cartelito + flecha — solo en shell mode, mientras no hay escaneo activo */}
+        {isShell && scanState === 'idle' && isDesktop && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 486,
+              left: 140,
+              zIndex: 30,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            <motion.div
+              animate={{ x: [0, -6, 0] }}
+              transition={{ duration: 0.75, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ color: '#eab308', fontSize: 22, lineHeight: 1, pointerEvents: 'none' }}
+            >
+              ←
+            </motion.div>
+            <div
+              style={{
+                background: '#fff',
+                borderRadius: 10,
+                padding: '7px 18px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                border: '2px solid #eab308',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <span style={{ fontWeight: 700, fontSize: 13, color: '#111827' }}>Registrar visita</span>
+            </div>
+          </div>
+        )}
+
+        {isShell && scanState === 'idle' && !isDesktop && (
+          <div
+            style={{
+              position: 'fixed',
+              bottom: demoSubStep === 2 ? 75 : 100,
+              ...(demoSubStep === 2 ? { left: 82 } : { left: 'calc(50% + 2px)', transform: 'translateX(-50%)' }),
+              zIndex: 30,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 0,
+            }}
+          >
+            <div
+              style={{
+                background: '#fff',
+                borderRadius: 10,
+                padding: '7px 18px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                border: '2px solid #eab308',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <span style={{ fontWeight: 700, fontSize: 13, color: '#111827' }}>
+                {demoSubStep === 2 ? 'Miembros' : 'Registrar visita'}
+              </span>
+            </div>
+            <motion.div
+              animate={{ y: [0, 6, 0] }}
+              transition={{ duration: 0.75, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ color: '#eab308', fontSize: 22, lineHeight: 1, pointerEvents: 'none' }}
+            >
+              ↓
+            </motion.div>
+          </div>
+        )}
 
         {/* Tour card — hidden in shell mode y durante el escaneo */}
         {!isShell && scanState !== 'found' && (

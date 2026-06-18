@@ -48,6 +48,7 @@ import FlyerPDF from '@/components/programs/FlyerPDF'
 import { pdf } from '@react-pdf/renderer'
 import { toast } from 'sonner'
 import { useLanguage } from '@/components/auth/LanguageContext'
+import { getProgramTypeName, getProgramTypeFromId } from '@/constants/programTypes'
 
 const POST_TYPES = [
   {
@@ -71,6 +72,39 @@ const POST_TYPES = [
 ]
 
 const EMPTY_POST = { type: 'promo', title: '', description: '', image_url: '', expires_at: '' }
+
+const TYPE_BADGE_STYLES = {
+  stamps: 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800',
+  points: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800',
+  giftCard: 'bg-pink-100 text-pink-700 border-pink-200 dark:bg-pink-950 dark:text-pink-300 dark:border-pink-800',
+  discount: 'bg-sky-100 text-sky-700 border-sky-200 dark:bg-sky-950 dark:text-sky-300 dark:border-sky-800',
+  cashback:
+    'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800',
+  membership:
+    'bg-violet-100 text-violet-700 border-violet-200 dark:bg-violet-950 dark:text-violet-300 dark:border-violet-800',
+  coupon:
+    'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-300 dark:border-orange-800',
+}
+
+// Breaks long club names into two lines (at the nearest space to the midpoint) so they
+// don't overflow the fixed-width color preview block.
+function splitTwoLines(text, maxLineLength = 14) {
+  if (!text || text.length <= maxLineLength) return [text]
+  const mid = Math.floor(text.length / 2)
+  let breakIndex = -1
+  let minDist = Infinity
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === ' ') {
+      const dist = Math.abs(i - mid)
+      if (dist < minDist) {
+        minDist = dist
+        breakIndex = i
+      }
+    }
+  }
+  if (breakIndex === -1) return [text]
+  return [text.slice(0, breakIndex), text.slice(breakIndex + 1)]
+}
 
 function SurveyConfigModal({ open, onOpenChange, program }) {
   const [question, setQuestion] = useState('¿Cómo fue tu experiencia?')
@@ -557,20 +591,26 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
     setFlyerTemplate('classic')
   }
 
+  const [titleLine1, titleLine2] = splitTwoLines(card.club_name)
+
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
       <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
         <div className="flex flex-col md:flex-row">
           {/* Program Preview */}
           <div
-            className="w-full md:w-48 h-48 md:h-auto relative"
+            className="w-full md:w-48 h-48 md:h-auto relative overflow-hidden"
             style={{
               background: card.card_color || '#000000',
             }}
           >
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center text-white">
-                <h4 className="font-bold text-lg mb-1 truncate px-2">{card.club_name}</h4>
+                <h4 className="font-bold text-lg leading-tight px-2 break-words">
+                  {titleLine1}
+                  {titleLine2 && <br />}
+                  {titleLine2}
+                </h4>
               </div>
             </div>
           </div>
@@ -579,7 +619,15 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
           <div className="flex-1 p-6">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1 truncate">{card.club_name}</h3>
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 truncate">{card.club_name}</h3>
+                  <Badge
+                    variant="outline"
+                    className={`flex-shrink-0 ${TYPE_BADGE_STYLES[getProgramTypeFromId(card.program_type_id)] || ''}`}
+                  >
+                    {getProgramTypeName(card.program_type_id)}
+                  </Badge>
+                </div>
                 <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">{card.reward_text}</p>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">

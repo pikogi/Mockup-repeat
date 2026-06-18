@@ -61,11 +61,16 @@ const PublicProgramDemoMoonCafe = lazy(() => import('./PublicProgramDemoMoonCafe
 const PublicProgramDemoMoonCafePoints = lazy(() => import('./PublicProgramDemoMoonCafePoints'))
 const WalletDemoMoonCafe = lazy(() => import('./WalletDemoMoonCafe'))
 const ScanDemoMoonCafe = lazy(() => import('./ScanDemoMoonCafe'))
-// const DashboardMoonCafe = lazy(() => import('./DashboardMoonCafe'))
+const ScanDemoMoonCafeSelector = lazy(() => import('./ScanDemoMoonCafeSelector'))
+const DashboardMoonCafe = lazy(() => import('./DashboardMoonCafe'))
 const NotificationsMoonCafe = lazy(() => import('./NotificationsMoonCafe'))
 const CustomersMoonCafe = lazy(() => import('./CustomersMoonCafe'))
 const DashboardHintMoonCafe = lazy(() => import('./DashboardHintMoonCafe'))
-// const DashboardMoonCafePoints = lazy(() => import('./DashboardMoonCafePoints'))
+const DashboardMoonCafePoints = lazy(() => import('./DashboardMoonCafePoints'))
+const MyProgramsMoonCafe = lazy(() => import('./MyProgramsMoonCafe'))
+const EditClubMoonCafe = lazy(() => import('./EditClubMoonCafe'))
+const TeamMoonCafe = lazy(() => import('./TeamMoonCafe'))
+const StoresMoonCafe = lazy(() => import('./StoresMoonCafe'))
 const CustomersMoonCafePoints = lazy(() => import('./CustomersMoonCafePoints'))
 const NotificationsMoonCafePoints = lazy(() => import('./NotificationsMoonCafePoints'))
 const ScanDemoMoonCafePoints = lazy(() => import('./ScanDemoMoonCafePoints'))
@@ -145,6 +150,87 @@ export default function Pages() {
             <Route path="/publicprogram-demo/mooncafe-points" element={<PublicProgramDemoMoonCafePoints />} />
             <Route path="/wallet-demo/mooncafe" element={<WalletDemoMoonCafe />} />
             <Route path="/scan-demo/mooncafe" element={<ScanDemoMoonCafe />} />
+            <Route path="/scan-demo/mooncafe-select" element={<ScanDemoMoonCafeSelector />} />
+            <Route
+              path="/dashboard-demo/mooncafe"
+              element={
+                <LayoutWrapper>
+                  <DashboardMoonCafe />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/dashboard-demo/mooncafe-points"
+              element={
+                <LayoutWrapper>
+                  <DashboardMoonCafePoints />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/myprograms-demo/mooncafe"
+              element={
+                <LayoutWrapper>
+                  <MyProgramsMoonCafe />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/myprograms-demo/mooncafe-points"
+              element={
+                <LayoutWrapper>
+                  <MyProgramsMoonCafe />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/editclub-demo/mooncafe"
+              element={
+                <LayoutWrapper>
+                  <EditClubMoonCafe />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/editclub-demo/mooncafe-points"
+              element={
+                <LayoutWrapper>
+                  <EditClubMoonCafe />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/team-demo/mooncafe"
+              element={
+                <LayoutWrapper>
+                  <TeamMoonCafe />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/team-demo/mooncafe-points"
+              element={
+                <LayoutWrapper>
+                  <TeamMoonCafe />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/stores-demo/mooncafe"
+              element={
+                <LayoutWrapper>
+                  <StoresMoonCafe />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/stores-demo/mooncafe-points"
+              element={
+                <LayoutWrapper>
+                  <StoresMoonCafe />
+                </LayoutWrapper>
+              }
+            />
             <Route path="/dashboard-hint/mooncafe" element={<DashboardHintMoonCafe />} />
             <Route path="/scan-demo/mooncafe-points" element={<ScanDemoMoonCafePoints />} />
             <Route path="/wallet-demo/mooncafe-points" element={<WalletDemoMoonCafePoints />} />
@@ -495,6 +581,14 @@ export default function Pages() {
             />
             <Route
               path="/sorteo"
+              element={
+                <LayoutWrapper>
+                  <Sorteo />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/sorteo/mooncafe-demo"
               element={
                 <LayoutWrapper>
                   <Sorteo />

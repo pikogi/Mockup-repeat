@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { X, CheckCircle, AlertCircle, Store, Gift, Loader2, Coins, Plus, QrCode } from 'lucide-react'
+import { X, CheckCircle, AlertCircle, Store, Gift, Loader2, Coins, Plus, QrCode, ArrowLeft } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLanguage } from '@/components/auth/LanguageContext'
 import jsQR from 'jsqr'
@@ -55,7 +55,8 @@ export default function ScanQR() {
   const isDemoStamps = demoParam === 'stamps'
   const isDemoMembership = demoParam === 'membership'
   const isDemoCashback = demoParam === 'cashback'
-  const isDemo = isDemoPoints || isDemoStamps || isDemoMembership || isDemoCashback
+  const isDemoSelector = demoParam === 'selector'
+  const isDemo = isDemoPoints || isDemoStamps || isDemoMembership || isDemoCashback || isDemoSelector
   const autoScan = searchParams.get('scan') === '1'
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
@@ -81,6 +82,13 @@ export default function ScanQR() {
   const user = getCurrentUser()
   const brandId = user?.brand_id || localStorage.getItem('brand_id')
 
+  // Notifica al padre (ScanDemoMoonCafe) que el scan se abrió, para ocultar el badge
+  useEffect(() => {
+    if (isDemoSelector) {
+      window.parent?.postMessage({ type: 'scan-opened' }, '*')
+    }
+  }, [isDemoSelector])
+
   // Auto-trigger demo según ?demo=<type>
   useEffect(() => {
     const demo = searchParams.get('demo')
@@ -93,6 +101,11 @@ export default function ScanQR() {
       setPurchaseAmount('')
       setRedeemCodeInput('')
       setPointsToRedeem('')
+
+      if (demo === 'selector') {
+        setStep('selector')
+        return
+      }
 
       if (demo === 'points' || demo === 'points-direct' || demo === 'points-threshold') {
         const isDirect = demo === 'points-direct'
@@ -178,7 +191,7 @@ export default function ScanQR() {
   const { stores, isLoading: loadingStores, fetchStores } = useStoresStore()
 
   useEffect(() => {
-    if (brandId) fetchStores(brandId)
+    if (brandId && !isDemo) fetchStores(brandId)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [brandId])
 
@@ -311,10 +324,50 @@ export default function ScanQR() {
   const handleClose = () => {
     const demo = searchParams.get('demo')
     if (demo) {
-      window.parent.postMessage({ type: 'demo-close' }, '*')
+      window.parent?.postMessage({ type: 'demo-close' }, '*')
+      if (isDemoSelector) window.history.back()
       return
     }
     navigate(createPageUrl('Dashboard'))
+  }
+
+  const handleSelectorPickStamps = () => {
+    setCardData({
+      card: {
+        customer: { full_name: 'Valentina Gómez', email: 'valentina@gmail.com' },
+        current_balance: 4,
+        created_at: '2024-01-15T00:00:00Z',
+        redemptions: [],
+        program: { reward_description: 'Café gratis', program_rules: { stamps_required: 8 } },
+      },
+      cardId: 'mock-stamps-card',
+      stampsRequired: 8,
+      programTypeId: STAMPS_PROGRAM_TYPE_ID,
+      moneyPerPoint: null,
+    })
+    setStep('review')
+  }
+
+  const handleSelectorPickPoints = () => {
+    setCardData({
+      card: {
+        customer: { full_name: 'Valentina Gómez', email: 'valentina@gmail.com' },
+        current_balance: 800,
+        created_at: '2026-01-12T00:00:00Z',
+        redemptions: [
+          { id: 'r1', status: 'pending', benefit_name: 'Degustación de nuevos sabores', tier: 'Bronce' },
+          { id: 'r2', status: 'pending', benefit_name: '10% off en todos los helados', tier: 'Bronce' },
+        ],
+      },
+      cardId: 'mock-points-card',
+      stampsRequired: 10,
+      programTypeId: POINTS_PROGRAM_TYPE_ID,
+      moneyPerPoint: 1000,
+      redeemMode: 'direct',
+      moneyPerPointRedeem: 100,
+    })
+    setPointsTab('add')
+    setStep('review')
   }
 
   // Paso 1: escanear QR → obtener info del cliente
@@ -386,7 +439,7 @@ export default function ScanQR() {
     if (!cardData) return
     setProcessing(true)
 
-    if (isDemoStamps) {
+    if (isDemoStamps || isDemoSelector) {
       await new Promise((r) => setTimeout(r, 800))
       setResult({
         success: true,
@@ -395,7 +448,7 @@ export default function ScanQR() {
       })
       setStep('success')
       setProcessing(false)
-      window.parent?.postMessage({ type: 'scan-success' }, '*')
+      if (!isDemoSelector) window.parent?.postMessage({ type: 'scan-success' }, '*')
       return
     }
 
@@ -474,7 +527,7 @@ export default function ScanQR() {
       setResult({ success: true, customerName: cardData.card.customer?.full_name, points, isPoints: true })
       setStep('success')
       setProcessing(false)
-      window.parent?.postMessage({ type: 'scan-success' }, '*')
+      if (!isDemoSelector) window.parent?.postMessage({ type: 'scan-success' }, '*')
       return
     }
     try {
@@ -552,9 +605,12 @@ export default function ScanQR() {
     const demo = searchParams.get('demo')
     if (demo) {
       if (backToDashboard) {
-        window.parent.postMessage({ type: 'demo-close' }, '*')
+        window.parent?.postMessage({ type: 'demo-close' }, '*')
+        if (isDemoSelector) window.history.back()
+      } else if (isDemoSelector) {
+        window.parent?.postMessage({ type: 'demo-rescan' }, '*')
       } else {
-        window.location.reload()
+        window.location.href = `${window.location.pathname}?demo=${demoParam}&scan=1`
       }
       return
     }
@@ -659,6 +715,18 @@ export default function ScanQR() {
         </div>
       )}
 
+      {/* Back arrow (demo mode only) */}
+      {isDemo && scanning && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleClose}
+          className="absolute top-4 left-4 z-10 text-white hover:bg-white/20"
+        >
+          <ArrowLeft className="w-6 h-6" />
+        </Button>
+      )}
+
       {/* Close Button */}
       <Button
         variant="ghost"
@@ -740,6 +808,53 @@ export default function ScanQR() {
                 </div>
               )}
 
+              {/* ── SELECTOR: elegir tipo de programa ── */}
+              {step === 'selector' && (
+                <>
+                  <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">Tarjeta detectada</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Valentina Gómez · Moon Café</p>
+
+                  <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 text-left">
+                    ¿Qué deseas registrar?
+                  </p>
+
+                  <div className="flex flex-col gap-3 mb-4">
+                    <button
+                      onClick={handleSelectorPickStamps}
+                      className="flex items-center gap-4 p-4 rounded-2xl border-2 border-green-700 bg-white dark:bg-gray-800 hover:bg-green-50 dark:hover:bg-green-950 text-left transition-colors"
+                    >
+                      <div className="w-11 h-11 rounded-xl bg-green-700 flex items-center justify-center flex-shrink-0 text-lg">
+                        🟢
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-900 dark:text-gray-100 text-sm">Sumar sello</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Programa de sellos · +1 sello</p>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={handleSelectorPickPoints}
+                      className="flex items-center gap-4 p-4 rounded-2xl border-2 border-yellow-400 bg-white dark:bg-gray-800 hover:bg-yellow-50 dark:hover:bg-yellow-950 text-left transition-colors"
+                    >
+                      <div className="w-11 h-11 rounded-xl bg-yellow-400 flex items-center justify-center flex-shrink-0 text-lg">
+                        🟡
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-900 dark:text-gray-100 text-sm">Sumar puntos</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Programa de puntos · ingresa monto</p>
+                      </div>
+                    </button>
+                  </div>
+
+                  <Button variant="outline" className="w-full" onClick={handleClose}>
+                    {t('cancel')}
+                  </Button>
+                </>
+              )}
+
               {/* ── REVIEW: info del cliente ── */}
               {step === 'review' &&
                 cardData &&
@@ -762,6 +877,23 @@ export default function ScanQR() {
 
                   return (
                     <>
+                      {/* Back to selector (selector demo mode only) */}
+                      {isDemoSelector && (
+                        <div className="text-left mb-3">
+                          <button
+                            onClick={() => {
+                              setStep('selector')
+                              setCardData(null)
+                              setPurchaseAmount('')
+                            }}
+                            className="inline-flex items-center gap-1 text-sm text-gray-400 hover:text-gray-700 transition-colors"
+                          >
+                            <ArrowLeft className="w-3.5 h-3.5" />
+                            Cambiar selección
+                          </button>
+                        </div>
+                      )}
+
                       {/* Avatar */}
                       <div className="w-20 h-20 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center mx-auto mb-4">
                         <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{initials}</span>
@@ -1073,7 +1205,7 @@ export default function ScanQR() {
                         onClick={() => resetScanner(true)}
                         disabled={processing}
                       >
-                        {t('cancel')}
+                        {isDemoSelector ? 'Volver al panel' : t('cancel')}
                       </Button>
                     </>
                   )
@@ -1133,8 +1265,12 @@ export default function ScanQR() {
                   )}
 
                   <div className="flex gap-3">
-                    <Button variant="outline" className="flex-1" onClick={handleClose}>
-                      {t('scanClose')}
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={isDemoSelector ? () => resetScanner(true) : handleClose}
+                    >
+                      {isDemoSelector ? 'Volver al panel' : t('scanClose')}
                     </Button>
                     <Button className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black" onClick={resetScanner}>
                       {t('scanNewScan')}

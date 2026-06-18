@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Users, QrCode, Gift } from 'lucide-react'
+import { Users, QrCode, Gift, CreditCard } from 'lucide-react'
 import { motion } from 'framer-motion'
 import MetricCard from '@/components/dashboard/MetricCard'
 import StatsChart from '@/components/dashboard/StatsChart'
@@ -75,7 +75,7 @@ export default function DashboardMoonCafePoints() {
         </motion.div>
 
         {/* Metric cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           <MetricCard
             title="Miembros"
             value={metrics.members}
@@ -83,16 +83,22 @@ export default function DashboardMoonCafePoints() {
             gradient="bg-gradient-to-br from-blue-500 to-blue-600"
           />
           <MetricCard
-            title="Puntos otorgados"
-            value={metrics.points}
-            icon={QrCode}
-            gradient="bg-gradient-to-br from-emerald-500 to-emerald-600"
+            title="Club activo"
+            value={1}
+            icon={CreditCard}
+            gradient="bg-gradient-to-br from-teal-500 to-emerald-600"
           />
           <MetricCard
-            title="Premios canjeados"
+            title="Puntos"
+            value={metrics.points}
+            icon={QrCode}
+            gradient="bg-gradient-to-br from-amber-400 to-amber-500"
+          />
+          <MetricCard
+            title="Premios"
             value={metrics.rewards}
             icon={Gift}
-            gradient="bg-gradient-to-br from-amber-500 to-orange-500"
+            gradient="bg-gradient-to-br from-purple-500 to-purple-600"
           />
         </div>
 

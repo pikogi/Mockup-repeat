@@ -6,6 +6,7 @@ import {
   Clock,
   CreditCard,
   Crown,
+  Mail,
   RefreshCw,
   Store,
   Ticket,
@@ -143,34 +144,53 @@ function WinnerCard({ winner, index }) {
   )
 }
 
+// ── History winner row — same card UI used to list members ────────────────────
+function HistoryWinnerRow({ winner }) {
+  return (
+    <div className="flex items-center gap-4 p-3 rounded-xl border border-gray-100 dark:border-gray-800">
+      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 dark:from-indigo-900 to-purple-100 dark:to-purple-900 flex items-center justify-center flex-shrink-0">
+        <span className="font-bold text-indigo-600 dark:text-indigo-400 text-lg">{winner.name[0].toUpperCase()}</span>
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{winner.name}</p>
+        {winner.email && (
+          <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
+            <Mail className="w-3 h-3 inline mr-1 align-text-bottom" />
+            {winner.email}
+          </p>
+        )}
+      </div>
+      <Trophy className="w-4 h-4 flex-shrink-0" style={{ color: ACCENT }} />
+    </div>
+  )
+}
+
 // ── History item ──────────────────────────────────────────────────────────────
 function HistoryItem({ entry }) {
   return (
     <Card className="p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
       <div className="flex items-start justify-between gap-3 mb-4">
-        <div className="min-w-0">
-          <p className="font-bold text-gray-900 dark:text-gray-100 text-base truncate">{entry.prize}</p>
-          <p className="text-sm text-gray-400 mt-1">{entry.filter}</p>
-        </div>
+        <p className="text-sm text-gray-400">{entry.filter}</p>
         <span className="text-xs text-gray-400 flex-shrink-0 flex items-center gap-1 mt-0.5">
           <CalendarDays className="w-3.5 h-3.5" />
           {entry.date}
         </span>
       </div>
-      <div className="flex items-center justify-between">
-        <div className="flex flex-wrap gap-2">
-          {entry.winners.map((w, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border"
-              style={{ backgroundColor: ACCENT + '18', borderColor: ACCENT + '60' }}
-            >
-              <Trophy className="w-3.5 h-3.5" style={{ color: ACCENT }} />
-              <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">{w.name}</span>
-            </div>
-          ))}
-        </div>
-        <span className="text-xs text-gray-400 flex-shrink-0 ml-3">{entry.participants} participantes</span>
+
+      <div className="flex items-center gap-2 mb-4 p-3 rounded-xl" style={{ backgroundColor: ACCENT + '14' }}>
+        <Trophy className="w-4 h-4 flex-shrink-0" style={{ color: ACCENT }} />
+        <span className="text-sm text-gray-500 dark:text-gray-400">Premio:</span>
+        <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{entry.prize}</span>
+      </div>
+
+      <div className="space-y-2 mb-3">
+        {entry.winners.map((w, i) => (
+          <HistoryWinnerRow key={i} winner={w} />
+        ))}
+      </div>
+
+      <div className="flex items-center justify-end">
+        <span className="text-xs text-gray-400">{entry.participants} participantes</span>
       </div>
     </Card>
   )
@@ -522,7 +542,7 @@ export default function Sorteo() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
             >
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 max-w-2xl">
                 {MOCK_HISTORY.map((entry) => (
                   <HistoryItem key={entry.id} entry={entry} />
                 ))}

@@ -18,7 +18,6 @@ import {
   BookOpen,
   HelpCircle,
   X,
-  Gift,
   Ticket,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -73,38 +72,52 @@ export default function Sidebar() {
   }
 
   const MOONCAFE_DEMO_URLS = {
-    Dashboard: '/dashboard/mooncafe-demo',
+    Dashboard: '/dashboard-demo/mooncafe',
     Customers: '/customers/mooncafe-demo',
     Notifications: '/notifications/mooncafe-demo',
-    MyPrograms: '/dashboard/mooncafe-demo',
-    CreateClub: '/dashboard/mooncafe-demo',
-    Stores: '/dashboard/mooncafe-demo',
-    Profile: '/dashboard/mooncafe-demo',
-    Team: '/dashboard/mooncafe-demo',
-    ScanQR: '/scan-demo/mooncafe',
+    MyPrograms: '/myprograms-demo/mooncafe',
+    CreateClub: '/dashboard-demo/mooncafe',
+    Stores: '/stores-demo/mooncafe',
+    Profile: '/dashboard-demo/mooncafe',
+    Team: '/team-demo/mooncafe',
+    ScanQR: '/scanqr-demo?demo=selector&scan=1',
+    Sorteo: '/sorteo/mooncafe-demo',
   }
 
   const MOONCAFE_PATHS = [
     '/dashboard/mooncafe-demo',
+    '/dashboard-demo/mooncafe',
     '/customers/mooncafe-demo',
     '/notifications/mooncafe-demo',
     '/scan-demo/mooncafe',
+    '/scan-demo/mooncafe-select',
+    '/myprograms-demo/mooncafe',
+    '/editclub-demo/mooncafe',
+    '/team-demo/mooncafe',
+    '/stores-demo/mooncafe',
     '/dashboard/mooncafe-points-demo',
+    '/dashboard-demo/mooncafe-points',
     '/customers/mooncafe-points-demo',
     '/notifications/mooncafe-points-demo',
     '/scan-demo/mooncafe-points',
+    '/myprograms-demo/mooncafe-points',
+    '/editclub-demo/mooncafe-points',
+    '/team-demo/mooncafe-points',
+    '/stores-demo/mooncafe-points',
+    '/sorteo/mooncafe-demo',
   ]
 
   const MOONCAFE_POINTS_DEMO_URLS = {
-    Dashboard: '/dashboard/mooncafe-points-demo',
+    Dashboard: '/dashboard-demo/mooncafe-points',
     Customers: '/customers/mooncafe-points-demo',
     Notifications: '/notifications/mooncafe-points-demo',
-    MyPrograms: '/dashboard/mooncafe-points-demo',
-    CreateClub: '/dashboard/mooncafe-points-demo',
-    Stores: '/dashboard/mooncafe-points-demo',
-    Profile: '/dashboard/mooncafe-points-demo',
-    Team: '/dashboard/mooncafe-points-demo',
-    ScanQR: '/scan-demo/mooncafe-points',
+    MyPrograms: '/myprograms-demo/mooncafe-points',
+    CreateClub: '/dashboard-demo/mooncafe-points',
+    Stores: '/stores-demo/mooncafe-points',
+    Profile: '/dashboard-demo/mooncafe-points',
+    Team: '/team-demo/mooncafe-points',
+    ScanQR: '/scanqr-demo?demo=selector&scan=1',
+    Sorteo: '/sorteo/mooncafe-demo',
   }
 
   const GLOW_PATHS = [
@@ -202,15 +215,15 @@ export default function Sidebar() {
     { name: t('customers'), icon: User, page: 'Customers' },
     { name: t('notifications'), icon: Bell, page: 'Notifications' },
     { name: t('myPrograms'), icon: CreditCard, page: 'MyPrograms' },
-    { name: 'Encuesta', icon: ClipboardList, noNav: true },
     ...(isGlowDemo || isMoonCafeDemo || isDelPilarDemo
       ? [
-          { name: 'Catálogo', icon: Gift, noNav: true },
           { name: 'Sorteo', icon: Ticket, page: 'Sorteo' },
+          { name: t('stores'), icon: Store, page: 'Stores' },
+          { name: t('team'), icon: Users, page: 'Team' },
         ]
       : []),
     ...(!isDemo ? [{ name: t('menu'), icon: BookOpen, page: 'Menu' }] : []),
-    ...(user?.type_user === 'brand_admin' ? [{ name: t('stores'), icon: Store, page: 'Stores' }] : []),
+    ...(user?.type_user === 'brand_admin' && !isDemo ? [{ name: t('stores'), icon: Store, page: 'Stores' }] : []),
   ]
 
   const primaryAction = { name: t('createProgram'), icon: Plus, page: 'CreateClub' }
@@ -284,15 +297,29 @@ export default function Sidebar() {
               </Link>
             )
           })}
+          {(isMoonCafeDemo || isGlowDemo || isDelPilarDemo) && resolveUrl('ScanQR') && (
+            <Link
+              to={resolveUrl('ScanQR')}
+              className="flex items-center gap-3 px-4 py-3 mt-4 rounded-xl transition-all duration-200 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg hover:shadow-xl hover:from-yellow-500 hover:to-yellow-600"
+            >
+              <QrCode className="w-5 h-5" />
+              <span className="font-medium">Escanear QR</span>
+            </Link>
+          )}
           {resolveUrl(primaryAction.page) === null ? (
-            <div className="flex items-center gap-3 px-4 py-3 mt-4 rounded-xl bg-gradient-to-r from-yellow-400 to-yellow-500 text-black opacity-40 cursor-default select-none">
+            <div className="flex items-center gap-3 px-4 py-3 mt-2 rounded-xl bg-gradient-to-r from-yellow-400 to-yellow-500 text-black opacity-40 cursor-default select-none">
               <primaryAction.icon className="w-5 h-5" />
               <span className="font-medium">{primaryAction.name}</span>
             </div>
           ) : (
             <Link
               to={resolveUrl(primaryAction.page)}
-              className="flex items-center gap-3 px-4 py-3 mt-4 rounded-xl transition-all duration-200 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg hover:shadow-xl hover:from-yellow-500 hover:to-yellow-600"
+              className={cn(
+                'flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200',
+                isMoonCafeDemo || isGlowDemo || isDelPilarDemo
+                  ? 'mt-2 border-2 border-yellow-400 text-black dark:text-white bg-white dark:bg-gray-900 hover:bg-yellow-50 dark:hover:bg-gray-800'
+                  : 'mt-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg hover:shadow-xl hover:from-yellow-500 hover:to-yellow-600',
+              )}
             >
               <primaryAction.icon className="w-5 h-5" />
               <span className="font-medium">{primaryAction.name}</span>

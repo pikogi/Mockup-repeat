@@ -68,7 +68,7 @@ const MetricCard = React.memo(function MetricCard({
 
             {/* Desktop: flex-col justify-between so icon stays top, number stays bottom */}
             <div className="hidden md:flex flex-col justify-between h-full">
-              <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between mb-4">
                 <div className={`p-2.5 rounded-2xl ${gradient} shadow-lg`}>
                   <Icon className="w-5 h-5 text-white" />
                 </div>
