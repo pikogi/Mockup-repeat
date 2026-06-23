@@ -569,71 +569,96 @@ function PointsPreview({ card, foregroundColor, backgroundColor }) {
   const currentPoints = 5
   const redeemValue = currentPoints * moneyPerPointRedeem
 
+  const bgImageUrl = card.background_image_url
+    ? card.background_image_url?.startsWith('http') || card.background_image_url?.startsWith('data:')
+      ? card.background_image_url
+      : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3000'}${card.background_image_url}`
+    : null
+
   return (
     <div className="relative h-44 overflow-hidden">
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(135deg, ${backgroundColor} 0%, ${adjustColor(backgroundColor, -30)} 100%)`,
-        }}
-      />
-      <div
-        className="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-10"
-        style={{ backgroundColor: foregroundColor }}
-      />
+      {bgImageUrl ? (
+        <>
+          <img
+            key={bgImageUrl}
+            src={bgImageUrl}
+            alt="Background"
+            className="absolute inset-0 w-full h-full object-cover"
+            onError={(e) => {
+              e.target.style.display = 'none'
+            }}
+          />
+          <div className="absolute inset-0 bg-black bg-opacity-20" />
+        </>
+      ) : (
+        <>
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(135deg, ${backgroundColor} 0%, ${adjustColor(backgroundColor, -30)} 100%)`,
+            }}
+          />
+          <div
+            className="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-10"
+            style={{ backgroundColor: foregroundColor }}
+          />
+        </>
+      )}
 
-      <div className="relative h-full flex flex-col p-4">
-        {/* Puntos actuales */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
+      {!bgImageUrl && (
+        <div className="relative h-full flex flex-col p-4">
+          {/* Puntos actuales */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center"
+                style={{ backgroundColor: `${foregroundColor}20` }}
+              >
+                <Coins className="w-5 h-5" style={{ color: foregroundColor }} />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wider opacity-60" style={{ color: foregroundColor }}>
+                  Mis puntos
+                </p>
+                <p className="text-3xl font-bold leading-none" style={{ color: foregroundColor }}>
+                  {currentPoints}
+                  <span className="text-sm font-normal opacity-60 ml-1">pts</span>
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-xs opacity-50" style={{ color: foregroundColor }}>
+                Valor de canje
+              </p>
+              <p className="text-lg font-bold" style={{ color: foregroundColor }}>
+                {redeemValue.toLocaleString()}
+              </p>
+            </div>
+          </div>
+
+          {/* Tasas de conversión */}
+          <div className="mt-auto flex items-center gap-2">
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ backgroundColor: `${foregroundColor}20` }}
+              className="flex-1 text-center px-2 py-1.5 rounded-lg text-xs font-medium"
+              style={{ backgroundColor: `${foregroundColor}15`, color: foregroundColor }}
             >
-              <Coins className="w-5 h-5" style={{ color: foregroundColor }} />
+              {moneyPerPoint.toLocaleString()} → 1 pt
             </div>
-            <div>
-              <p className="text-xs uppercase tracking-wider opacity-60" style={{ color: foregroundColor }}>
-                Mis puntos
-              </p>
-              <p className="text-3xl font-bold leading-none" style={{ color: foregroundColor }}>
-                {currentPoints}
-                <span className="text-sm font-normal opacity-60 ml-1">pts</span>
-              </p>
+            <div
+              className="w-4 h-4 flex items-center justify-center opacity-40 flex-shrink-0"
+              style={{ color: foregroundColor }}
+            >
+              ·
             </div>
-          </div>
-          <div className="text-right">
-            <p className="text-xs opacity-50" style={{ color: foregroundColor }}>
-              Valor de canje
-            </p>
-            <p className="text-lg font-bold" style={{ color: foregroundColor }}>
-              {redeemValue.toLocaleString()}
-            </p>
+            <div
+              className="flex-1 text-center px-2 py-1.5 rounded-lg text-xs font-medium"
+              style={{ backgroundColor: `${foregroundColor}15`, color: foregroundColor }}
+            >
+              1 pt → {moneyPerPointRedeem.toLocaleString()}
+            </div>
           </div>
         </div>
-
-        {/* Tasas de conversión */}
-        <div className="mt-auto flex items-center gap-2">
-          <div
-            className="flex-1 text-center px-2 py-1.5 rounded-lg text-xs font-medium"
-            style={{ backgroundColor: `${foregroundColor}15`, color: foregroundColor }}
-          >
-            {moneyPerPoint.toLocaleString()} → 1 pt
-          </div>
-          <div
-            className="w-4 h-4 flex items-center justify-center opacity-40 flex-shrink-0"
-            style={{ color: foregroundColor }}
-          >
-            ·
-          </div>
-          <div
-            className="flex-1 text-center px-2 py-1.5 rounded-lg text-xs font-medium"
-            style={{ backgroundColor: `${foregroundColor}15`, color: foregroundColor }}
-          >
-            1 pt → {moneyPerPointRedeem.toLocaleString()}
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   )
 }
