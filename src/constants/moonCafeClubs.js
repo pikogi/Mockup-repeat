@@ -8,7 +8,7 @@ const asset = (path) => `${window.location.origin}${path}`
 
 const BASE_CLUB = {
   reward_tiers: [],
-  stamp_image_url: '',
+  stamp_image_url: asset('/mooncafe-stamp.jpg'),
   stamp_icon_bg_color: '#1a4a2e',
   card_color: '#1a4a2e',
   foreground_color: '#ffffff',
@@ -68,7 +68,7 @@ export const MOONCAFE_CLUBS = [
     reward_text: 'Cada 5 cafés, 1 GRATIS ☕',
     stamps_required: 5,
     logo_url: asset('/moon-cafe-logo.png'),
-    background_image_url: asset('/cafe-mostrador.jpg'),
+    background_image_url: asset('/mooncafe-bg.jpg'),
     terms: `Club Moon Cafe es el programa de fidelidad de Café Moon. Al registrarse, el usuario acepta los siguientes términos:\n\n• Por cada café comprado se acumula 1 sello.\n• Al completar 5 sellos se obtiene 1 café gratis.\n• Los sellos no son transferibles ni canjeables por dinero.\n• Café Moon se reserva el derecho de modificar los beneficios con previo aviso.\n• La membresía es personal e intransferible.`,
     is_active: true,
     members: 148,
@@ -89,7 +89,7 @@ export const MOONCAFE_CLUBS = [
     money_per_point_redeem: 100,
     redeem_mode: 'direct',
     logo_url: asset('/moon-cafe-logo.png'),
-    background_image_url: asset('/cafe-mostrador-points.png'),
+    background_image_url: asset('/mooncafe-bg.jpg'),
     terms: `Club Moon Cafe es el programa de fidelidad de Café Moon. Al registrarse, el usuario acepta los siguientes términos:\n\n• Por cada compra se acumulan puntos según el monto gastado.\n• Al llegar a 100 puntos se obtiene un desayuno gratis.\n• Los puntos no son transferibles ni canjeables por dinero.\n• Café Moon se reserva el derecho de modificar los beneficios con previo aviso.\n• La membresía es personal e intransferible.`,
     is_active: true,
     members: 148,

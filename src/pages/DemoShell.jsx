@@ -340,7 +340,7 @@ function CafeScreen({ onNext, cafeImage }) {
 /* ─── Shell principal ────────────────────────────────────────────────────── */
 export default function DemoShell({ flow }) {
   const steps = flow === 'mooncafe-points' ? MOONCAFE_POINTS_STEPS : MOONCAFE_STEPS
-  const cafeImage = flow === 'mooncafe-points' ? '/cafe-mostrador-points.png' : '/cafe-mostrador.jpg'
+  const cafeImage = '/mooncafe-bg.jpg'
 
   const [phase, setPhase] = useState('welcome') // 'welcome' | 'cafe' | 'steps'
   const [currentStep, setCurrentStep] = useState(0)
