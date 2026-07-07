@@ -905,9 +905,12 @@ export default function DemoShell({ flow, isRoadmap = false }) {
   const iframeRef = useRef(null)
 
   useEffect(() => {
-    fetch('https://ipapi.co/country_code/')
-      .then((r) => r.text())
-      .then((code) => setCountry(code.trim()))
+    fetch('https://ipapi.co/json/')
+      .then((r) => r.json())
+      .then((data) => {
+        const code = data.country_code?.toUpperCase()
+        if (code) setCountry(code)
+      })
       .catch(() => {})
   }, [])
 
