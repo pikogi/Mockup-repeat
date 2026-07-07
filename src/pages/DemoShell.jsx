@@ -905,20 +905,19 @@ export default function DemoShell({ flow, isRoadmap = false }) {
   const iframeRef = useRef(null)
 
   useEffect(() => {
-    // Timezone-based detection — instant, no network, no rate limits
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
-    if (tz.startsWith('America/Argentina') || tz === 'America/Buenos_Aires') {
-      setCountry('AR')
-      return
-    }
-    // Fallback to IP geolocation for other regions
-    fetch('https://ipapi.co/json/')
-      .then((r) => r.json())
-      .then((data) => {
-        const code = data.country_code?.toUpperCase()
-        if (code) setCountry(code)
+    // Use Cloudflare's trace endpoint — client-side friendly, no CORS, no rate limits.
+    // Equivalent to Repeat.la's /api/geo server-side proxy but adapted for a static SPA.
+    fetch('https://cloudflare.com/cdn-cgi/trace')
+      .then((r) => r.text())
+      .then((text) => {
+        const loc = text.match(/loc=([A-Z]{2})/)?.[1]
+        if (loc) setCountry(loc)
       })
-      .catch(() => {})
+      .catch(() => {
+        // Last resort: timezone-based detection
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+        if (tz.startsWith('America/Argentina')) setCountry('AR')
+      })
   }, [])
 
   useEffect(() => {

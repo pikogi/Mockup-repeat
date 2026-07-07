@@ -29,6 +29,12 @@ export default defineConfig({
         secure: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
+      '/geo': {
+        target: 'https://ipapi.co',
+        changeOrigin: true,
+        secure: true,
+        rewrite: () => '/json/',
+      },
     },
     // Asegurar que el servidor maneje correctamente las rutas del SPA
     // Vite por defecto ya hace esto, pero esta configuración lo hace explícito
