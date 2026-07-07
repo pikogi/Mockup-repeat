@@ -905,6 +905,13 @@ export default function DemoShell({ flow, isRoadmap = false }) {
   const iframeRef = useRef(null)
 
   useEffect(() => {
+    // Timezone-based detection — instant, no network, no rate limits
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+    if (tz.startsWith('America/Argentina') || tz === 'America/Buenos_Aires') {
+      setCountry('AR')
+      return
+    }
+    // Fallback to IP geolocation for other regions
     fetch('https://ipapi.co/json/')
       .then((r) => r.json())
       .then((data) => {
