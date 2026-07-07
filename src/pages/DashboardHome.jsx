@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import { ReferidosContent } from './ReferidosRoadmap'
+import { EncuestasContent } from './EncuestaRoadmap'
 import PropTypes from 'prop-types'
 import { ArrowRight, BarChart2, Gift, Percent, QrCode, Repeat2, Trophy, UserPlus, Users } from 'lucide-react'
 import { motion } from 'framer-motion'
@@ -7,6 +9,7 @@ import { Card } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useLanguage } from '@/components/auth/LanguageContext'
 import { createPageUrl } from '@/utils'
+import { cn } from '@/lib/utils'
 import MetricCard from '@/components/dashboard/MetricCard'
 import StatsChart from '@/components/dashboard/StatsChart'
 import Step3CTA from '@/components/dashboard/Step3CTA'
@@ -316,10 +319,11 @@ function InsightProgress({ progressClubs, loading }) {
   )
 }
 
-export default function DashboardHome({ brandId, demo = false, demoTitle, demoLogo }) {
+export default function DashboardHome({ brandId, demo = false, demoTitle, demoLogo, isRoadmap = false }) {
   const { t } = useLanguage()
   const [activeChart, setActiveChart] = useState('scans')
   const [activeMembersChart, setActiveMembersChart] = useState('adds')
+  const [dashTab, setDashTab] = useState('resumen')
 
   const {
     dateFilter,
@@ -701,7 +705,35 @@ export default function DashboardHome({ brandId, demo = false, demoTitle, demoLo
           </div>
         </motion.div>
       )}
-      {statsView}
+      {isRoadmap && (
+        <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1 w-fit">
+          {[
+            { id: 'resumen', label: 'Resumen' },
+            { id: 'referidos', label: 'Referidos' },
+            { id: 'encuestas', label: 'Encuestas' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setDashTab(tab.id)}
+              className={cn(
+                'px-4 py-1.5 rounded-lg text-sm font-medium transition-all',
+                dashTab === tab.id
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300',
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      )}
+      {isRoadmap && dashTab === 'referidos' ? (
+        <ReferidosContent />
+      ) : isRoadmap && dashTab === 'encuestas' ? (
+        <EncuestasContent />
+      ) : (
+        statsView
+      )}
     </div>
   )
 

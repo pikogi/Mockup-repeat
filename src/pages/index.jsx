@@ -64,6 +64,10 @@ const ScanDemoMoonCafe = lazy(() => import('./ScanDemoMoonCafe'))
 const ScanDemoMoonCafeSelector = lazy(() => import('./ScanDemoMoonCafeSelector'))
 const DashboardMoonCafe = lazy(() => import('./DashboardMoonCafe'))
 const NotificationsMoonCafe = lazy(() => import('./NotificationsMoonCafe'))
+const NotificationsRoadmap = lazy(() => import('./NotificationsRoadmap'))
+const ComunicacionRoadmap = lazy(() => import('./ComunicacionRoadmap'))
+const EncuestaRoadmap = lazy(() => import('./EncuestaRoadmap'))
+const PublicEncuesta = lazy(() => import('./PublicEncuesta'))
 const CustomersMoonCafe = lazy(() => import('./CustomersMoonCafe'))
 const DashboardHintMoonCafe = lazy(() => import('./DashboardHintMoonCafe'))
 const DashboardMoonCafePoints = lazy(() => import('./DashboardMoonCafePoints'))
@@ -143,6 +147,7 @@ export default function Pages() {
             <Route path="/demo-del-pilar" element={<Preview />} />
             <Route path="/demo-del-pilar-points" element={<Preview />} />
             <Route path="/demo-mooncafe" element={<DemoShell flow="mooncafe" />} />
+            <Route path="/roadmap" element={<DemoShell flow="mooncafe" isRoadmap />} />
             <Route path="/demo-mooncafe-points" element={<DemoShell flow="mooncafe-points" />} />
             <Route path="/demo-gym" element={<Preview />} />
             <Route path="/wallet/mooncafe" element={<WalletMoonCafe />} />
@@ -300,10 +305,43 @@ export default function Pages() {
               }
             />
             <Route
+              path="/notifications/roadmap"
+              element={
+                <LayoutWrapper>
+                  <NotificationsRoadmap />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/comunicacion/roadmap"
+              element={
+                <LayoutWrapper>
+                  <ComunicacionRoadmap />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/encuesta/roadmap"
+              element={
+                <LayoutWrapper>
+                  <EncuestaRoadmap />
+                </LayoutWrapper>
+              }
+            />
+            <Route path="/encuesta/demo" element={<PublicEncuesta />} />
+            <Route
               path="/dashboard/mooncafe-demo"
               element={
                 <LayoutWrapper>
                   <DashboardHome demo demoTitle="Moon Café" demoLogo="/moon-cafe-logo.png" />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/dashboard/mooncafe-roadmap"
+              element={
+                <LayoutWrapper>
+                  <DashboardHome demo isRoadmap demoTitle="Moon Café" demoLogo="/moon-cafe-logo.png" />
                 </LayoutWrapper>
               }
             />

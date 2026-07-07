@@ -365,200 +365,105 @@ function DiscountPreview({ card, foregroundColor, backgroundColor }) {
   )
 }
 
-// Preview para Membresías - Estilo Apple Wallet generic (premium)
+// Preview para Membresías - mismo banner que Puntos, sin datos
 function MembershipPreview({ card, foregroundColor, backgroundColor }) {
-  const membershipLevel = card.membership_level || 'Gold'
-  const memberSince = card.member_since || '2024'
-  const memberId = card.member_id || 'MBR-001234'
-  const benefits = card.benefits || ['Envío gratis', 'Acceso VIP', 'Ofertas exclusivas']
-
-  // Colores según nivel de membresía
-  const levelColors = {
-    Bronze: '#CD7F32',
-    Silver: '#C0C0C0',
-    Gold: '#FFD700',
-    Platinum: '#E5E4E2',
-    Diamond: '#B9F2FF',
-  }
-  const levelColor = levelColors[membershipLevel] || '#FFD700'
+  const bgImageUrl = card.background_image_url
+    ? card.background_image_url.startsWith('http') || card.background_image_url.startsWith('data:')
+      ? card.background_image_url
+      : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3000'}${card.background_image_url}`
+    : null
 
   return (
     <div className="relative h-44 overflow-hidden">
-      {/* Background con efecto premium */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(135deg, ${backgroundColor} 0%, ${adjustColor(backgroundColor, -25)} 50%, ${backgroundColor} 100%)`,
-        }}
-      />
-
-      {/* Efecto de brillo sutil */}
-      <div
-        className="absolute top-0 left-0 w-full h-full opacity-10"
-        style={{
-          background: `linear-gradient(45deg, transparent 40%, ${foregroundColor} 50%, transparent 60%)`,
-        }}
-      />
-
-      {/* Contenido */}
-      <div className="relative h-full flex flex-col p-4">
-        {/* Header Field - Nivel de membresía */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center"
-              style={{
-                background: `linear-gradient(135deg, ${levelColor} 0%, ${adjustColor(levelColor, -30)} 100%)`,
-                boxShadow: `0 4px 12px ${levelColor}40`,
-              }}
-            >
-              <Crown className="w-6 h-6 text-white drop-shadow-sm" />
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-wider opacity-60" style={{ color: foregroundColor }}>
-                Nivel
-              </p>
-              <p className="text-xl font-bold" style={{ color: foregroundColor }}>
-                {membershipLevel}
-              </p>
-            </div>
-          </div>
+      {bgImageUrl ? (
+        <>
+          <img
+            key={bgImageUrl}
+            src={bgImageUrl}
+            alt="Background"
+            className="absolute inset-0 w-full h-full object-cover"
+            onError={(e) => {
+              e.target.style.display = 'none'
+            }}
+          />
+          <div className="absolute inset-0 bg-black bg-opacity-20" />
+        </>
+      ) : (
+        <>
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(135deg, ${backgroundColor} 0%, ${adjustColor(backgroundColor, -30)} 100%)`,
+            }}
+          />
+          <div
+            className="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-10"
+            style={{ backgroundColor: foregroundColor }}
+          />
+        </>
+      )}
+      {!bgImageUrl && (
+        <div className="relative h-full flex items-center justify-center">
+          <Crown className="w-16 h-16 opacity-20" style={{ color: foregroundColor }} />
         </div>
-
-        {/* Secondary Fields */}
-        <div className="mt-auto">
-          {/* Beneficios como tags */}
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            {benefits.slice(0, 3).map((benefit, i) => (
-              <span
-                key={i}
-                className="text-xs px-2 py-1 rounded-full font-medium"
-                style={{
-                  backgroundColor: `${foregroundColor}15`,
-                  color: foregroundColor,
-                }}
-              >
-                {benefit}
-              </span>
-            ))}
-          </div>
-
-          {/* Info del miembro */}
-          <div className="flex justify-between items-end">
-            <div>
-              <p className="text-xs uppercase tracking-wider opacity-50" style={{ color: foregroundColor }}>
-                Miembro desde
-              </p>
-              <p className="text-sm font-semibold" style={{ color: foregroundColor }}>
-                {memberSince}
-              </p>
-            </div>
-            <p className="text-xs font-mono opacity-50" style={{ color: foregroundColor }}>
-              {memberId}
-            </p>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   )
 }
 
-// Preview para Cupones - Estilo Apple Wallet coupon (colección de cupones)
+// Preview para Cupones - mismo banner que Membresías
 function CouponPreview({ card, foregroundColor, backgroundColor }) {
-  const availableCoupons = card.available_coupons || 3
-  const totalCoupons = card.total_coupons || 5
-  const nextCoupon = card.next_coupon || 'Café gratis'
-  const expiresIn = card.expires_in || '7 días'
+  const bgImageUrl = card.background_image_url
+    ? card.background_image_url.startsWith('http') || card.background_image_url.startsWith('data:')
+      ? card.background_image_url
+      : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3000'}${card.background_image_url}`
+    : null
 
   return (
     <div className="relative h-44 overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0" style={{ backgroundColor }} />
-
-      {/* Patrón de fondo sutil */}
-      <div
-        className="absolute inset-0 opacity-5"
-        style={{
-          backgroundImage: `repeating-linear-gradient(45deg, ${foregroundColor} 0, ${foregroundColor} 1px, transparent 0, transparent 50%)`,
-          backgroundSize: '10px 10px',
-        }}
-      />
-
-      {/* Efecto de cupón - bordes dentados */}
-      <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-around -translate-x-1/2">
-        {[...Array(6)].map((_, i) => (
-          <div key={i} className="w-3 h-3 rounded-full" style={{ backgroundColor: '#f8fafc' }} />
-        ))}
-      </div>
-      <div className="absolute right-0 top-0 bottom-0 flex flex-col justify-around translate-x-1/2">
-        {[...Array(6)].map((_, i) => (
-          <div key={i} className="w-3 h-3 rounded-full" style={{ backgroundColor: '#f8fafc' }} />
-        ))}
-      </div>
-
-      {/* Contenido */}
-      <div className="relative h-full flex flex-col p-4">
-        {/* Header - Cupones disponibles */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ backgroundColor: `${foregroundColor}15` }}
-            >
-              <Ticket className="w-5 h-5" style={{ color: foregroundColor }} />
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-wider opacity-60" style={{ color: foregroundColor }}>
-                Cupones
-              </p>
-              <p className="text-lg font-bold" style={{ color: foregroundColor }}>
-                {availableCoupons} disponibles
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Visual de cupones - progress bar */}
-        <div className="mb-3">
-          <div className="flex gap-1.5">
-            {Array.from({ length: totalCoupons }).map((_, i) => (
-              <div
-                key={i}
-                className="flex-1 h-2 rounded-full transition-all"
-                style={{
-                  backgroundColor: i < availableCoupons ? foregroundColor : `${foregroundColor}25`,
-                }}
-              />
-            ))}
-          </div>
-          <p className="text-xs mt-1 opacity-50 text-right" style={{ color: foregroundColor }}>
-            {availableCoupons}/{totalCoupons}
-          </p>
-        </div>
-
-        {/* Next reward */}
-        <div className="mt-auto flex items-center justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-wider opacity-50" style={{ color: foregroundColor }}>
-              Próximo cupón
-            </p>
-            <p className="text-sm font-semibold" style={{ color: foregroundColor }}>
-              {nextCoupon}
-            </p>
-          </div>
-          <div
-            className="px-2 py-1 rounded-lg text-xs font-medium"
-            style={{
-              backgroundColor: `${foregroundColor}15`,
-              color: foregroundColor,
+      {bgImageUrl ? (
+        <>
+          <img
+            key={bgImageUrl}
+            src={bgImageUrl}
+            alt="Background"
+            className="absolute inset-0 w-full h-full object-cover"
+            onError={(e) => {
+              e.target.style.display = 'none'
             }}
-          >
-            Vence en {expiresIn}
-          </div>
+          />
+          <div className="absolute inset-0 bg-black bg-opacity-20" />
+        </>
+      ) : (
+        <>
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(135deg, ${backgroundColor} 0%, ${adjustColor(backgroundColor, -30)} 100%)`,
+            }}
+          />
+          <div
+            className="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-10"
+            style={{ backgroundColor: foregroundColor }}
+          />
+        </>
+      )}
+      {!bgImageUrl && (
+        <div className="relative h-full flex items-center justify-center">
+          <Ticket className="w-16 h-16 opacity-20" style={{ color: foregroundColor }} />
         </div>
-      </div>
+      )}
     </div>
   )
+}
+
+// Calcula el texto del beneficio del cupón según su configuración
+function getCouponBenefitLabel(card) {
+  const benefitType = card.coupon_benefit_type || 'percent'
+  const benefitValue = card.coupon_benefit_value ?? 10
+  if (benefitType === 'percent') return `${benefitValue}% de descuento`
+  if (benefitType === 'fixed') return `$${benefitValue} de descuento`
+  return card.coupon_description || 'Producto gratis'
 }
 
 // Preview para Puntos - iOS Apple Wallet style
@@ -887,117 +792,79 @@ function AndroidDiscountPreview({ card, backgroundColor }) {
   )
 }
 
-// Preview Membership para Android - Estilo Google Wallet Generic
+// Preview Membership para Android - mismo banner que Puntos, sin datos
 function AndroidMembershipPreview({ card, backgroundColor }) {
-  const membershipLevel = card.membership_level || 'Gold'
-  const memberSince = card.member_since || '2024'
-  const memberId = card.member_id || 'MBR-001234'
-  const benefits = card.benefits || ['Envío gratis', 'Acceso VIP', 'Ofertas exclusivas']
-
-  const levelColors = {
-    Bronze: '#CD7F32',
-    Silver: '#C0C0C0',
-    Gold: '#FFD700',
-    Platinum: '#E5E4E2',
-    Diamond: '#B9F2FF',
-  }
-  const levelColor = levelColors[membershipLevel] || '#FFD700'
+  const bgImageUrl = card.background_image_url
+    ? card.background_image_url.startsWith('http') || card.background_image_url.startsWith('data:')
+      ? card.background_image_url
+      : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3000'}${card.background_image_url}`
+    : null
 
   return (
     <div className="relative h-48">
-      {/* Hero con nivel */}
       <div
-        className="h-20 w-full flex items-center px-4"
+        className="h-24 w-full relative overflow-hidden"
         style={{
           background: `linear-gradient(135deg, ${backgroundColor} 0%, ${adjustColor(backgroundColor, -30)} 100%)`,
         }}
       >
-        <div className="flex items-center gap-3">
-          <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg"
-            style={{
-              background: `linear-gradient(135deg, ${levelColor} 0%, ${adjustColor(levelColor, -40)} 100%)`,
-            }}
-          >
-            <Crown className="w-6 h-6 text-white" />
+        {bgImageUrl ? (
+          <>
+            <img
+              key={bgImageUrl}
+              src={bgImageUrl}
+              alt="Background"
+              className="absolute inset-0 w-full h-full object-cover"
+              onError={(e) => {
+                e.target.style.display = 'none'
+              }}
+            />
+            <div className="absolute inset-0 bg-black/20" />
+          </>
+        ) : (
+          <div className="h-full flex items-center justify-center">
+            <Crown className="w-12 h-12 text-white/20" />
           </div>
-          <div>
-            <p className="text-white/70 text-xs">Nivel de Membresía</p>
-            <p className="text-white text-xl font-bold">{membershipLevel}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Benefits y info */}
-      <div className="px-4 py-3">
-        <div className="flex flex-wrap gap-1.5 mb-3">
-          {benefits.slice(0, 3).map((benefit, i) => (
-            <span key={i} className="text-xs px-2 py-1 rounded-full font-medium bg-gray-100 text-gray-700">
-              {benefit}
-            </span>
-          ))}
-        </div>
-        <div className="flex justify-between text-xs text-gray-500">
-          <span>Miembro desde {memberSince}</span>
-          <span className="font-mono">{memberId}</span>
-        </div>
+        )}
       </div>
     </div>
   )
 }
 
-// Preview Coupon para Android - Estilo Google Wallet Offer
+// Preview Coupon para Android - mismo banner que Membresías
 function AndroidCouponPreview({ card, backgroundColor }) {
-  const availableCoupons = card.available_coupons || 3
-  const totalCoupons = card.total_coupons || 5
-  const nextCoupon = card.next_coupon || 'Café gratis'
-  const expiresIn = card.expires_in || '7 días'
+  const bgImageUrl = card.background_image_url
+    ? card.background_image_url.startsWith('http') || card.background_image_url.startsWith('data:')
+      ? card.background_image_url
+      : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3000'}${card.background_image_url}`
+    : null
 
   return (
     <div className="relative h-48">
-      {/* Hero */}
-      <div className="h-20 w-full flex items-center justify-between px-4" style={{ backgroundColor }}>
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
-            <Ticket className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <p className="text-white/70 text-xs">Cupones disponibles</p>
-            <p className="text-white text-2xl font-bold">{availableCoupons}</p>
-          </div>
-        </div>
-        <div className="text-right">
-          <p className="text-white/70 text-xs">de {totalCoupons}</p>
-        </div>
-      </div>
-
-      {/* Cupones visual */}
-      <div className="px-4 py-3">
-        {/* Progress dots */}
-        <div className="flex justify-center gap-2 mb-3">
-          {Array.from({ length: totalCoupons }).map((_, i) => (
-            <div
-              key={i}
-              className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
-              style={{
-                backgroundColor: i < availableCoupons ? backgroundColor : '#e5e7eb',
+      <div
+        className="h-24 w-full relative overflow-hidden"
+        style={{
+          background: `linear-gradient(135deg, ${backgroundColor} 0%, ${adjustColor(backgroundColor, -30)} 100%)`,
+        }}
+      >
+        {bgImageUrl ? (
+          <>
+            <img
+              key={bgImageUrl}
+              src={bgImageUrl}
+              alt="Background"
+              className="absolute inset-0 w-full h-full object-cover"
+              onError={(e) => {
+                e.target.style.display = 'none'
               }}
-            >
-              {i < availableCoupons && <Ticket className="w-4 h-4 text-white" />}
-            </div>
-          ))}
-        </div>
-
-        {/* Next reward info */}
-        <div className="bg-gray-50 rounded-lg p-3 flex items-center justify-between">
-          <div>
-            <p className="text-xs text-gray-500">Próximo cupón</p>
-            <p className="text-sm font-semibold text-gray-900">{nextCoupon}</p>
+            />
+            <div className="absolute inset-0 bg-black/20" />
+          </>
+        ) : (
+          <div className="h-full flex items-center justify-center">
+            <Ticket className="w-12 h-12 text-white/20" />
           </div>
-          <span className="text-xs px-2 py-1 rounded-full font-medium text-white" style={{ backgroundColor }}>
-            {expiresIn}
-          </span>
-        </div>
+        )}
       </div>
     </div>
   )
@@ -1342,12 +1209,16 @@ export default function ProgramPreviewComponent({
                   {programType === 'giftCard' && 'Beneficio'}
                   {programType === 'cashback' && 'Beneficio'}
                   {programType === 'discount' && 'Aplica en'}
-                  {programType === 'membership' && 'Beneficio Principal'}
+                  {programType === 'membership' && 'Nombre'}
                   {programType === 'coupon' && 'Próxima Recompensa'}
                   {programType === 'points' && 'Recompensa al canjear'}
                 </p>
                 <p className="font-semibold text-sm" style={{ color: foregroundColor }}>
-                  {card.reward_text || 'Sin definir'}
+                  {programType === 'membership'
+                    ? 'Valentina Gómez'
+                    : programType === 'coupon'
+                      ? getCouponBenefitLabel(card)
+                      : card.reward_text || 'Sin definir'}
                 </p>
               </div>
               <div className="text-right">
@@ -1365,7 +1236,17 @@ export default function ProgramPreviewComponent({
                   {programType === 'giftCard' && 'Activo'}
                   {programType === 'cashback' && 'Activo'}
                   {programType === 'discount' && 'Vigente'}
-                  {programType === 'membership' && 'Activo'}
+                  {programType === 'membership' &&
+                    (() => {
+                      const tiers = card.membership_tiers
+                      const tier = tiers?.length > 0 ? tiers[Math.min(1, tiers.length - 1)] : null
+                      return (
+                        <>
+                          Activo
+                          {tier && <span style={{ color: tier.color }}> · {tier.name}</span>}
+                        </>
+                      )
+                    })()}
                   {programType === 'coupon' && `${card.available_coupons || 3} disp.`}
                   {programType === 'points' && '5 pts'}
                 </p>
@@ -1652,13 +1533,37 @@ export default function ProgramPreviewComponent({
             <div className="px-4 py-3 bg-white border-t border-gray-100 flex-shrink-0">
               <div className="grid grid-cols-2 gap-4">
                 <GoogleTextModule
-                  label={programType === 'stamps' ? 'Recompensa' : 'Beneficio'}
-                  value={card.reward_text || 'Sin definir'}
+                  label={
+                    programType === 'membership'
+                      ? 'Nombre'
+                      : programType === 'stamps'
+                        ? 'Recompensa'
+                        : programType === 'coupon'
+                          ? 'Próxima Recompensa'
+                          : 'Beneficio'
+                  }
+                  value={
+                    programType === 'membership'
+                      ? 'Valentina Gómez'
+                      : programType === 'coupon'
+                        ? getCouponBenefitLabel(card)
+                        : card.reward_text || 'Sin definir'
+                  }
                   foregroundColor="#1f2937"
                 />
                 <GoogleTextModule
                   label={programType === 'stamps' ? 'Progreso' : 'Estado'}
-                  value={programType === 'stamps' ? `${currentStamps} de ${stampsRequired}` : 'Activo'}
+                  value={
+                    programType === 'stamps'
+                      ? `${currentStamps} de ${stampsRequired}`
+                      : programType === 'membership'
+                        ? (() => {
+                            const t = card.membership_tiers
+                            const tier = t?.length > 0 ? t[Math.min(1, t.length - 1)] : null
+                            return tier ? `Activo · ${tier.name}` : 'Activo'
+                          })()
+                        : 'Activo'
+                  }
                   foregroundColor="#1f2937"
                   align="right"
                 />

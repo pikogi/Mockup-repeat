@@ -19,6 +19,7 @@ import {
   HelpCircle,
   X,
   Ticket,
+  Megaphone,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLanguage } from '@/components/auth/LanguageContext'
@@ -79,6 +80,28 @@ export default function Sidebar() {
     CreateClub: '/dashboard-demo/mooncafe',
     Stores: '/stores-demo/mooncafe',
     Profile: '/dashboard-demo/mooncafe',
+    Team: '/team-demo/mooncafe',
+    ScanQR: '/scanqr-demo?demo=selector&scan=1',
+    Sorteo: '/sorteo/mooncafe-demo',
+  }
+
+  const MOONCAFE_ROADMAP_PATHS = [
+    '/dashboard/mooncafe-roadmap',
+    '/encuesta/roadmap',
+    '/comunicacion/roadmap',
+    '/referidos/roadmap',
+  ]
+
+  const MOONCAFE_ROADMAP_URLS = {
+    Dashboard: '/dashboard/mooncafe-roadmap',
+    Customers: '/customers/mooncafe-demo',
+    Notifications: '/comunicacion/roadmap',
+    Comunicacion: '/comunicacion/roadmap',
+    Encuesta: '/encuesta/roadmap',
+    MyPrograms: '/myprograms-demo/mooncafe',
+    CreateClub: '/dashboard/mooncafe-roadmap',
+    Stores: '/stores-demo/mooncafe',
+    Profile: '/dashboard/mooncafe-roadmap',
     Team: '/team-demo/mooncafe',
     ScanQR: '/scanqr-demo?demo=selector&scan=1',
     Sorteo: '/sorteo/mooncafe-demo',
@@ -189,11 +212,17 @@ export default function Sidebar() {
   const currentPath = location.pathname
   const isBgMode = new URLSearchParams(location.search).get('bg') === '1'
   const isMoonCafeDemo = MOONCAFE_PATHS.some((p) => currentPath.startsWith(p))
+  const isMoonCafeRoadmap = MOONCAFE_ROADMAP_PATHS.some((p) => currentPath.startsWith(p))
   const isGlowDemo = GLOW_PATHS.some((p) => currentPath.startsWith(p))
   const isDelPilarDemo = DEL_PILAR_PATHS.some((p) => currentPath.startsWith(p))
   const DEMO_PATH_PREFIXES = Object.values(DEMO_URLS).map((u) => u.split('?')[0])
   const isDemo =
-    !user || isMoonCafeDemo || isGlowDemo || isDelPilarDemo || DEMO_PATH_PREFIXES.some((p) => currentPath.startsWith(p))
+    !user ||
+    isMoonCafeDemo ||
+    isMoonCafeRoadmap ||
+    isGlowDemo ||
+    isDelPilarDemo ||
+    DEMO_PATH_PREFIXES.some((p) => currentPath.startsWith(p))
 
   const isMoonCafePoints = MOONCAFE_PATHS.some((p) => currentPath.startsWith(p) && p.includes('points'))
   const isGlowPoints = GLOW_PATHS.some((p) => currentPath.startsWith(p) && p.includes('points'))
@@ -201,6 +230,7 @@ export default function Sidebar() {
 
   const resolveUrl = (page) => {
     if (!isDemo) return createPageUrl(page)
+    if (isMoonCafeRoadmap) return MOONCAFE_ROADMAP_URLS[page] ?? '/dashboard/mooncafe-roadmap'
     if (isMoonCafePoints) return MOONCAFE_POINTS_DEMO_URLS[page] ?? '/dashboard/mooncafe-points-demo'
     if (isMoonCafeDemo) return MOONCAFE_DEMO_URLS[page] ?? '/dashboard/mooncafe-demo'
     if (isGlowPoints) return GLOW_POINTS_DEMO_URLS[page] ?? '/dashboard/glow-points-demo'
@@ -213,15 +243,18 @@ export default function Sidebar() {
   const navItems = [
     { name: t('dashboard'), icon: LayoutDashboard, page: 'Dashboard' },
     { name: t('customers'), icon: User, page: 'Customers' },
-    { name: t('notifications'), icon: Bell, page: 'Notifications' },
+    ...(isMoonCafeRoadmap
+      ? [{ name: 'Comunicación', icon: Megaphone, page: 'Comunicacion' }]
+      : [{ name: t('notifications'), icon: Bell, page: 'Notifications' }]),
     { name: t('myPrograms'), icon: CreditCard, page: 'MyPrograms' },
-    ...(isGlowDemo || isMoonCafeDemo || isDelPilarDemo
+    ...(isGlowDemo || isMoonCafeDemo || isMoonCafeRoadmap || isDelPilarDemo
       ? [
           { name: 'Sorteo', icon: Ticket, page: 'Sorteo' },
           { name: t('stores'), icon: Store, page: 'Stores' },
           { name: t('team'), icon: Users, page: 'Team' },
         ]
       : []),
+    ...(isMoonCafeRoadmap ? [{ name: 'Encuestas', icon: ClipboardList, page: 'Encuesta' }] : []),
     ...(!isDemo ? [{ name: t('menu'), icon: BookOpen, page: 'Menu' }] : []),
     ...(user?.type_user === 'brand_admin' && !isDemo ? [{ name: t('stores'), icon: Store, page: 'Stores' }] : []),
   ]

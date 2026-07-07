@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import DemoGuideCard from '@/components/demo/DemoGuideCard'
 
 const MOONCAFE_STEPS = [
@@ -76,7 +76,7 @@ const MOONCAFE_POINTS_STEPS = [
     phoneFrame: true,
   },
   {
-    url: '/dashboard-demo/mooncafe-points',
+    url: '/dashboard/mooncafe-points-demo',
     title: 'Panel de control',
     desc: 'Una vez dentro de Repeat, verás las métricas de tus programas en tiempo real.',
     fullWidth: true,
@@ -88,7 +88,7 @@ const MOONCAFE_POINTS_STEPS = [
     fullWidth: false,
     desktopSubSteps: [
       {
-        url: '/dashboard-demo/mooncafe-points',
+        url: '/dashboard/mooncafe-points-demo',
         title: 'Registrar visita',
         desc: 'Tienes 2 formas de registrar la visita del cliente. Elige la que más se adapte a tu operación diaria.',
       },
@@ -103,7 +103,7 @@ const MOONCAFE_POINTS_STEPS = [
     ],
     mobileSubSteps: [
       {
-        url: '/dashboard-demo/mooncafe-points',
+        url: '/dashboard/mooncafe-points-demo',
         title: 'Registrar visita',
         desc: 'Tienes 2 formas de registrar la visita del cliente. Elige la que más se adapte a tu operación diaria.',
       },
@@ -337,9 +337,562 @@ function CafeScreen({ onNext, cafeImage }) {
   )
 }
 
+/* ─── Pantalla de pricing final ──────────────────────────────────────────── */
+const WA_NUMBERS = {
+  AR: '5493517881653',
+  default: '5215657529234',
+}
+
+const PRICING_PLANS = [
+  {
+    name: 'Club Base',
+    desc: 'El punto de entrada para digitalizar tu programa de fidelidad.',
+    highlight: false,
+    features: [
+      'Clientes ilimitados',
+      'Hasta 5 condiciones de club',
+      'Base de datos de clientes',
+      'Sin necesidad de app',
+    ],
+    notIncluded: ['Notificaciones push', 'Miembros de equipo ilimitados', 'Sorteo'],
+    prices: {
+      ar: { mensual: 19999, semianual: 16999, anual: 14999 },
+      mx: { mensual: 299, semianual: 254, anual: 224 },
+    },
+  },
+  {
+    name: 'Club de Lealtad',
+    desc: 'El programa de fidelidad digital para que tus clientes vuelvan más seguido.',
+    highlight: false,
+    features: [
+      'Clientes ilimitados',
+      'Miembros de equipo ilimitados',
+      'Notificaciones push',
+      'Sorteo',
+      'Sin necesidad de app',
+    ],
+    notIncluded: ['Encuesta de satisfacción', 'Menú y catálogo digital'],
+    prices: {
+      ar: { mensual: 29999, semianual: 25499, anual: 22499 },
+      mx: { mensual: 499, semianual: 424, anual: 374 },
+    },
+  },
+  {
+    name: 'Club Full',
+    desc: 'Todo lo del plan base más encuesta de satisfacción y menú digital.',
+    highlight: true,
+    features: ['Todo lo del Club de Lealtad', 'Encuesta de satisfacción', 'Menú y catálogo digital'],
+    notIncluded: [],
+    prices: {
+      ar: { mensual: 49999, semianual: 42499, anual: 37499 },
+      mx: { mensual: 799, semianual: 679, anual: 599 },
+    },
+  },
+]
+
+const BILLING_CYCLES = [
+  { key: 'mensual', label: 'Mensual' },
+  { key: 'semianual', label: 'Semestral', badge: '15% off 🚀' },
+  { key: 'anual', label: 'Anual', badge: '25% off 🔥' },
+]
+
+function fmtPrice(n, isAR) {
+  return isAR ? new Intl.NumberFormat('es-AR').format(n) : new Intl.NumberFormat('es-MX').format(n)
+}
+
+function PricingScreen({ onRestart, onBack, country }) {
+  const [billing, setBilling] = useState('mensual')
+  const [branches, setBranches] = useState(0)
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 640)
+  const cardRefs = useRef([])
+  const isAR = country === 'AR'
+  const priceKey = isAR ? 'ar' : 'mx'
+  const currency = isAR ? 'ARS' : 'MXN'
+  const isEnterprise = branches === 'enterprise'
+  const branchCount = isEnterprise ? 0 : branches
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 639px)')
+    const handler = (e) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+
+  useLayoutEffect(() => {
+    const cards = cardRefs.current.filter(Boolean)
+    if (!isMobile || cards.length === 0) {
+      cards.forEach((c) => (c.style.height = 'auto'))
+      return
+    }
+    cards.forEach((c) => (c.style.height = 'auto'))
+    const max = Math.max(...cards.map((c) => c.offsetHeight))
+    cards.forEach((c) => (c.style.height = max + 'px'))
+  }, [billing, branches, isMobile])
+
+  const waNumber = WA_NUMBERS[country] ?? WA_NUMBERS.default
+  const waUrl =
+    `https://wa.me/${waNumber}?text=` +
+    encodeURIComponent('Hola, acabo de ver la demo de Repeat y quiero saber más sobre los planes.')
+  const waSalesUrl =
+    `https://wa.me/${waNumber}?text=` +
+    encodeURIComponent('Hola, quisiera consultar por el precio preferencial para más de 3 sucursales.')
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'linear-gradient(to bottom, #f9fafb, #fff)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        padding: '36px 20px 40px',
+        overflowY: 'auto',
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+      }}
+    >
+      {/* Header */}
+      <span
+        style={{
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: '0.15em',
+          textTransform: 'uppercase',
+          color: '#ef4444',
+          marginBottom: 10,
+        }}
+      >
+        Precios
+      </span>
+      <h1
+        style={{
+          color: '#111827',
+          fontSize: 'clamp(22px, 4vw, 36px)',
+          fontWeight: 800,
+          margin: '0 0 8px',
+          letterSpacing: -0.5,
+          textAlign: 'center',
+          lineHeight: 1.2,
+        }}
+      >
+        Elige el plan que se adapta
+        <br />a tu negocio
+      </h1>
+      <p
+        style={{
+          color: '#6b7280',
+          fontSize: 14,
+          margin: '0 0 28px',
+          textAlign: 'center',
+          lineHeight: 1.5,
+          maxWidth: 340,
+        }}
+      >
+        🎁 <strong>Prueba gratis por 7 días</strong> · Cancelá cuando quieras
+      </p>
+
+      {/* Billing toggle — full-width en mobile, pill en desktop */}
+      {isMobile ? (
+        <div
+          style={{
+            display: 'flex',
+            width: '100%',
+            maxWidth: 400,
+            background: '#fff',
+            border: '1px solid #e5e7eb',
+            borderRadius: 99,
+            padding: 4,
+            marginBottom: 24,
+            boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+            boxSizing: 'border-box',
+          }}
+        >
+          {[
+            { key: 'mensual', label: 'Mensual' },
+            { key: 'semianual', label: 'Semestral -15% 🚀' },
+            { key: 'anual', label: 'Anual -25% 🔥' },
+          ].map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setBilling(key)}
+              style={{
+                flex: 1,
+                padding: '8px 4px',
+                borderRadius: 99,
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: 11,
+                fontWeight: 600,
+                textAlign: 'center',
+                lineHeight: 1.3,
+                background: billing === key ? '#111827' : 'transparent',
+                color: billing === key ? '#fff' : '#6b7280',
+                transition: 'all 0.15s',
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            background: '#fff',
+            border: '1px solid #e5e7eb',
+            borderRadius: 99,
+            padding: '6px',
+            marginBottom: 24,
+            boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+          }}
+        >
+          {BILLING_CYCLES.map(({ key, label, badge }) => (
+            <button
+              key={key}
+              onClick={() => setBilling(key)}
+              style={{
+                padding: '8px 16px',
+                borderRadius: 99,
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: 13,
+                fontWeight: 600,
+                background: billing === key ? (key === 'anual' ? '#facc15' : '#111827') : 'transparent',
+                color: billing === key ? (key === 'anual' ? '#000' : '#fff') : '#6b7280',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                transition: 'all 0.15s',
+              }}
+            >
+              {label}
+              {badge && (
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    padding: '2px 6px',
+                    borderRadius: 99,
+                    background: key === 'anual' ? '#fee2e2' : '#d1fae5',
+                    color: key === 'anual' ? '#92400e' : '#065f46',
+                  }}
+                >
+                  {badge}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Selector de sucursales */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, marginBottom: 28 }}>
+        <label style={{ fontSize: 13, fontWeight: 500, color: '#374151' }}>
+          {isAR ? '¿Cuántas sucursales tenés?' : '¿Cuántas sucursales tienes?'}
+        </label>
+        <select
+          value={branches}
+          onChange={(e) => setBranches(e.target.value === 'enterprise' ? 'enterprise' : Number(e.target.value))}
+          style={{
+            padding: '8px 16px',
+            borderRadius: 99,
+            border: '1px solid #e5e7eb',
+            background: '#fff',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+            fontSize: 13,
+            color: '#374151',
+            cursor: 'pointer',
+            outline: 'none',
+          }}
+        >
+          <option value={0}>Solo una sucursal</option>
+          <option value={1}>2 sucursales</option>
+          <option value={2}>3 sucursales</option>
+          <option value="enterprise">Más de 3 sucursales (precio preferencial)</option>
+        </select>
+      </div>
+
+      {/* Plan cards — white cards like pricing-section-3 */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+          alignItems: 'stretch',
+          gap: 20,
+          width: '100%',
+          maxWidth: 820,
+          marginBottom: 32,
+        }}
+      >
+        {PRICING_PLANS.map((plan, i) => {
+          const basePrice = plan.prices[priceKey][billing]
+          const baseMonthly = plan.prices[priceKey]['mensual']
+          const totalPrice = isEnterprise ? basePrice : basePrice + branchCount * basePrice * 0.5
+          const totalMonthly = isEnterprise ? baseMonthly : baseMonthly + branchCount * baseMonthly * 0.5
+          const periodTotal = totalPrice * (billing === 'semianual' ? 6 : billing === 'anual' ? 12 : 1)
+          const showOld = billing !== 'mensual'
+
+          return (
+            <div
+              key={plan.name}
+              ref={(el) => (cardRefs.current[i] = el)}
+              style={{
+                background: '#fff',
+                border: plan.highlight ? '2px solid #facc15' : '1px solid #e5e7eb',
+                borderRadius: 20,
+                padding: '28px 22px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 0,
+                position: 'relative',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
+                boxSizing: 'border-box',
+              }}
+            >
+              {/* Savings badge */}
+              {billing === 'semianual' && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+                  <span
+                    style={{
+                      background: '#dcfce7',
+                      color: '#15803d',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      padding: '4px 12px',
+                      borderRadius: 99,
+                    }}
+                  >
+                    15% de ahorro 🚀
+                  </span>
+                </div>
+              )}
+              {billing === 'anual' && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+                  <span
+                    style={{
+                      background: '#fee2e2',
+                      color: '#b91c1c',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      padding: '4px 12px',
+                      borderRadius: 99,
+                    }}
+                  >
+                    25% de ahorro 🔥
+                  </span>
+                </div>
+              )}
+
+              {/* Name + description */}
+              <h3 style={{ fontSize: 20, fontWeight: 800, color: '#111827', margin: '0 0 6px', textAlign: 'center' }}>
+                {plan.name}
+              </h3>
+              <p style={{ fontSize: 12, color: '#6b7280', margin: '0 0 16px', textAlign: 'center', lineHeight: 1.5 }}>
+                {plan.desc}
+              </p>
+
+              {/* Price */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 16 }}>
+                {isEnterprise ? (
+                  <div style={{ textAlign: 'center' }}>
+                    <p style={{ fontSize: 22, fontWeight: 800, color: '#111827', margin: '0 0 4px' }}>
+                      Precio preferencial
+                    </p>
+                    <p style={{ fontSize: 12, color: '#9ca3af', margin: 0 }}>Más de 3 sucursales</p>
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2 }}>
+                      <span style={{ fontSize: 44, fontWeight: 800, color: '#111827', lineHeight: 1 }}>
+                        ${fmtPrice(totalPrice, isAR)}
+                      </span>
+                      <span style={{ fontSize: 16, color: '#9ca3af', fontWeight: 500, marginBottom: 4 }}>/mes</span>
+                    </div>
+                    {branchCount > 0 && (
+                      <span style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>
+                        Incluye {branchCount + 1} sucursales
+                      </span>
+                    )}
+                    {showOld && (
+                      <span style={{ fontSize: 12, color: '#d1d5db', textDecoration: 'line-through', marginTop: 2 }}>
+                        ${fmtPrice(totalMonthly, isAR)}/mes
+                      </span>
+                    )}
+                    <span style={{ fontSize: 11, color: '#d1d5db', marginTop: 2 }}>{currency}</span>
+                    {billing === 'semianual' && (
+                      <p
+                        style={{
+                          fontSize: 12,
+                          color: '#6b7280',
+                          marginTop: 8,
+                          background: '#f3f4f6',
+                          padding: '6px 10px',
+                          borderRadius: 8,
+                          width: '100%',
+                          boxSizing: 'border-box',
+                          textAlign: 'center',
+                        }}
+                      >
+                        💰 Pago semestral: ${fmtPrice(periodTotal, isAR)} {currency}
+                      </p>
+                    )}
+                    {billing === 'anual' && (
+                      <p
+                        style={{
+                          fontSize: 12,
+                          color: '#6b7280',
+                          marginTop: 8,
+                          background: '#f3f4f6',
+                          padding: '6px 10px',
+                          borderRadius: 8,
+                          width: '100%',
+                          boxSizing: 'border-box',
+                          textAlign: 'center',
+                        }}
+                      >
+                        💰 Pago anual: ${fmtPrice(periodTotal, isAR)} {currency}
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* CTA */}
+              <a
+                href={isEnterprise ? waSalesUrl : waUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'block',
+                  textAlign: 'center',
+                  width: '100%',
+                  boxSizing: 'border-box',
+                  padding: '13px 0',
+                  background: '#facc15',
+                  color: '#000',
+                  fontWeight: 700,
+                  fontSize: 14,
+                  borderRadius: 12,
+                  textDecoration: 'none',
+                  marginBottom: 20,
+                }}
+              >
+                {isEnterprise ? 'Contactar a ventas →' : 'Comenzar ahora →'}
+              </a>
+
+              {/* Features — flex:1 so this section fills remaining card height, equalizing all cards */}
+              <div style={{ flex: 1 }}>
+                <p
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: '#111827',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
+                    margin: '0 0 10px',
+                  }}
+                >
+                  Incluye:
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {plan.features.map((f) => (
+                    <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                      <div
+                        style={{
+                          width: 18,
+                          height: 18,
+                          borderRadius: '50%',
+                          background: '#111827',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                          marginTop: 1,
+                        }}
+                      >
+                        <span style={{ color: '#fff', fontSize: 10, fontWeight: 800, lineHeight: 1 }}>✓</span>
+                      </div>
+                      <span style={{ fontSize: 12, color: '#374151', lineHeight: 1.4 }}>{f}</span>
+                    </div>
+                  ))}
+                  {plan.notIncluded.map((f) => (
+                    <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                      <div
+                        style={{
+                          width: 18,
+                          height: 18,
+                          borderRadius: '50%',
+                          background: '#fee2e2',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                          marginTop: 1,
+                        }}
+                      >
+                        <span style={{ color: '#ef4444', fontSize: 10, fontWeight: 800, lineHeight: 1 }}>✕</span>
+                      </div>
+                      <span style={{ fontSize: 12, color: '#d1d5db', lineHeight: 1.4 }}>{f}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Volver / Reiniciar */}
+      <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+        <button
+          onClick={onBack}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#9ca3af',
+            fontSize: 13,
+            cursor: 'pointer',
+            padding: '8px 0',
+          }}
+        >
+          ← Volver
+        </button>
+        <span style={{ color: '#e5e7eb', fontSize: 13 }}>|</span>
+        <button
+          onClick={onRestart}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#9ca3af',
+            fontSize: 13,
+            cursor: 'pointer',
+            padding: '8px 0',
+          }}
+        >
+          Ver demo otra vez
+        </button>
+      </div>
+    </div>
+  )
+}
+
 /* ─── Shell principal ────────────────────────────────────────────────────── */
-export default function DemoShell({ flow }) {
-  const steps = flow === 'mooncafe-points' ? MOONCAFE_POINTS_STEPS : MOONCAFE_STEPS
+export default function DemoShell({ flow, isRoadmap = false }) {
+  const baseSteps = flow === 'mooncafe-points' ? MOONCAFE_POINTS_STEPS : MOONCAFE_STEPS
+  const steps = isRoadmap
+    ? baseSteps.map((s) => {
+        const replaceUrl = (url) => (url === '/dashboard-demo/mooncafe' ? '/dashboard/mooncafe-roadmap' : url)
+        return {
+          ...s,
+          url: s.url ? replaceUrl(s.url) : s.url,
+          desktopSubSteps: s.desktopSubSteps?.map((ss) => ({ ...ss, url: ss.url ? replaceUrl(ss.url) : ss.url })),
+          mobileSubSteps: s.mobileSubSteps?.map((ss) => ({ ...ss, url: ss.url ? replaceUrl(ss.url) : ss.url })),
+        }
+      })
+    : baseSteps
   const cafeImage = '/cafe-mostrador.jpg'
 
   const [phase, setPhase] = useState('welcome') // 'welcome' | 'cafe' | 'steps'
@@ -348,7 +901,15 @@ export default function DemoShell({ flow }) {
   const [done, setDone] = useState(false)
   const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 1024)
   const [scanActive, setScanActive] = useState(false)
+  const [country, setCountry] = useState('')
   const iframeRef = useRef(null)
+
+  useEffect(() => {
+    fetch('https://ipapi.co/country_code/')
+      .then((r) => r.text())
+      .then((code) => setCountry(code.trim()))
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     const handler = (e) => {
@@ -376,6 +937,7 @@ export default function DemoShell({ flow }) {
   const handleRestart = () => {
     setDone(false)
     setCurrentStep(0)
+    setSubStep(0)
     setPhase('welcome')
   }
 
@@ -387,6 +949,11 @@ export default function DemoShell({ flow }) {
   if (phase === 'cafe') {
     const content = <CafeScreen cafeImage={cafeImage} onNext={() => setPhase('steps')} />
     return isDesktop ? <PhoneFrame>{content}</PhoneFrame> : <div style={{ position: 'fixed', inset: 0 }}>{content}</div>
+  }
+
+  // Tour completado → pantalla de pricing
+  if (done) {
+    return <PricingScreen onRestart={handleRestart} onBack={() => setDone(false)} country={country} />
   }
 
   // Flujo principal de pasos

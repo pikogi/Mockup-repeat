@@ -20,6 +20,8 @@ import {
   CouponConfigSection,
   MembershipConfigSection,
   CashbackConfigSection,
+  CatalogFields,
+  ReferralSection,
 } from '@/components/programs/ClubFormSections'
 import {
   MOONCAFE_CLUBS,
@@ -146,9 +148,12 @@ export default function EditClubMoonCafe() {
                 <ColorPickerGroup formData={formData} setFormData={setFormData} />
 
                 {isPointsProgram && <PointsConversionSection formData={formData} setFormData={setFormData} />}
+                {isPointsProgram && <CatalogFields formData={formData} setFormData={setFormData} />}
                 {isCouponProgram && <CouponConfigSection formData={formData} setFormData={setFormData} />}
                 {isMembershipProgram && <MembershipConfigSection formData={formData} setFormData={setFormData} />}
                 {isCashbackProgram && <CashbackConfigSection formData={formData} setFormData={setFormData} />}
+
+                <ReferralSection formData={formData} setFormData={setFormData} />
 
                 <ValiditySection
                   formData={formData}

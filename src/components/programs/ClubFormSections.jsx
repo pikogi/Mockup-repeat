@@ -16,6 +16,7 @@ import {
   Zap,
   Check,
   CheckCircle2,
+  Copy,
 } from 'lucide-react'
 import { useLanguage } from '@/components/auth/LanguageContext'
 
@@ -333,7 +334,7 @@ function PointsValueSection({ formData, setFormData }) {
   )
 }
 
-function CatalogFields({ formData, setFormData }) {
+export function CatalogFields({ formData, setFormData }) {
   const [newItem, setNewItem] = useState({
     name: '',
     description: '',
@@ -1216,11 +1217,65 @@ const MEMBERSHIP_REFERRAL_TYPES = [
   { value: 'benefit', label: 'Beneficio exclusivo', desc: 'Un producto, servicio o regalo que vos definís.' },
 ]
 
+function getReferredRewardConfig(programTypeId, formData) {
+  switch (programTypeId) {
+    case POINTS_TYPE_ID:
+      return {
+        label: 'Puntos de bienvenida',
+        unit: 'puntos',
+        field: 'referral_referred_points',
+        placeholder: '50',
+        rewardSummary: `${formData.referral_referred_points || '—'} puntos`,
+      }
+    case CASHBACK_TYPE_ID:
+      return {
+        label: 'Cashback de bienvenida',
+        unit: 'pesos',
+        prefix: '$',
+        field: 'referral_referred_cashback',
+        placeholder: '200',
+        rewardSummary: `$${formData.referral_referred_cashback || '—'} de cashback`,
+      }
+    case COUPON_TYPE_ID:
+      return {
+        label: null,
+        field: null,
+        rewardSummary: 'un cupón gratis de bienvenida',
+      }
+    case MEMBERSHIP_TYPE_ID:
+      return {
+        label: 'Días gratis de bienvenida',
+        unit: 'días',
+        field: 'referral_referred_days',
+        placeholder: '7',
+        rewardSummary: `${formData.referral_referred_days || '—'} días gratis`,
+      }
+    default:
+      return {
+        label: 'Sellos de bienvenida',
+        unit: 'sellos',
+        field: 'referral_referred_stamps',
+        placeholder: '1',
+        rewardSummary: `${formData.referral_referred_stamps || '—'} ${(formData.referral_referred_stamps || 0) === 1 ? 'sello' : 'sellos'}`,
+      }
+  }
+}
+
+const REFERRAL_LINK_DEMO = 'https://repeat.la/r/mooncafe-a8f2k'
+
 export function ReferralSection({ formData, setFormData }) {
+  const [copied, setCopied] = useState(false)
   const enabled = formData.referral_enabled || false
   const isMembership = formData.program_type_id === MEMBERSHIP_TYPE_ID
   const membershipRewardType = formData.referral_reward_membership_type || 'days'
   const config = getReferralConfig(formData.program_type_id, formData)
+  const referredConfig = getReferredRewardConfig(formData.program_type_id, formData)
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(REFERRAL_LINK_DEMO).catch(() => {})
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   return (
     <div className="border-t pt-6 pb-6">
@@ -1247,6 +1302,23 @@ export function ReferralSection({ formData, setFormData }) {
 
       {enabled && (
         <div className="mt-4 grid gap-4">
+          {/* Referral link */}
+          <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Tu link de referido</p>
+                <p className="text-xs text-gray-400 mt-0.5">Compartilo en redes, WhatsApp o en el local.</p>
+              </div>
+              <Button type="button" size="sm" variant="outline" onClick={handleCopy} className="gap-1.5 flex-shrink-0">
+                {copied ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? 'Copiado' : 'Copiar'}
+              </Button>
+            </div>
+            <div className="bg-white dark:bg-gray-900 rounded-lg px-3 py-2 font-mono text-xs text-gray-600 dark:text-gray-300 truncate border border-gray-200 dark:border-gray-700">
+              {REFERRAL_LINK_DEMO}
+            </div>
+          </div>
+
           {/* Selector de tipo de recompensa para membresías */}
           {isMembership && (
             <div className="space-y-2">
@@ -1336,6 +1408,48 @@ export function ReferralSection({ formData, setFormData }) {
             </div>
           ) : null}
 
+          {/* Premio para el nuevo cliente */}
+          <div className="border-t border-gray-100 dark:border-gray-800 pt-4 space-y-3">
+            <div>
+              <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">Premio para el nuevo cliente</p>
+              <p className="text-xs text-gray-400 mt-0.5">Incentivo para el amigo que se registra usando el link.</p>
+            </div>
+            {referredConfig.field === null ? (
+              <div className="rounded-xl border border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950/40 p-4">
+                <p className="text-sm text-orange-900 dark:text-orange-200">
+                  El amigo recibe <strong>un cupón gratis de bienvenida</strong> al completar su registro.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="referral_referred_reward">{referredConfig.label}</Label>
+                <div className="flex items-center gap-3">
+                  {referredConfig.prefix && (
+                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      {referredConfig.prefix}
+                    </span>
+                  )}
+                  <Input
+                    id="referral_referred_reward"
+                    type="number"
+                    min="1"
+                    placeholder={referredConfig.placeholder}
+                    value={formData[referredConfig.field] || ''}
+                    onChange={(e) => {
+                      const v = parseInt(e.target.value) || 0
+                      setFormData((prev) => ({ ...prev, [referredConfig.field]: v }))
+                    }}
+                    className="h-12 max-w-[140px]"
+                  />
+                  <span className="text-sm text-gray-500">{referredConfig.unit}</span>
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Se acreditarán automáticamente cuando el amigo complete su registro.
+                </p>
+              </div>
+            )}
+          </div>
+
           <div className="rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/40 p-4 space-y-1.5">
             <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wider">
               ¿Cómo funciona?
@@ -1347,7 +1461,10 @@ export function ReferralSection({ formData, setFormData }) {
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-0.5 flex-shrink-0">②</span>
-                <span>Su amigo se registra usando ese link y obtiene su tarjeta.</span>
+                <span>
+                  Su amigo se registra usando ese link, obtiene su tarjeta y recibe{' '}
+                  <strong>{referredConfig.rewardSummary}</strong> de bienvenida.
+                </span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-0.5 flex-shrink-0">③</span>
@@ -1367,8 +1484,25 @@ export function ReferralSection({ formData, setFormData }) {
 const COUPON_TRIGGERS = [
   { value: 'purchase', label: 'Por cada compra', desc: 'El cliente recibe un cupón cada vez que realiza una compra.' },
   { value: 'signup', label: 'Al registrarse', desc: 'El cliente recibe un cupón al unirse al programa.' },
-  { value: 'manual', label: 'Manual', desc: 'Vos entregás el cupón manualmente desde el panel.' },
+  {
+    value: 'survey',
+    label: 'Al completar la encuesta',
+    desc: 'El cliente recibe un cupón como premio al completar la encuesta de satisfacción.',
+  },
+  {
+    value: 'manual',
+    label: 'Manual',
+    desc: 'Vos entregás el cupón manualmente desde el panel, por ejemplo enviándolo por correo.',
+  },
 ]
+
+function getCouponBenefitSummary(formData) {
+  const benefitType = formData.coupon_benefit_type || 'percent'
+  const benefitValue = formData.coupon_benefit_value ?? 10
+  if (benefitType === 'percent') return `${benefitValue}% de descuento`
+  if (benefitType === 'fixed') return `$${benefitValue} de descuento`
+  return formData.coupon_description || 'Producto gratis'
+}
 
 const COUPON_BENEFIT_TYPES = [
   { value: 'percent', label: '% de descuento' },
@@ -1377,11 +1511,19 @@ const COUPON_BENEFIT_TYPES = [
 ]
 
 export function CouponConfigSection({ formData, setFormData }) {
-  const trigger = formData.coupon_trigger || 'purchase'
+  const triggers = formData.coupon_triggers || ['purchase']
   const benefitType = formData.coupon_benefit_type || 'percent'
   const benefitValue = formData.coupon_benefit_value ?? 10
   const validityDays = formData.coupon_validity_days ?? 30
-  const selectedTrigger = COUPON_TRIGGERS.find((t) => t.value === trigger)
+  const selectedTriggers = COUPON_TRIGGERS.filter((t) => triggers.includes(t.value))
+
+  const toggleTrigger = (value) => {
+    setFormData((prev) => {
+      const current = prev.coupon_triggers || ['purchase']
+      const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value]
+      return { ...prev, coupon_triggers: next }
+    })
+  }
 
   return (
     <div className="border-t pt-6 pb-6 space-y-6">
@@ -1395,14 +1537,15 @@ export function CouponConfigSection({ formData, setFormData }) {
       {/* Cómo se obtiene */}
       <div className="space-y-3">
         <Label>¿Cómo obtiene el cupón el cliente?</Label>
+        <p className="text-xs text-gray-400 dark:text-gray-500 -mt-2">Podés tildar más de una opción.</p>
         <div className="grid grid-cols-1 gap-2">
           {COUPON_TRIGGERS.map((opt) => {
-            const isSelected = trigger === opt.value
+            const isSelected = triggers.includes(opt.value)
             return (
               <button
                 key={opt.value}
                 type="button"
-                onClick={() => setFormData((prev) => ({ ...prev, coupon_trigger: opt.value }))}
+                onClick={() => toggleTrigger(opt.value)}
                 className={`flex items-start gap-3 p-3 rounded-xl border-2 transition-all text-left ${
                   isSelected
                     ? 'border-orange-400 bg-orange-50 dark:bg-orange-950/40'
@@ -1410,8 +1553,12 @@ export function CouponConfigSection({ formData, setFormData }) {
                 }`}
               >
                 <div
-                  className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${isSelected ? 'bg-orange-500' : 'bg-gray-300 dark:bg-gray-600'}`}
-                />
+                  className={`w-4 h-4 rounded-md mt-0.5 flex-shrink-0 flex items-center justify-center border-2 ${
+                    isSelected ? 'bg-orange-500 border-orange-500' : 'border-gray-300 dark:border-gray-600'
+                  }`}
+                >
+                  {isSelected && <Check className="w-3 h-3 text-white" />}
+                </div>
                 <div>
                   <p
                     className={`text-sm font-semibold ${isSelected ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}
@@ -1509,15 +1656,16 @@ export function CouponConfigSection({ formData, setFormData }) {
       {/* Resumen */}
       <div className="rounded-xl border border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950/40 p-4 space-y-1.5">
         <p className="text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wider">Resumen</p>
-        <p className="text-sm text-orange-900 dark:text-orange-200">
-          {selectedTrigger?.label} → el cliente recibe un cupón de{' '}
-          <strong>
-            {benefitType === 'percent' && `${benefitValue}% de descuento`}
-            {benefitType === 'fixed' && `$${benefitValue} de descuento`}
-            {benefitType === 'free_item' && (formData.coupon_description || 'producto gratis')}
-          </strong>{' '}
-          válido por <strong>{validityDays} días</strong>.
-        </p>
+        {selectedTriggers.length > 0 ? (
+          <p className="text-sm text-orange-900 dark:text-orange-200">
+            {selectedTriggers.map((t) => t.label.toLowerCase()).join(' · ')} → el cliente recibe un cupón de{' '}
+            <strong>{getCouponBenefitSummary(formData)}</strong> válido por <strong>{validityDays} días</strong>.
+          </p>
+        ) : (
+          <p className="text-sm text-orange-900 dark:text-orange-200">
+            Seleccioná al menos una forma de entrega del cupón.
+          </p>
+        )}
       </div>
     </div>
   )
@@ -1532,7 +1680,13 @@ const USE_TYPES = [
 ]
 
 export function MembershipConfigSection({ formData, setFormData }) {
-  const [newTier, setNewTier] = useState({ name: '', min_spend: '', color: '#f59e0b' })
+  const [newTier, setNewTier] = useState({
+    name: '',
+    min_spend: '',
+    sub_price: '',
+    sub_period: 'monthly',
+    color: '#f59e0b',
+  })
   const [newBenefit, setNewBenefit] = useState({
     name: '',
     description: '',
@@ -1552,9 +1706,13 @@ export function MembershipConfigSection({ formData, setFormData }) {
       name: newTier.name.trim(),
       min_spend: parseInt(newTier.min_spend) || 0,
       color: newTier.color,
+      ...(newTier.sub_price !== '' && {
+        sub_price: parseInt(newTier.sub_price),
+        sub_period: newTier.sub_period,
+      }),
     }
     setFormData((prev) => ({ ...prev, membership_tiers: [...(prev.membership_tiers || []), tier] }))
-    setNewTier({ name: '', min_spend: '', color: '#f59e0b' })
+    setNewTier({ name: '', min_spend: '', sub_price: '', sub_period: 'monthly', color: '#f59e0b' })
   }
 
   const handleRemoveTier = (id) => {
@@ -1612,7 +1770,7 @@ export function MembershipConfigSection({ formData, setFormData }) {
             {
               value: 'tiers',
               label: 'Por niveles',
-              desc: 'Los clientes suben de nivel según cuánto gastan. Cada nivel tiene sus propios beneficios.',
+              desc: 'Los clientes suben de nivel según cuánto gastan. Opcionalmente podés habilitar suscripción paga por nivel para que puedan saltear el gasto.',
             },
           ].map((opt) => {
             const isSelected = activation === opt.value
@@ -1650,6 +1808,7 @@ export function MembershipConfigSection({ formData, setFormData }) {
           <Label>Niveles</Label>
           <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4 space-y-3 bg-gray-50 dark:bg-gray-800/50">
             <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Agregar nivel</p>
+
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="tier_name" className="text-xs">
@@ -1684,6 +1843,62 @@ export function MembershipConfigSection({ formData, setFormData }) {
                 />
               </div>
             </div>
+
+            {/* Suscripción opcional */}
+            <div className="pt-1 border-t border-gray-200 dark:border-gray-700 space-y-2">
+              <div className="flex items-center gap-2">
+                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">Suscripción directa</p>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-400 font-medium">
+                  opcional
+                </span>
+              </div>
+              <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-snug">
+                Si definís un precio, los clientes pueden pagar para acceder a este nivel sin necesidad de alcanzar el
+                gasto mínimo.
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="tier_sub_price" className="text-xs">
+                    Precio ($)
+                  </Label>
+                  <Input
+                    id="tier_sub_price"
+                    type="number"
+                    min="0"
+                    value={newTier.sub_price}
+                    onChange={(e) => setNewTier((p) => ({ ...p, sub_price: e.target.value }))}
+                    placeholder="Dejar vacío si no aplica"
+                    className="h-9"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Período</Label>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[
+                      { value: 'monthly', label: 'Mensual' },
+                      { value: 'annual', label: 'Anual' },
+                    ].map((opt) => {
+                      const isSelected = newTier.sub_period === opt.value
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setNewTier((p) => ({ ...p, sub_period: opt.value }))}
+                          className={`py-2 rounded-lg border-2 text-[11px] font-semibold transition-all ${
+                            isSelected
+                              ? 'border-violet-400 bg-violet-50 dark:bg-violet-950/40 text-gray-900 dark:text-gray-100'
+                              : 'border-gray-200 dark:border-gray-700 text-gray-400 hover:border-gray-300'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-1.5">
               <Label className="text-xs">Color</Label>
               <div className="flex items-center gap-2">
@@ -1698,6 +1913,7 @@ export function MembershipConfigSection({ formData, setFormData }) {
                 ))}
               </div>
             </div>
+
             <Button
               type="button"
               onClick={handleAddTier}
@@ -1718,14 +1934,22 @@ export function MembershipConfigSection({ formData, setFormData }) {
                   className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700"
                 >
                   <div className="w-8 h-8 rounded-lg flex-shrink-0" style={{ backgroundColor: tier.color }} />
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{tier.name}</p>
-                    <p className="text-xs text-gray-400">Gasto mínimo: ${parseInt(tier.min_spend).toLocaleString()}</p>
+                    <p className="text-xs text-gray-400">
+                      Gasto mín. ${parseInt(tier.min_spend || 0).toLocaleString()}
+                      {tier.sub_price != null && (
+                        <span className="ml-2 text-violet-500 font-medium">
+                          · Suscripción ${parseInt(tier.sub_price).toLocaleString()}/
+                          {tier.sub_period === 'annual' ? 'año' : 'mes'}
+                        </span>
+                      )}
+                    </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleRemoveTier(tier.id)}
-                    className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-gray-400 hover:text-red-500 transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

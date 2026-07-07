@@ -1,4 +1,5 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 
 const WHATSAPP_URL =
   'https://wa.me/5493517881653?text=' +
@@ -32,9 +33,17 @@ export default function DemoGuideCard({
   positionTop,
   isDesktop,
 }) {
+  const [dismissed, setDismissed] = useState(false)
+
+  useEffect(() => {
+    setDismissed(false)
+  }, [currentStep])
+
   const step = steps[currentStep]
   const isFirst = currentStep === 0
   const isLast = currentStep === steps.length - 1
+
+  if (dismissed) return null
 
   if (done) {
     return (
@@ -227,6 +236,21 @@ export default function DemoGuideCard({
         <span style={{ marginLeft: 'auto', fontSize: isDesktop ? 13 : 11, color: '#d1d5db', fontWeight: 500 }}>
           {currentStep + 1} / {steps.length}
         </span>
+        <button
+          onClick={() => setDismissed(true)}
+          style={{
+            marginLeft: isDesktop ? 10 : 8,
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: 2,
+            display: 'flex',
+            alignItems: 'center',
+            color: '#d1d5db',
+          }}
+        >
+          <X size={isDesktop ? 16 : 14} />
+        </button>
       </div>
 
       {/* Progress bar */}

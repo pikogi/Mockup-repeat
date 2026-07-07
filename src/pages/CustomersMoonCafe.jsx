@@ -11,13 +11,28 @@ const PROGRAM = {
   program_rules: { stamps_required: 5 },
 }
 
-const makeCard = (id, balance, visits, rewardsCount) => ({
-  card_id: `mc${id}`,
-  current_balance: balance,
-  total_visits: visits,
-  redemptions: Array.from({ length: rewardsCount }, (_, i) => ({ status: 'completed', id: i })),
-  program: PROGRAM,
-})
+const makeCard = (id, balance, visits, rewardsCount) => {
+  const txCount = Math.min(visits, 8)
+  const transactions = Array.from({ length: txCount }, (_, i) => {
+    const daysAgo = i * 3 + (id % 3)
+    const d = new Date()
+    d.setUTCDate(d.getUTCDate() - daysAgo)
+    d.setUTCHours(9 + ((id * 3 + i * 7) % 10), (id * 11 + i * 17) % 60, 0, 0)
+    return {
+      transaction_id: `tx-${id}-${i}`,
+      transaction_type: 'stamp_added',
+      created_at: d.toISOString(),
+    }
+  })
+  return {
+    card_id: `mc${id}`,
+    current_balance: balance,
+    total_visits: visits,
+    redemptions: Array.from({ length: rewardsCount }, (_, i) => ({ status: 'completed', id: i })),
+    program: PROGRAM,
+    transactions,
+  }
+}
 
 const RAW_MEMBERS = [
   {
