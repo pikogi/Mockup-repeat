@@ -54,6 +54,7 @@ const DEFAULT_FORM_DATA = {
   membership_activation: 'free',
   membership_tiers: [],
   membership_catalog: [],
+  membership_partners: [],
   // Referidos (por tipo)
   referral_reward_cashback: 500,
   referral_reward_membership_type: 'days',

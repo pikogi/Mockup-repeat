@@ -73,6 +73,7 @@ const DashboardHintMoonCafe = lazy(() => import('./DashboardHintMoonCafe'))
 const DashboardMoonCafePoints = lazy(() => import('./DashboardMoonCafePoints'))
 const MyProgramsMoonCafe = lazy(() => import('./MyProgramsMoonCafe'))
 const EditClubMoonCafe = lazy(() => import('./EditClubMoonCafe'))
+const PublicMembershipMoonCafe = lazy(() => import('./PublicMembershipMoonCafe'))
 const TeamMoonCafe = lazy(() => import('./TeamMoonCafe'))
 const StoresMoonCafe = lazy(() => import('./StoresMoonCafe'))
 const CustomersMoonCafePoints = lazy(() => import('./CustomersMoonCafePoints'))
@@ -140,6 +141,7 @@ export default function Pages() {
             <Route path="/catalog/:programId" element={<PublicCatalog />} />
             <Route path="/membership/leroma-membership-demo" element={<PublicMembershipLeroma />} />
             <Route path="/membership/del-pilar-membership-demo" element={<PublicMembershipDelPilar />} />
+            <Route path="/membership/moon-cafe-demo" element={<PublicMembershipMoonCafe />} />
             <Route path="/membership/:programId" element={<PublicMembership />} />
             <Route path="/cashback/:programId" element={<PublicCashback />} />
             <Route path="/demo" element={<Demo />} />

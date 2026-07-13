@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { ReferidosContent } from './ReferidosRoadmap'
 import { EncuestasContent } from './EncuestaRoadmap'
+import { CuponesContent } from './CuponesRoadmap'
 import PropTypes from 'prop-types'
 import { ArrowRight, BarChart2, Gift, Percent, QrCode, Repeat2, Trophy, UserPlus, Users } from 'lucide-react'
 import { motion } from 'framer-motion'
@@ -706,31 +707,36 @@ export default function DashboardHome({ brandId, demo = false, demoTitle, demoLo
         </motion.div>
       )}
       {isRoadmap && (
-        <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1 w-fit">
-          {[
-            { id: 'resumen', label: 'Resumen' },
-            { id: 'referidos', label: 'Referidos' },
-            { id: 'encuestas', label: 'Encuestas' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setDashTab(tab.id)}
-              className={cn(
-                'px-4 py-1.5 rounded-lg text-sm font-medium transition-all',
-                dashTab === tab.id
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300',
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
+        <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+          <div className="inline-flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1 min-w-max">
+            {[
+              { id: 'resumen', label: 'Resumen' },
+              { id: 'referidos', label: 'Referidos' },
+              { id: 'encuestas', label: 'Encuestas' },
+              { id: 'cupones', label: 'Cupones' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setDashTab(tab.id)}
+                className={cn(
+                  'px-4 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap',
+                  dashTab === tab.id
+                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300',
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
       {isRoadmap && dashTab === 'referidos' ? (
         <ReferidosContent />
       ) : isRoadmap && dashTab === 'encuestas' ? (
         <EncuestasContent />
+      ) : isRoadmap && dashTab === 'cupones' ? (
+        <CuponesContent />
       ) : (
         statsView
       )}
@@ -739,7 +745,7 @@ export default function DashboardHome({ brandId, demo = false, demoTitle, demoLo
 
   if (demo) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen overflow-x-hidden">
         <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">{inner}</div>
       </div>
     )

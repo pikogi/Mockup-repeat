@@ -21,6 +21,7 @@ import {
   ReferralSection,
   CouponConfigSection,
   MembershipConfigSection,
+  PartnerBenefitsSection,
   CashbackConfigSection,
 } from '@/components/programs/ClubFormSections'
 
@@ -174,6 +175,7 @@ export default function CreateClub() {
                   {isPointsProgram && <PointsConversionSection formData={formData} setFormData={setFormData} />}
                   {isCouponProgram && <CouponConfigSection formData={formData} setFormData={setFormData} />}
                   {isMembershipProgram && <MembershipConfigSection formData={formData} setFormData={setFormData} />}
+                  {isMembershipProgram && <PartnerBenefitsSection formData={formData} setFormData={setFormData} />}
                   {isCashbackProgram && <CashbackConfigSection formData={formData} setFormData={setFormData} />}
 
                   <ValiditySection

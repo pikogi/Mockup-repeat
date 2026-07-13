@@ -17,6 +17,11 @@ import {
   Check,
   CheckCircle2,
   Copy,
+  Building2,
+  ChevronDown,
+  Pencil,
+  X,
+  Megaphone,
 } from 'lucide-react'
 import { useLanguage } from '@/components/auth/LanguageContext'
 
@@ -1694,6 +1699,9 @@ export function MembershipConfigSection({ formData, setFormData }) {
     tier_required: 'all',
   })
   const [benefitImagePreview, setBenefitImagePreview] = useState(null)
+  const [benefitsOpen, setBenefitsOpen] = useState(false)
+  const [editingBenefitId, setEditingBenefitId] = useState(null)
+  const [editingTierId, setEditingTierId] = useState(null)
 
   const activation = formData.membership_activation || 'free'
   const tiers = [...(formData.membership_tiers || [])].sort((a, b) => a.min_spend - b.min_spend)
@@ -1701,17 +1709,53 @@ export function MembershipConfigSection({ formData, setFormData }) {
 
   const handleAddTier = () => {
     if (!newTier.name.trim() || newTier.min_spend === '') return
-    const tier = {
-      id: Date.now().toString(),
-      name: newTier.name.trim(),
-      min_spend: parseInt(newTier.min_spend) || 0,
-      color: newTier.color,
-      ...(newTier.sub_price !== '' && {
-        sub_price: parseInt(newTier.sub_price),
-        sub_period: newTier.sub_period,
-      }),
+    if (editingTierId !== null) {
+      setFormData((prev) => ({
+        ...prev,
+        membership_tiers: prev.membership_tiers.map((t) =>
+          t.id === editingTierId
+            ? {
+                ...t,
+                name: newTier.name.trim(),
+                min_spend: parseInt(newTier.min_spend) || 0,
+                color: newTier.color,
+                ...(newTier.sub_price !== ''
+                  ? { sub_price: parseInt(newTier.sub_price), sub_period: newTier.sub_period }
+                  : { sub_price: undefined, sub_period: undefined }),
+              }
+            : t,
+        ),
+      }))
+      setEditingTierId(null)
+    } else {
+      const tier = {
+        id: Date.now().toString(),
+        name: newTier.name.trim(),
+        min_spend: parseInt(newTier.min_spend) || 0,
+        color: newTier.color,
+        ...(newTier.sub_price !== '' && {
+          sub_price: parseInt(newTier.sub_price),
+          sub_period: newTier.sub_period,
+        }),
+      }
+      setFormData((prev) => ({ ...prev, membership_tiers: [...(prev.membership_tiers || []), tier] }))
     }
-    setFormData((prev) => ({ ...prev, membership_tiers: [...(prev.membership_tiers || []), tier] }))
+    setNewTier({ name: '', min_spend: '', sub_price: '', sub_period: 'monthly', color: '#f59e0b' })
+  }
+
+  const handleEditTier = (tier) => {
+    setNewTier({
+      name: tier.name,
+      min_spend: String(tier.min_spend ?? ''),
+      sub_price: tier.sub_price != null ? String(tier.sub_price) : '',
+      sub_period: tier.sub_period || 'monthly',
+      color: tier.color || '#f59e0b',
+    })
+    setEditingTierId(tier.id)
+  }
+
+  const handleCancelTierEdit = () => {
+    setEditingTierId(null)
     setNewTier({ name: '', min_spend: '', sub_price: '', sub_period: 'monthly', color: '#f59e0b' })
   }
 
@@ -1727,15 +1771,52 @@ export function MembershipConfigSection({ formData, setFormData }) {
 
   const handleAddBenefit = () => {
     if (!newBenefit.name.trim()) return
-    const benefit = {
-      id: Date.now(),
-      name: newBenefit.name.trim(),
-      description: newBenefit.description.trim(),
-      use_type: newBenefit.use_type,
-      tier_required: newBenefit.tier_required,
-      image_url: benefitImagePreview || null,
+    if (editingBenefitId !== null) {
+      setFormData((prev) => ({
+        ...prev,
+        membership_catalog: prev.membership_catalog.map((b) =>
+          b.id === editingBenefitId
+            ? {
+                ...b,
+                name: newBenefit.name.trim(),
+                description: newBenefit.description.trim(),
+                use_type: newBenefit.use_type,
+                tier_required: newBenefit.tier_required,
+                image_url: benefitImagePreview ?? b.image_url,
+              }
+            : b,
+        ),
+      }))
+      setEditingBenefitId(null)
+    } else {
+      const benefit = {
+        id: Date.now(),
+        name: newBenefit.name.trim(),
+        description: newBenefit.description.trim(),
+        use_type: newBenefit.use_type,
+        tier_required: newBenefit.tier_required,
+        image_url: benefitImagePreview || null,
+      }
+      setFormData((prev) => ({ ...prev, membership_catalog: [...(prev.membership_catalog || []), benefit] }))
     }
-    setFormData((prev) => ({ ...prev, membership_catalog: [...(prev.membership_catalog || []), benefit] }))
+    setNewBenefit({ name: '', description: '', use_type: 'unlimited', tier_required: 'all' })
+    setBenefitImagePreview(null)
+  }
+
+  const handleEditBenefit = (benefit) => {
+    setNewBenefit({
+      name: benefit.name,
+      description: benefit.description || '',
+      use_type: benefit.use_type,
+      tier_required: benefit.tier_required,
+    })
+    setBenefitImagePreview(benefit.image_url || null)
+    setEditingBenefitId(benefit.id)
+    setBenefitsOpen(true)
+  }
+
+  const handleCancelBenefitEdit = () => {
+    setEditingBenefitId(null)
     setNewBenefit({ name: '', description: '', use_type: 'unlimited', tier_required: 'all' })
     setBenefitImagePreview(null)
   }
@@ -1806,8 +1887,12 @@ export function MembershipConfigSection({ formData, setFormData }) {
       {activation === 'tiers' && (
         <div className="space-y-4">
           <Label>Niveles</Label>
-          <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4 space-y-3 bg-gray-50 dark:bg-gray-800/50">
-            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Agregar nivel</p>
+          <div
+            className={`rounded-xl border p-4 space-y-3 ${editingTierId !== null ? 'border-violet-300 dark:border-violet-700 bg-violet-50/50 dark:bg-violet-950/20' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50'}`}
+          >
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              {editingTierId !== null ? 'Editando nivel' : 'Agregar nivel'}
+            </p>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -1914,16 +1999,31 @@ export function MembershipConfigSection({ formData, setFormData }) {
               </div>
             </div>
 
-            <Button
-              type="button"
-              onClick={handleAddTier}
-              disabled={!newTier.name.trim() || newTier.min_spend === ''}
-              className="w-full gap-2 text-white"
-              style={{ backgroundColor: newTier.color }}
-            >
-              <Plus className="w-4 h-4" />
-              Agregar nivel
-            </Button>
+            <div className="flex gap-2">
+              {editingTierId !== null && (
+                <Button type="button" onClick={handleCancelTierEdit} variant="outline" className="flex-1">
+                  Cancelar
+                </Button>
+              )}
+              <Button
+                type="button"
+                onClick={handleAddTier}
+                disabled={!newTier.name.trim() || newTier.min_spend === ''}
+                className="flex-1 gap-2 bg-violet-500 hover:bg-violet-600 text-white"
+              >
+                {editingTierId !== null ? (
+                  <>
+                    <Pencil className="w-4 h-4" />
+                    Guardar cambios
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4" />
+                    Agregar nivel
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
 
           {tiers.length > 0 ? (
@@ -1946,13 +2046,22 @@ export function MembershipConfigSection({ formData, setFormData }) {
                       )}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveTier(tier.id)}
-                    className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex gap-1 flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => handleEditTier(tier)}
+                      className="p-1.5 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-950/30 text-gray-400 hover:text-violet-500 transition-colors"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveTier(tier.id)}
+                      className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-gray-400 hover:text-red-500 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -1966,179 +2075,228 @@ export function MembershipConfigSection({ formData, setFormData }) {
 
       {/* Beneficios / catálogo */}
       <div className="space-y-4">
-        <div>
-          <Label>Beneficios del programa</Label>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Agregá descuentos, productos o servicios. Definí si son ilimitados, 1 vez por mes, o de un solo uso.
-          </p>
-        </div>
-
-        {/* Form nuevo beneficio */}
-        <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4 space-y-3 bg-gray-50 dark:bg-gray-800/50">
-          <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Agregar beneficio</p>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="benefit_name" className="text-xs">
-              Nombre
-            </Label>
-            <Input
-              id="benefit_name"
-              value={newBenefit.name}
-              onChange={(e) => setNewBenefit((p) => ({ ...p, name: e.target.value }))}
-              placeholder="Ej: 10% de descuento, Gatorade gratis, Corte gratis..."
-              className="h-10"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="benefit_desc" className="text-xs">
-                Descripción <span className="text-gray-400 font-normal">(opcional)</span>
-              </Label>
-              <Input
-                id="benefit_desc"
-                value={newBenefit.description}
-                onChange={(e) => setNewBenefit((p) => ({ ...p, description: e.target.value }))}
-                placeholder="Detalles..."
-                className="h-10"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">
-                Imagen <span className="text-gray-400 font-normal">(opcional)</span>
-              </Label>
-              <label className="cursor-pointer flex items-center gap-2 h-10 px-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 transition-colors">
-                <input type="file" accept="image/*" onChange={handleBenefitImageChange} className="hidden" />
-                {benefitImagePreview ? (
-                  <img src={benefitImagePreview} className="w-6 h-6 rounded object-cover flex-shrink-0" />
-                ) : (
-                  <ImageIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                )}
-                <span className="text-xs text-gray-500 truncate">{benefitImagePreview ? 'Cambiar' : 'Subir'}</span>
-              </label>
-            </div>
-          </div>
-
-          {/* Tipo de uso */}
-          <div className="space-y-1.5">
-            <Label className="text-xs">Tipo de uso</Label>
-            <div className="grid grid-cols-3 gap-2">
-              {USE_TYPES.map((opt) => {
-                const isSelected = newBenefit.use_type === opt.value
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => setNewBenefit((p) => ({ ...p, use_type: opt.value }))}
-                    className={`p-2.5 rounded-xl border-2 text-left transition-all ${
-                      isSelected
-                        ? 'border-violet-400 bg-violet-50 dark:bg-violet-950/40'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    <p
-                      className={`text-xs font-semibold ${isSelected ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}
-                    >
-                      {opt.label}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-0.5 leading-tight">{opt.desc}</p>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Nivel requerido */}
-          {activation === 'tiers' && tiers.length > 0 && (
-            <div className="space-y-1.5">
-              <Label className="text-xs">Nivel mínimo requerido</Label>
-              <Select
-                value={newBenefit.tier_required}
-                onValueChange={(v) => setNewBenefit((p) => ({ ...p, tier_required: v }))}
-              >
-                <SelectTrigger className="h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los niveles</SelectItem>
-                  {tiers.map((t) => (
-                    <SelectItem key={t.id} value={t.id}>
-                      {t.name}+
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          <Button
-            type="button"
-            onClick={handleAddBenefit}
-            disabled={!newBenefit.name.trim()}
-            className="w-full gap-2 bg-violet-500 hover:bg-violet-600 text-white"
-          >
-            <Plus className="w-4 h-4" />
-            Agregar beneficio
-          </Button>
-        </div>
-
-        {/* Lista beneficios */}
-        {catalog.length > 0 ? (
-          <div className="space-y-2">
-            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-              {catalog.length} {catalog.length === 1 ? 'beneficio' : 'beneficios'}
+        <button
+          type="button"
+          onClick={() => setBenefitsOpen((p) => !p)}
+          className="w-full flex items-center justify-between text-left group"
+        >
+          <div>
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              Beneficios del programa
+              {catalog.length > 0 && (
+                <span className="ml-2 text-xs font-semibold px-1.5 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400">
+                  {catalog.length}
+                </span>
+              )}
             </p>
-            {catalog.map((benefit) => {
-              const useType = USE_TYPES.find((u) => u.value === benefit.use_type)
-              const tierInfo =
-                benefit.tier_required !== 'all' ? tiers.find((t) => t.id === benefit.tier_required) : null
-              return (
-                <div
-                  key={benefit.id}
-                  className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700"
-                >
-                  {benefit.image_url ? (
-                    <img src={benefit.image_url} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-lg bg-violet-50 dark:bg-violet-950/30 flex items-center justify-center flex-shrink-0">
-                      <Package className="w-5 h-5 text-violet-400" />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{benefit.name}</p>
-                    <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                      <span className="text-xs px-1.5 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 font-medium">
-                        {useType?.label}
-                      </span>
-                      {tierInfo ? (
-                        <span
-                          className="text-xs px-1.5 py-0.5 rounded-full font-medium text-white"
-                          style={{ backgroundColor: tierInfo.color }}
-                        >
-                          {tierInfo.name}+
-                        </span>
-                      ) : (
-                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-medium">
-                          Todos
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveBenefit(benefit.id)}
-                    className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              )
-            })}
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              Agregá descuentos, productos o servicios propios.
+            </p>
           </div>
-        ) : (
-          <div className="text-center py-6 text-gray-400 dark:text-gray-500">
-            <Package className="w-8 h-8 mx-auto mb-2 opacity-40" />
-            <p className="text-sm">Todavía no hay beneficios cargados</p>
+          <ChevronDown
+            className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200 ${benefitsOpen ? 'rotate-180' : ''}`}
+          />
+        </button>
+
+        {benefitsOpen && (
+          <div className="space-y-4">
+            {/* Form nuevo / editar beneficio */}
+            <div
+              className={`rounded-xl border p-4 space-y-3 ${editingBenefitId !== null ? 'border-violet-300 dark:border-violet-700 bg-violet-50/50 dark:bg-violet-950/20' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50'}`}
+            >
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                {editingBenefitId !== null ? 'Editando beneficio' : 'Agregar beneficio'}
+              </p>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="benefit_name" className="text-xs">
+                  Nombre
+                </Label>
+                <Input
+                  id="benefit_name"
+                  value={newBenefit.name}
+                  onChange={(e) => setNewBenefit((p) => ({ ...p, name: e.target.value }))}
+                  placeholder="Ej: 10% de descuento, Gatorade gratis, Corte gratis..."
+                  className="h-10"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="benefit_desc" className="text-xs">
+                    Descripción <span className="text-gray-400 font-normal">(opcional)</span>
+                  </Label>
+                  <Input
+                    id="benefit_desc"
+                    value={newBenefit.description}
+                    onChange={(e) => setNewBenefit((p) => ({ ...p, description: e.target.value }))}
+                    placeholder="Detalles..."
+                    className="h-10"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">
+                    Imagen <span className="text-gray-400 font-normal">(opcional)</span>
+                  </Label>
+                  <label className="cursor-pointer flex items-center gap-2 h-10 px-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 transition-colors">
+                    <input type="file" accept="image/*" onChange={handleBenefitImageChange} className="hidden" />
+                    {benefitImagePreview ? (
+                      <img src={benefitImagePreview} className="w-6 h-6 rounded object-cover flex-shrink-0" />
+                    ) : (
+                      <ImageIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    )}
+                    <span className="text-xs text-gray-500 truncate">{benefitImagePreview ? 'Cambiar' : 'Subir'}</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Tipo de uso */}
+              <div className="space-y-1.5">
+                <Label className="text-xs">Tipo de uso</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {USE_TYPES.map((opt) => {
+                    const isSelected = newBenefit.use_type === opt.value
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setNewBenefit((p) => ({ ...p, use_type: opt.value }))}
+                        className={`p-2.5 rounded-xl border-2 text-left transition-all ${
+                          isSelected
+                            ? 'border-violet-400 bg-violet-50 dark:bg-violet-950/40'
+                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                        }`}
+                      >
+                        <p
+                          className={`text-xs font-semibold ${isSelected ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}
+                        >
+                          {opt.label}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-0.5 leading-tight">{opt.desc}</p>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Nivel requerido */}
+              {activation === 'tiers' && tiers.length > 0 && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Nivel mínimo requerido</Label>
+                  <Select
+                    value={newBenefit.tier_required}
+                    onValueChange={(v) => setNewBenefit((p) => ({ ...p, tier_required: v }))}
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los niveles</SelectItem>
+                      {tiers.map((t) => (
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.name}+
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                {editingBenefitId !== null && (
+                  <Button type="button" onClick={handleCancelBenefitEdit} variant="outline" className="flex-1">
+                    Cancelar
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  onClick={handleAddBenefit}
+                  disabled={!newBenefit.name.trim()}
+                  className="flex-1 gap-2 bg-violet-500 hover:bg-violet-600 text-white"
+                >
+                  {editingBenefitId !== null ? (
+                    <>
+                      <Pencil className="w-4 h-4" />
+                      Guardar cambios
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4" />
+                      Agregar beneficio
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Lista beneficios */}
+            {catalog.length > 0 ? (
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  {catalog.length} {catalog.length === 1 ? 'beneficio' : 'beneficios'}
+                </p>
+                {catalog.map((benefit) => {
+                  const useType = USE_TYPES.find((u) => u.value === benefit.use_type)
+                  const tierInfo =
+                    benefit.tier_required !== 'all' ? tiers.find((t) => t.id === benefit.tier_required) : null
+                  return (
+                    <div
+                      key={benefit.id}
+                      className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700"
+                    >
+                      {benefit.image_url ? (
+                        <img src={benefit.image_url} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-violet-50 dark:bg-violet-950/30 flex items-center justify-center flex-shrink-0">
+                          <Package className="w-5 h-5 text-violet-400" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{benefit.name}</p>
+                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                          <span className="text-xs px-1.5 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 font-medium">
+                            {useType?.label}
+                          </span>
+                          {tierInfo ? (
+                            <span
+                              className="text-xs px-1.5 py-0.5 rounded-full font-medium text-white"
+                              style={{ backgroundColor: tierInfo.color }}
+                            >
+                              {tierInfo.name}+
+                            </span>
+                          ) : (
+                            <span className="text-xs px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-medium">
+                              Todos
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-1 flex-shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleEditBenefit(benefit)}
+                          className="p-1.5 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-950/30 text-gray-400 hover:text-violet-500 transition-colors"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveBenefit(benefit.id)}
+                          className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-gray-400 hover:text-red-500 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-6 text-gray-400 dark:text-gray-500">
+                <Package className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                <p className="text-sm">Todavía no hay beneficios cargados</p>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -2301,6 +2459,752 @@ export function CashbackConfigSection({ formData, setFormData }) {
           </p>
         </div>
       </div>
+    </div>
+  )
+}
+
+// ─── Partner Benefits ──────────────────────────────────────────────────────────
+
+const PARTNER_CATEGORIES = [
+  { value: 'gastronomia', label: 'Gastronomía', emoji: '🍽️' },
+  { value: 'salud', label: 'Salud & Bienestar', emoji: '💊' },
+  { value: 'deportes', label: 'Deportes', emoji: '⚽' },
+  { value: 'moda', label: 'Moda & Belleza', emoji: '👗' },
+  { value: 'entretenimiento', label: 'Entretenimiento', emoji: '🎬' },
+  { value: 'servicios', label: 'Servicios', emoji: '🔧' },
+  { value: 'otro', label: 'Otro', emoji: '⭐' },
+]
+
+const DEFAULT_PARTNER = {
+  partner_name: '',
+  benefit_name: '',
+  description: '',
+  category: 'gastronomia',
+  use_type: 'unlimited',
+  tier_required: 'all',
+}
+
+export function PartnerBenefitsSection({ formData, setFormData }) {
+  const [newPartner, setNewPartner] = useState(DEFAULT_PARTNER)
+  const [logoPreview, setLogoPreview] = useState(null)
+  const [open, setOpen] = useState(false)
+  const [editingPartnerId, setEditingPartnerId] = useState(null)
+
+  const activation = formData.membership_activation || 'free'
+  const tiers = [...(formData.membership_tiers || [])].sort((a, b) => a.min_spend - b.min_spend)
+  const partners = formData.membership_partners || []
+
+  const handleAddPartner = () => {
+    if (!newPartner.partner_name.trim() || !newPartner.benefit_name.trim()) return
+    if (editingPartnerId !== null) {
+      setFormData((prev) => ({
+        ...prev,
+        membership_partners: prev.membership_partners.map((p) =>
+          p.id === editingPartnerId
+            ? {
+                ...p,
+                partner_name: newPartner.partner_name.trim(),
+                benefit_name: newPartner.benefit_name.trim(),
+                description: newPartner.description.trim(),
+                category: newPartner.category,
+                use_type: newPartner.use_type,
+                tier_required: newPartner.tier_required,
+                logo_url: logoPreview ?? p.logo_url,
+              }
+            : p,
+        ),
+      }))
+      setEditingPartnerId(null)
+    } else {
+      const partner = {
+        id: Date.now(),
+        ...newPartner,
+        partner_name: newPartner.partner_name.trim(),
+        benefit_name: newPartner.benefit_name.trim(),
+        description: newPartner.description.trim(),
+        logo_url: logoPreview || null,
+      }
+      setFormData((prev) => ({ ...prev, membership_partners: [...(prev.membership_partners || []), partner] }))
+    }
+    setNewPartner(DEFAULT_PARTNER)
+    setLogoPreview(null)
+  }
+
+  const handleEditPartner = (partner) => {
+    setNewPartner({
+      partner_name: partner.partner_name,
+      benefit_name: partner.benefit_name,
+      description: partner.description || '',
+      category: partner.category || 'gastronomia',
+      use_type: partner.use_type,
+      tier_required: partner.tier_required,
+    })
+    setLogoPreview(partner.logo_url || null)
+    setEditingPartnerId(partner.id)
+    setOpen(true)
+  }
+
+  const handleCancelPartnerEdit = () => {
+    setEditingPartnerId(null)
+    setNewPartner(DEFAULT_PARTNER)
+    setLogoPreview(null)
+  }
+
+  const handleRemovePartner = (id) => {
+    setFormData((prev) => ({ ...prev, membership_partners: prev.membership_partners.filter((p) => p.id !== id) }))
+  }
+
+  const handleLogoChange = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => setLogoPreview(ev.target.result)
+    reader.readAsDataURL(file)
+  }
+
+  return (
+    <div className="border-t pt-6 pb-6 space-y-4">
+      <button
+        type="button"
+        onClick={() => setOpen((p) => !p)}
+        className="w-full flex items-center justify-between text-left"
+      >
+        <div>
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            Comercios adheridos
+            {partners.length > 0 && (
+              <span className="ml-2 text-xs font-semibold px-1.5 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400">
+                {partners.length}
+              </span>
+            )}
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            Sumá negocios aliados que ofrezcan beneficios exclusivos a tus miembros.
+          </p>
+        </div>
+        <ChevronDown
+          className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
+
+      {open && (
+        <>
+          {/* Formulario de alta / edición */}
+          <div
+            className={`rounded-xl border p-4 space-y-3 ${editingPartnerId !== null ? 'border-violet-300 dark:border-violet-700 bg-violet-50/50 dark:bg-violet-950/20' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50'}`}
+          >
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              {editingPartnerId !== null ? 'Editando comercio' : 'Agregar comercio'}
+            </p>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="partner_name" className="text-xs">
+                  Nombre del comercio
+                </Label>
+                <Input
+                  id="partner_name"
+                  value={newPartner.partner_name}
+                  onChange={(e) => setNewPartner((p) => ({ ...p, partner_name: e.target.value }))}
+                  placeholder="Ej: Starbucks, Gym X..."
+                  className="h-10"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="partner_benefit" className="text-xs">
+                  Beneficio
+                </Label>
+                <Input
+                  id="partner_benefit"
+                  value={newPartner.benefit_name}
+                  onChange={(e) => setNewPartner((p) => ({ ...p, benefit_name: e.target.value }))}
+                  placeholder="Ej: 20% descuento, Café gratis..."
+                  className="h-10"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="partner_desc" className="text-xs">
+                  Descripción <span className="text-gray-400 font-normal">(opcional)</span>
+                </Label>
+                <Input
+                  id="partner_desc"
+                  value={newPartner.description}
+                  onChange={(e) => setNewPartner((p) => ({ ...p, description: e.target.value }))}
+                  placeholder="Detalles del beneficio..."
+                  className="h-10"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">
+                  Logo <span className="text-gray-400 font-normal">(opcional)</span>
+                </Label>
+                <label className="cursor-pointer flex items-center gap-2 h-10 px-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 transition-colors">
+                  <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
+                  {logoPreview ? (
+                    <img src={logoPreview} className="w-6 h-6 rounded-full object-cover flex-shrink-0" />
+                  ) : (
+                    <ImageIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  )}
+                  <span className="text-xs text-gray-500 truncate">{logoPreview ? 'Cambiar' : 'Subir logo'}</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Categoría */}
+            <div className="space-y-1.5">
+              <Label className="text-xs">Categoría</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {PARTNER_CATEGORIES.map((cat) => {
+                  const isSelected = newPartner.category === cat.value
+                  return (
+                    <button
+                      key={cat.value}
+                      type="button"
+                      onClick={() => setNewPartner((p) => ({ ...p, category: cat.value }))}
+                      className={`p-2.5 rounded-xl border-2 text-left transition-all ${
+                        isSelected
+                          ? 'border-violet-400 bg-violet-50 dark:bg-violet-950/40'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                      }`}
+                    >
+                      <p className="text-sm">{cat.emoji}</p>
+                      <p
+                        className={`text-xs font-semibold mt-0.5 leading-tight ${isSelected ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}
+                      >
+                        {cat.label}
+                      </p>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Tipo de uso */}
+            <div className="space-y-1.5">
+              <Label className="text-xs">Tipo de uso</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {USE_TYPES.map((opt) => {
+                  const isSelected = newPartner.use_type === opt.value
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setNewPartner((p) => ({ ...p, use_type: opt.value }))}
+                      className={`p-2.5 rounded-xl border-2 text-left transition-all ${
+                        isSelected
+                          ? 'border-violet-400 bg-violet-50 dark:bg-violet-950/40'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                      }`}
+                    >
+                      <p
+                        className={`text-xs font-semibold ${isSelected ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}
+                      >
+                        {opt.label}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-0.5 leading-tight">{opt.desc}</p>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Nivel requerido */}
+            {activation === 'tiers' && tiers.length > 0 && (
+              <div className="space-y-1.5">
+                <Label className="text-xs">Nivel mínimo requerido</Label>
+                <Select
+                  value={newPartner.tier_required}
+                  onValueChange={(v) => setNewPartner((p) => ({ ...p, tier_required: v }))}
+                >
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los niveles</SelectItem>
+                    {tiers.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>
+                        {t.name}+
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              {editingPartnerId !== null && (
+                <Button type="button" onClick={handleCancelPartnerEdit} variant="outline" className="flex-1">
+                  Cancelar
+                </Button>
+              )}
+              <Button
+                type="button"
+                onClick={handleAddPartner}
+                disabled={!newPartner.partner_name.trim() || !newPartner.benefit_name.trim()}
+                className="flex-1 gap-2 bg-violet-500 hover:bg-violet-600 text-white"
+              >
+                {editingPartnerId !== null ? (
+                  <>
+                    <Pencil className="w-4 h-4" />
+                    Guardar cambios
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4" />
+                    Agregar comercio
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {/* Lista de comercios */}
+          {partners.length > 0 ? (
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                {partners.length} {partners.length === 1 ? 'comercio adherido' : 'comercios adheridos'}
+              </p>
+              {partners.map((partner) => {
+                const cat = PARTNER_CATEGORIES.find((c) => c.value === partner.category)
+                const useType = USE_TYPES.find((u) => u.value === partner.use_type)
+                const tierInfo =
+                  partner.tier_required !== 'all' ? tiers.find((t) => t.id === partner.tier_required) : null
+                const initial = partner.partner_name.charAt(0).toUpperCase()
+                return (
+                  <div
+                    key={partner.id}
+                    className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700"
+                  >
+                    {partner.logo_url ? (
+                      <img src={partner.logo_url} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-violet-100 dark:bg-violet-950/40 flex items-center justify-center flex-shrink-0">
+                        <span className="text-sm font-bold text-violet-600 dark:text-violet-300">{initial}</span>
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
+                        {partner.partner_name}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{partner.benefit_name}</p>
+                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                        {cat && (
+                          <span className="text-xs px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium">
+                            {cat.emoji} {cat.label}
+                          </span>
+                        )}
+                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 font-medium">
+                          {useType?.label}
+                        </span>
+                        {tierInfo ? (
+                          <span
+                            className="text-xs px-1.5 py-0.5 rounded-full font-medium text-white"
+                            style={{ backgroundColor: tierInfo.color }}
+                          >
+                            {tierInfo.name}+
+                          </span>
+                        ) : (
+                          <span className="text-xs px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-medium">
+                            Todos
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-1 flex-shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleEditPartner(partner)}
+                        className="p-1.5 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-950/30 text-gray-400 hover:text-violet-500 transition-colors"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemovePartner(partner.id)}
+                        className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-gray-400 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-6 text-gray-400 dark:text-gray-500">
+              <Building2 className="w-8 h-8 mx-auto mb-2 opacity-40" />
+              <p className="text-sm">Todavía no hay comercios adheridos</p>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
+// ─── Ticker Section ───────────────────────────────────────────────────────────
+
+export function TickerSection({ formData, setFormData }) {
+  const [newItem, setNewItem] = useState('')
+  const items = formData.ticker_items || []
+
+  const handleAdd = () => {
+    if (!newItem.trim()) return
+    setFormData((prev) => ({ ...prev, ticker_items: [...items, newItem.trim()] }))
+    setNewItem('')
+  }
+
+  const handleRemove = (i) => {
+    setFormData((prev) => ({ ...prev, ticker_items: prev.ticker_items.filter((_, idx) => idx !== i) }))
+  }
+
+  return (
+    <div className="border-t pt-6 space-y-4">
+      <div>
+        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">Banner deslizante</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+          Texto que se desplaza en el encabezado de la página pública del club.
+        </p>
+      </div>
+      <div className="flex gap-2">
+        <Input
+          value={newItem}
+          onChange={(e) => setNewItem(e.target.value)}
+          placeholder="Ej: ☕ Cappuccino artesanal"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              handleAdd()
+            }
+          }}
+          className="flex-1"
+        />
+        <Button
+          type="button"
+          onClick={handleAdd}
+          disabled={!newItem.trim()}
+          className="bg-violet-500 hover:bg-violet-600 text-white"
+        >
+          <Plus className="w-4 h-4" />
+        </Button>
+      </div>
+      {items.length > 0 ? (
+        <div className="flex flex-wrap gap-2">
+          {items.map((item, i) => (
+            <span
+              key={i}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-800 text-sm text-violet-800 dark:text-violet-300"
+            >
+              {item}
+              <button
+                type="button"
+                onClick={() => handleRemove(i)}
+                className="text-violet-400 hover:text-red-500 transition-colors"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-gray-400 text-center py-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+          Todavía no hay elementos en el banner
+        </p>
+      )}
+    </div>
+  )
+}
+
+// ─── Novedades Section ────────────────────────────────────────────────────────
+
+const POST_TYPES = [
+  { value: 'novedad', label: 'Novedad', emoji: '📢', color: 'bg-violet-500' },
+  { value: 'promo', label: 'Promo', emoji: '🏷️', color: 'bg-rose-500' },
+  { value: 'evento', label: 'Evento', emoji: '📅', color: 'bg-amber-500' },
+]
+
+const DEFAULT_POST = { type: 'novedad', title: '', body: '', image_url: null, date: '' }
+
+export function NovedadesSection({ formData, setFormData }) {
+  const [newPost, setNewPost] = useState(DEFAULT_POST)
+  const [imagePreview, setImagePreview] = useState(null)
+  const [editingId, setEditingId] = useState(null)
+  const [open, setOpen] = useState(false)
+  const posts = formData.novedades || []
+
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onloadend = () => setImagePreview(reader.result)
+    reader.readAsDataURL(file)
+  }
+
+  const handleAdd = () => {
+    if (!newPost.title.trim()) return
+    const date = newPost.date.trim() || new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
+    if (editingId !== null) {
+      setFormData((prev) => ({
+        ...prev,
+        novedades: prev.novedades.map((p) =>
+          p.id === editingId
+            ? {
+                ...p,
+                ...newPost,
+                title: newPost.title.trim(),
+                body: newPost.body.trim(),
+                date,
+                image_url: imagePreview ?? p.image_url,
+              }
+            : p,
+        ),
+      }))
+      setEditingId(null)
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        novedades: [
+          {
+            id: Date.now(),
+            ...newPost,
+            title: newPost.title.trim(),
+            body: newPost.body.trim(),
+            date,
+            image_url: imagePreview || null,
+          },
+          ...(prev.novedades || []),
+        ],
+      }))
+    }
+    setNewPost(DEFAULT_POST)
+    setImagePreview(null)
+  }
+
+  const handleEdit = (post) => {
+    setEditingId(post.id)
+    setNewPost({
+      type: post.type,
+      title: post.title,
+      body: post.body || '',
+      image_url: post.image_url,
+      date: post.date || '',
+    })
+    setImagePreview(null)
+    setOpen(true)
+  }
+
+  const handleCancel = () => {
+    setEditingId(null)
+    setNewPost(DEFAULT_POST)
+    setImagePreview(null)
+  }
+
+  const handleRemove = (id) => {
+    setFormData((prev) => ({ ...prev, novedades: prev.novedades.filter((p) => p.id !== id) }))
+    if (editingId === id) handleCancel()
+  }
+
+  return (
+    <div className="rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between px-5 py-4 text-left bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+      >
+        <div className="flex items-center gap-2.5">
+          <Megaphone className="w-4 h-4 text-gray-400" />
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Novedades</h3>
+          {posts.length > 0 && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300">
+              {posts.length}
+            </span>
+          )}
+        </div>
+        <ChevronDown
+          className="w-4 h-4 text-gray-400 transition-transform"
+          style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
+        />
+      </button>
+
+      {open && (
+        <div className="border-t border-gray-100 dark:border-gray-800 px-5 py-5 space-y-5">
+          {/* Add / edit form */}
+          <div
+            className={`rounded-2xl border p-4 space-y-4 ${
+              editingId !== null
+                ? 'border-violet-200 dark:border-violet-800 bg-violet-50/50 dark:bg-violet-950/10'
+                : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50'
+            }`}
+          >
+            <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+              {editingId !== null ? 'Editar novedad' : 'Agregar novedad'}
+            </p>
+
+            {/* Type pills */}
+            <div className="grid grid-cols-3 gap-2">
+              {POST_TYPES.map((t) => (
+                <button
+                  key={t.value}
+                  type="button"
+                  onClick={() => setNewPost((p) => ({ ...p, type: t.value }))}
+                  className={`flex items-center justify-center gap-1.5 rounded-xl border-2 py-2 text-xs font-semibold transition-all ${
+                    newPost.type === t.value
+                      ? 'border-violet-500 bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300'
+                      : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                >
+                  <span>{t.emoji}</span>
+                  <span>{t.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Title */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Título *</Label>
+              <Input
+                value={newPost.title}
+                onChange={(e) => setNewPost((p) => ({ ...p, title: e.target.value }))}
+                placeholder="Ej: Nueva línea de fríos de temporada"
+              />
+            </div>
+
+            {/* Body */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Descripción</Label>
+              <Textarea
+                value={newPost.body}
+                onChange={(e) => setNewPost((p) => ({ ...p, body: e.target.value }))}
+                placeholder="Contá más detalles..."
+                rows={2}
+                className="resize-none"
+              />
+            </div>
+
+            {/* Image + Date */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Imagen</Label>
+                {imagePreview || (editingId !== null && newPost.image_url) ? (
+                  <div className="relative w-full h-20 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700">
+                    <img src={imagePreview || newPost.image_url} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImagePreview(null)
+                        setNewPost((p) => ({ ...p, image_url: null }))
+                      }}
+                      className="absolute top-1 right-1 w-5 h-5 rounded-full bg-white/80 flex items-center justify-center shadow"
+                    >
+                      <X className="w-3 h-3 text-gray-600" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex items-center justify-center gap-1.5 h-20 w-full rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 cursor-pointer hover:border-violet-400 transition-colors text-gray-400 hover:text-violet-500 text-xs font-medium">
+                    <Upload className="w-4 h-4" />
+                    Subir
+                    <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                  </label>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Fecha visible</Label>
+                <Input
+                  value={newPost.date}
+                  onChange={(e) => setNewPost((p) => ({ ...p, date: e.target.value }))}
+                  placeholder="Ej: 7 jul"
+                />
+                <p className="text-xs text-gray-400">Se muestra en la tarjeta</p>
+              </div>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                onClick={handleAdd}
+                disabled={!newPost.title.trim()}
+                className="flex-1 bg-violet-500 hover:bg-violet-600 text-white"
+              >
+                {editingId !== null ? (
+                  'Guardar cambios'
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4 mr-1" />
+                    Agregar novedad
+                  </>
+                )}
+              </Button>
+              {editingId !== null && (
+                <Button type="button" variant="outline" onClick={handleCancel}>
+                  Cancelar
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* List */}
+          {posts.length > 0 ? (
+            <div className="space-y-2">
+              {posts.map((post) => {
+                const typeInfo = POST_TYPES.find((t) => t.value === post.type)
+                return (
+                  <div
+                    key={post.id}
+                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                      editingId === post.id
+                        ? 'border-violet-300 dark:border-violet-800 bg-violet-50/50 dark:bg-violet-950/10'
+                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+                    }`}
+                  >
+                    {post.image_url ? (
+                      <img src={post.image_url} className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-14 h-14 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center flex-shrink-0 text-2xl">
+                        {typeInfo?.emoji}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <span className={`text-xs font-bold text-white px-1.5 py-0.5 rounded-md ${typeInfo?.color}`}>
+                          {typeInfo?.label}
+                        </span>
+                        {post.date && <span className="text-xs text-gray-400">{post.date}</span>}
+                      </div>
+                      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{post.title}</p>
+                      {post.body && <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{post.body}</p>}
+                    </div>
+                    <div className="flex gap-1 flex-shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleEdit(post)}
+                        className="p-1.5 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-950/30 text-gray-400 hover:text-violet-500 transition-colors"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemove(post.id)}
+                        className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-gray-400 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-6 text-gray-400 dark:text-gray-500">
+              <Megaphone className="w-8 h-8 mx-auto mb-2 opacity-40" />
+              <p className="text-sm">Todavía no hay novedades</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

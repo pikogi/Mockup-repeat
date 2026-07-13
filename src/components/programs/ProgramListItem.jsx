@@ -45,6 +45,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import PricingModal from '@/components/subscription/PricingModal'
 import FlyerPreview from '@/components/programs/FlyerPreview'
 import FlyerPDF from '@/components/programs/FlyerPDF'
+import { TickerSection, NovedadesSection } from '@/components/programs/ClubFormSections'
 import { pdf } from '@react-pdf/renderer'
 import { toast } from 'sonner'
 import { useLanguage } from '@/components/auth/LanguageContext'
@@ -70,6 +71,8 @@ const POST_TYPES = [
     color: 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300',
   },
 ]
+
+const MEMBERSHIP_TYPE_ID = '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc155'
 
 const EMPTY_POST = { type: 'promo', title: '', description: '', image_url: '', expires_at: '' }
 
@@ -166,6 +169,40 @@ function SurveyConfigModal({ open, onOpenChange, program }) {
           >
             Guardar
           </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function ComunicacionDrawer({ open, onOpenChange, program }) {
+  const [comunData, setComunData] = useState({
+    ticker_items: program.ticker_items || [],
+    novedades: program.novedades || [],
+  })
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="w-full max-w-lg flex flex-col p-0 max-h-[90vh]">
+        <DialogHeader className="px-6 py-5 border-b">
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2">
+              <Megaphone className="w-5 h-5 text-gray-500" />
+              Comunicación · <span className="font-normal text-gray-500 text-base">{program.club_name}</span>
+            </DialogTitle>
+            <a
+              href="/membership/moon-cafe-demo"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-violet-600 hover:text-violet-700 font-semibold flex-shrink-0"
+            >
+              Ver página pública →
+            </a>
+          </div>
+        </DialogHeader>
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+          <TickerSection formData={comunData} setFormData={setComunData} />
+          <NovedadesSection formData={comunData} setFormData={setComunData} />
         </div>
       </DialogContent>
     </Dialog>
@@ -441,6 +478,9 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
   const [showQr, setShowQr] = useState(false)
   const [showPosts, setShowPosts] = useState(false)
   const [showSurveyConfig, setShowSurveyConfig] = useState(false)
+  const [showComunicacion, setShowComunicacion] = useState(false)
+
+  const isMembershipProgram = card.program_type_id === MEMBERSHIP_TYPE_ID
 
   // Flyer states
   const [flyerTemplate, setFlyerTemplate] = useState('classic')
@@ -717,6 +757,18 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
                 </>
               )}
 
+              {isMembershipProgram && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 h-10 md:h-8"
+                  onClick={() => setShowComunicacion(true)}
+                >
+                  <Megaphone className="w-4 h-4" />
+                  Comunicación
+                </Button>
+              )}
+
               {currentUser?.type_user === 'brand_admin' && onDelete && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
@@ -754,6 +806,7 @@ export default function ProgramListItem({ card, onEdit, onToggleActive, onDelete
       </Card>
       <PostsDrawer open={showPosts} onOpenChange={setShowPosts} program={card} />
       <SurveyConfigModal open={showSurveyConfig} onOpenChange={setShowSurveyConfig} program={card} />
+      <ComunicacionDrawer open={showComunicacion} onOpenChange={setShowComunicacion} program={card} />
       <PricingModal open={showPricing} onOpenChange={setShowPricing} brand={brand} />
 
       {/* QR Dialog */}

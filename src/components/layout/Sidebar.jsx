@@ -212,7 +212,19 @@ export default function Sidebar() {
   const currentPath = location.pathname
   const isBgMode = new URLSearchParams(location.search).get('bg') === '1'
   const isMoonCafeDemo = MOONCAFE_PATHS.some((p) => currentPath.startsWith(p))
-  const isMoonCafeRoadmap = MOONCAFE_ROADMAP_PATHS.some((p) => currentPath.startsWith(p))
+
+  // Persist roadmap mode through shared pages (customers, stores, team, etc.)
+  const isOnExclusiveRoadmapPath = MOONCAFE_ROADMAP_PATHS.some((p) => currentPath.startsWith(p))
+  const isOnExclusiveRegularPath = [
+    '/dashboard-demo/mooncafe',
+    '/dashboard/mooncafe-demo',
+    '/notifications/mooncafe-demo',
+  ].some((p) => currentPath.startsWith(p))
+  if (isOnExclusiveRoadmapPath) sessionStorage.setItem('mcMode', 'roadmap')
+  else if (isOnExclusiveRegularPath) sessionStorage.setItem('mcMode', 'demo')
+  const isMoonCafeRoadmap =
+    isOnExclusiveRoadmapPath ||
+    (!isOnExclusiveRegularPath && isMoonCafeDemo && sessionStorage.getItem('mcMode') === 'roadmap')
   const isGlowDemo = GLOW_PATHS.some((p) => currentPath.startsWith(p))
   const isDelPilarDemo = DEL_PILAR_PATHS.some((p) => currentPath.startsWith(p))
   const DEMO_PATH_PREFIXES = Object.values(DEMO_URLS).map((u) => u.split('?')[0])
@@ -330,7 +342,7 @@ export default function Sidebar() {
               </Link>
             )
           })}
-          {(isMoonCafeDemo || isGlowDemo || isDelPilarDemo) && resolveUrl('ScanQR') && (
+          {(isMoonCafeDemo || isMoonCafeRoadmap || isGlowDemo || isDelPilarDemo) && resolveUrl('ScanQR') && (
             <Link
               to={resolveUrl('ScanQR')}
               className="flex items-center gap-3 px-4 py-3 mt-4 rounded-xl transition-all duration-200 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg hover:shadow-xl hover:from-yellow-500 hover:to-yellow-600"
@@ -349,7 +361,7 @@ export default function Sidebar() {
               to={resolveUrl(primaryAction.page)}
               className={cn(
                 'flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200',
-                isMoonCafeDemo || isGlowDemo || isDelPilarDemo
+                isMoonCafeDemo || isMoonCafeRoadmap || isGlowDemo || isDelPilarDemo
                   ? 'mt-2 border-2 border-yellow-400 text-black dark:text-white bg-white dark:bg-gray-900 hover:bg-yellow-50 dark:hover:bg-gray-800'
                   : 'mt-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg hover:shadow-xl hover:from-yellow-500 hover:to-yellow-600',
               )}
@@ -362,7 +374,7 @@ export default function Sidebar() {
 
         {/* Profile + Soporte */}
         <div className="p-4 border-t border-gray-100 dark:border-gray-800 flex items-center gap-2">
-          {isMoonCafeDemo || isGlowDemo || isDelPilarDemo ? (
+          {isMoonCafeDemo || isMoonCafeRoadmap || isGlowDemo || isDelPilarDemo ? (
             <button className="flex flex-1 items-center gap-3 px-4 py-3 rounded-xl text-gray-600 dark:text-gray-400 cursor-default">
               <User className="w-5 h-5" />
               <span className="font-medium">{t('profile')}</span>
@@ -381,7 +393,7 @@ export default function Sidebar() {
               <span className="font-medium">{t('profile')}</span>
             </Link>
           )}
-          {isMoonCafeDemo || isGlowDemo || isDelPilarDemo ? (
+          {isMoonCafeDemo || isMoonCafeRoadmap || isGlowDemo || isDelPilarDemo ? (
             <button className="p-3 rounded-xl text-gray-500 dark:text-gray-400 flex-shrink-0 cursor-default">
               <HelpCircle className="w-5 h-5" />
             </button>
@@ -403,111 +415,115 @@ export default function Sidebar() {
       <header className="lg:hidden fixed top-0 left-0 right-0 bg-black z-40 px-4 py-3 flex items-center justify-between">
         <h1 className="text-xl font-bold text-white">repeat</h1>
         <div className="flex items-center gap-1">
-          {(user?.type_user === 'brand_admin' || isMoonCafeDemo || isGlowDemo || isDelPilarDemo) && !isBgMode && (
-            <>
-              <button className="text-white p-4 -mr-4 -my-3" onClick={() => setIsMobileMenuOpen(true)}>
-                <Menu className="w-6 h-6" />
-              </button>
-              {isMobileMenuOpen && (
-                <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex' }}>
-                  <div style={{ flex: 1, background: 'rgba(0,0,0,0.5)' }} onClick={() => setIsMobileMenuOpen(false)} />
-                  <div
-                    style={{
-                      width: '75%',
-                      maxWidth: 320,
-                      background: 'white',
-                      height: '100%',
-                      padding: '24px 16px',
-                      position: 'relative',
-                      overflowY: 'auto',
-                    }}
-                  >
-                    <button
+          {(user?.type_user === 'brand_admin' || isMoonCafeDemo || isMoonCafeRoadmap || isGlowDemo || isDelPilarDemo) &&
+            !isBgMode && (
+              <>
+                <button className="text-white p-4 -mr-4 -my-3" onClick={() => setIsMobileMenuOpen(true)}>
+                  <Menu className="w-6 h-6" />
+                </button>
+                {isMobileMenuOpen && (
+                  <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex' }}>
+                    <div
+                      style={{ flex: 1, background: 'rgba(0,0,0,0.5)' }}
                       onClick={() => setIsMobileMenuOpen(false)}
+                    />
+                    <div
                       style={{
-                        position: 'absolute',
-                        right: 8,
-                        top: 8,
-                        opacity: 0.7,
-                        cursor: 'pointer',
-                        background: 'none',
-                        border: 'none',
-                        padding: 12,
-                        minWidth: 44,
-                        minHeight: 44,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                        width: '75%',
+                        maxWidth: 320,
+                        background: 'white',
+                        height: '100%',
+                        padding: '24px 16px',
+                        position: 'relative',
+                        overflowY: 'auto',
                       }}
                     >
-                      <X className="h-5 w-5" />
-                    </button>
-                    <nav className="flex flex-col gap-4 mt-8">
-                      <Link
-                        to={resolveUrl('Notifications')}
-                        className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100"
+                      <button
                         onClick={() => setIsMobileMenuOpen(false)}
+                        style={{
+                          position: 'absolute',
+                          right: 8,
+                          top: 8,
+                          opacity: 0.7,
+                          cursor: 'pointer',
+                          background: 'none',
+                          border: 'none',
+                          padding: 12,
+                          minWidth: 44,
+                          minHeight: 44,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
                       >
-                        <Bell className="w-5 h-5" />
-                        {t('notifications')}
-                      </Link>
-                      <Link
-                        to={resolveUrl('MyPrograms')}
-                        className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        <CreditCard className="w-5 h-5" />
-                        {t('myPrograms')}
-                      </Link>
-                      <Link
-                        to={resolveUrl('Survey')}
-                        className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        <ClipboardList className="w-5 h-5" />
-                        {t('survey')}
-                      </Link>
-                      <Link
-                        to={resolveUrl('Menu')}
-                        className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        <BookOpen className="w-5 h-5" />
-                        {t('menu')}
-                      </Link>
-
-                      <div className="border-t border-gray-200 pt-4 mt-4 flex flex-col gap-2">
-                        {isMoonCafeDemo || isGlowDemo || isDelPilarDemo ? (
-                          <button className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg text-gray-500 cursor-default w-full text-left">
-                            <HelpCircle className="w-5 h-5" />
-                            {t('support')}
-                          </button>
-                        ) : (
-                          <a
-                            href={whatsappUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                          >
-                            <HelpCircle className="w-5 h-5" />
-                            {t('support')}
-                          </a>
-                        )}
-                        <button
-                          onClick={handleLogout}
-                          className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-red-50 text-red-600 w-full text-left"
+                        <X className="h-5 w-5" />
+                      </button>
+                      <nav className="flex flex-col gap-4 mt-8">
+                        <Link
+                          to={resolveUrl('Notifications')}
+                          className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100"
+                          onClick={() => setIsMobileMenuOpen(false)}
                         >
-                          <LogOut className="w-5 h-5" />
-                          {t('logout')}
-                        </button>
-                      </div>
-                    </nav>
+                          <Bell className="w-5 h-5" />
+                          {t('notifications')}
+                        </Link>
+                        <Link
+                          to={resolveUrl('MyPrograms')}
+                          className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          <CreditCard className="w-5 h-5" />
+                          {t('myPrograms')}
+                        </Link>
+                        <Link
+                          to={resolveUrl('Survey')}
+                          className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          <ClipboardList className="w-5 h-5" />
+                          {t('survey')}
+                        </Link>
+                        <Link
+                          to={resolveUrl('Menu')}
+                          className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          <BookOpen className="w-5 h-5" />
+                          {t('menu')}
+                        </Link>
+
+                        <div className="border-t border-gray-200 pt-4 mt-4 flex flex-col gap-2">
+                          {isMoonCafeDemo || isMoonCafeRoadmap || isGlowDemo || isDelPilarDemo ? (
+                            <button className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg text-gray-500 cursor-default w-full text-left">
+                              <HelpCircle className="w-5 h-5" />
+                              {t('support')}
+                            </button>
+                          ) : (
+                            <a
+                              href={whatsappUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100"
+                              onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                              <HelpCircle className="w-5 h-5" />
+                              {t('support')}
+                            </a>
+                          )}
+                          <button
+                            onClick={handleLogout}
+                            className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-red-50 text-red-600 w-full text-left"
+                          >
+                            <LogOut className="w-5 h-5" />
+                            {t('logout')}
+                          </button>
+                        </div>
+                      </nav>
+                    </div>
                   </div>
-                </div>
-              )}
-            </>
-          )}
+                )}
+              </>
+            )}
         </div>
       </header>
 
@@ -566,7 +582,7 @@ export default function Sidebar() {
 
           {/* Right side: Profile & Stores */}
           <div className="flex items-center gap-4 flex-1 justify-end">
-            {isMoonCafeDemo || isGlowDemo || isDelPilarDemo ? (
+            {isMoonCafeDemo || isMoonCafeRoadmap || isGlowDemo || isDelPilarDemo ? (
               <>
                 <button className="flex flex-col items-center justify-center gap-0.5 py-2 min-w-[52px] rounded-xl text-gray-500 dark:text-gray-400 cursor-default">
                   <User className="w-5 h-5" />

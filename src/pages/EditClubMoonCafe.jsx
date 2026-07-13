@@ -19,6 +19,7 @@ import {
   PointsConversionSection,
   CouponConfigSection,
   MembershipConfigSection,
+  PartnerBenefitsSection,
   CashbackConfigSection,
   CatalogFields,
   ReferralSection,
@@ -151,6 +152,7 @@ export default function EditClubMoonCafe() {
                 {isPointsProgram && <CatalogFields formData={formData} setFormData={setFormData} />}
                 {isCouponProgram && <CouponConfigSection formData={formData} setFormData={setFormData} />}
                 {isMembershipProgram && <MembershipConfigSection formData={formData} setFormData={setFormData} />}
+                {isMembershipProgram && <PartnerBenefitsSection formData={formData} setFormData={setFormData} />}
                 {isCashbackProgram && <CashbackConfigSection formData={formData} setFormData={setFormData} />}
 
                 <ReferralSection formData={formData} setFormData={setFormData} />

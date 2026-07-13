@@ -31,6 +31,11 @@ import {
   ShoppingBag,
   BarChart2,
   Heart,
+  Gift,
+  MapPin,
+  Timer,
+  Crown,
+  Ticket,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
@@ -43,6 +48,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { addEmailCampaign, addPushCampaign, getEmailCampaigns, getPushCampaigns } from '@/constants/moonCafeCampaigns'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -50,24 +56,91 @@ const PUSH_HEADER_MAX = 40
 const PUSH_BODY_MAX = 200
 const EMAIL_SUBJECT_MAX = 80
 
+const SEGMENT_CHIP = {
+  vip: { label: 'VIP', cls: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
+  activo: { label: 'Activo', cls: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
+  nuevo: { label: 'Nuevo', cls: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+  en_riesgo: { label: 'En riesgo', cls: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
+  inactivo: { label: 'Inactivo', cls: 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400' },
+}
+
 const DEMO_MEMBERS = [
-  { id: 1, name: 'Carlos Martínez', email: 'carlos.mtz@gmail.com' },
-  { id: 2, name: 'Sofía Ramírez', email: 'sofi.ramirez@gmail.com' },
-  { id: 3, name: 'Andrés Morales', email: 'andres.m@hotmail.com' },
-  { id: 4, name: 'Valentina Cruz', email: 'valen.cruz@icloud.com' },
-  { id: 5, name: 'Lucía Herrera', email: 'lucia.h@gmail.com' },
-  { id: 6, name: 'Mateo Flores', email: 'mateo.flores@gmail.com' },
-  { id: 7, name: 'Camila Ortiz', email: 'cami.ortiz@yahoo.com' },
-  { id: 8, name: 'Diego Vargas', email: 'diego.v@gmail.com' },
-  { id: 9, name: 'Martina Rojas', email: 'marti.rojas@gmail.com' },
-  { id: 10, name: 'Sebastián Castro', email: 'seba.castro@hotmail.com' },
-  { id: 11, name: 'Isabella Méndez', email: 'isa.mendez@gmail.com' },
-  { id: 12, name: 'Tomás Navarro', email: 'tomas.nav@gmail.com' },
+  { id: 1, name: 'Carlos Martínez', email: 'carlos.mtz@gmail.com', segment: 'vip' },
+  { id: 2, name: 'Sofía Ramírez', email: 'sofi.ramirez@gmail.com', segment: 'vip' },
+  { id: 3, name: 'Andrés Morales', email: 'andres.m@hotmail.com', segment: 'vip' },
+  { id: 4, name: 'Valentina Cruz', email: 'valen.cruz@icloud.com', segment: 'activo' },
+  { id: 5, name: 'Lucía Herrera', email: 'lucia.h@gmail.com', segment: 'activo' },
+  { id: 6, name: 'Mateo Flores', email: 'mateo.flores@gmail.com', segment: 'vip' },
+  { id: 7, name: 'Camila Ortiz', email: 'cami.ortiz@yahoo.com', segment: 'en_riesgo' },
+  { id: 8, name: 'Diego Vargas', email: 'diego.v@gmail.com', segment: 'en_riesgo' },
+  { id: 9, name: 'Martina Rojas', email: 'marti.rojas@gmail.com', segment: 'nuevo' },
+  { id: 10, name: 'Sebastián Castro', email: 'seba.castro@hotmail.com', segment: 'inactivo' },
+  { id: 11, name: 'Isabella Méndez', email: 'isa.mendez@gmail.com', segment: 'nuevo' },
+  { id: 12, name: 'Tomás Navarro', email: 'tomas.nav@gmail.com', segment: 'activo' },
 ]
 
+const DEMO_COUPONS = [
+  { id: 1, name: 'Café gratis en tu próxima visita', type: 'free_item', value: null, validityDays: 7 },
+  { id: 2, name: '20% de descuento en tu pedido', type: 'percent', value: 20, validityDays: 14 },
+  { id: 3, name: '$500 de descuento', type: 'fixed', value: 500, validityDays: 30 },
+  { id: 4, name: 'Combo café + medialunas gratis', type: 'free_item', value: null, validityDays: 5 },
+  { id: 5, name: '2x1 en bebidas calientes', type: 'free_item', value: null, validityDays: 3 },
+]
+
+function couponLabel(c) {
+  if (c.type === 'percent') return `${c.value}% off`
+  if (c.type === 'fixed') return `$${c.value} off`
+  return 'Gratis'
+}
+
+function CouponPicker({ value, onChange }) {
+  return (
+    <Select
+      value={value ? String(value.id) : 'none'}
+      onValueChange={(v) => onChange(v === 'none' ? null : DEMO_COUPONS.find((c) => String(c.id) === v))}
+    >
+      <SelectTrigger className="text-sm">
+        <SelectValue placeholder="Seleccionar cupón..." />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="none">Sin cupón</SelectItem>
+        {DEMO_COUPONS.map((c) => (
+          <SelectItem key={c.id} value={String(c.id)}>
+            <span className="flex items-center gap-2">
+              <span className="text-xs font-semibold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">
+                {couponLabel(c)}
+              </span>
+              {c.name}
+            </span>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  )
+}
+
+function CouponBadge({ coupon, onRemove }) {
+  if (!coupon) return null
+  return (
+    <div className="inline-flex items-center gap-1.5 border border-amber-200 dark:border-amber-800 rounded-lg px-2 py-1">
+      <Ticket className="w-3 h-3 text-amber-500 flex-shrink-0" />
+      <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">{couponLabel(coupon)}</span>
+      <span className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">{coupon.name}</span>
+      <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">· {coupon.validityDays}d</span>
+      {onRemove && (
+        <button onClick={onRemove} className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0 ml-0.5">
+          <X className="w-3 h-3" />
+        </button>
+      )}
+    </div>
+  )
+}
+
 const PUSH_AUTOMATIONS_DEFAULT = [
+  // ── Ciclo de vida ──
   {
     id: 'push-welcome',
+    category: 'lifecycle',
     icon: Sparkles,
     color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600',
     accent: 'border-emerald-400',
@@ -80,6 +153,7 @@ const PUSH_AUTOMATIONS_DEFAULT = [
   },
   {
     id: 'push-birthday',
+    category: 'lifecycle',
     icon: Cake,
     color: 'bg-rose-100 dark:bg-rose-900/30 text-rose-600',
     accent: 'border-rose-400',
@@ -91,7 +165,35 @@ const PUSH_AUTOMATIONS_DEFAULT = [
     extra: { type: 'birthday_days', value: 0 },
   },
   {
+    id: 'push-tier-up',
+    category: 'lifecycle',
+    icon: Crown,
+    color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600',
+    accent: 'border-yellow-400',
+    title: 'Subida de nivel',
+    description: 'Se envía cuando el miembro alcanza un nuevo nivel por visitas o gasto acumulado.',
+    enabled: false,
+    header: '¡Subiste de nivel! 👑',
+    body: 'Felicitaciones, alcanzaste un nuevo nivel en Moon Café. A partir de ahora disfrutás de beneficios exclusivos.',
+    extra: null,
+  },
+  // ── Retención ──
+  {
+    id: 'push-early-reactivation',
+    category: 'retention',
+    icon: Clock,
+    color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600',
+    accent: 'border-blue-400',
+    title: 'Reactivación temprana',
+    description: 'Se envía si el miembro no visitó en los últimos N días (antes de que se enfríe del todo).',
+    enabled: false,
+    header: '¿Todo bien? ☕',
+    body: 'Hace 14 días que no pasás por Moon Café. Tus sellos te esperan — ¡volvé cuando quieras!',
+    extra: { type: 'days', value: 14 },
+  },
+  {
     id: 'push-inactivity',
+    category: 'retention',
     icon: Clock,
     color: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400',
     accent: 'border-slate-400',
@@ -103,7 +205,48 @@ const PUSH_AUTOMATIONS_DEFAULT = [
     extra: { type: 'days', value: 30 },
   },
   {
+    id: 'push-streak',
+    category: 'retention',
+    icon: Flame,
+    color: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600',
+    accent: 'border-orange-500',
+    title: 'Racha de visitas',
+    description: 'Se envía cuando el miembro alcanza X visitas en un período de días.',
+    enabled: false,
+    header: '¡Estás en racha! 🔥',
+    body: 'Llevas 3 visitas esta semana. ¡Seguí así y completá tu tarjeta antes de que te des cuenta!',
+    extra: { type: 'streak_visits', visits: 3, days: 7 },
+  },
+  {
+    id: 'push-unused-points',
+    category: 'retention',
+    icon: Gift,
+    color: 'bg-teal-100 dark:bg-teal-900/30 text-teal-600',
+    accent: 'border-teal-400',
+    title: 'Puntos sin utilizar',
+    description: 'Se envía cuando el miembro tiene puntos acumulados y no los canjeó en N días.',
+    enabled: false,
+    header: '¡No te olvides de tus puntos! 🎁',
+    body: 'Acumulaste puntos en Moon Café y todavía no los canjeaste. ¡Usálos en tu próxima visita!',
+    extra: { type: 'unused_points', minPoints: 100, days: 30 },
+  },
+  {
+    id: 'push-expiry',
+    category: 'retention',
+    icon: Timer,
+    color: 'bg-red-100 dark:bg-red-900/30 text-red-600',
+    accent: 'border-red-400',
+    title: 'Tarjeta por vencer',
+    description: 'Se envía cuando los sellos o puntos de la tarjeta están próximos a vencer.',
+    enabled: false,
+    header: '¡Tus sellos vencen pronto! ⏳',
+    body: 'Tus sellos de Moon Café vencen en 7 días. Pasá a canjear tu premio antes de que expiren.',
+    extra: { type: 'card_expiry', days: 7 },
+  },
+  // ── Premios ──
+  {
     id: 'push-benefit',
+    category: 'rewards',
     icon: Star,
     color: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600',
     accent: 'border-amber-400',
@@ -116,69 +259,68 @@ const PUSH_AUTOMATIONS_DEFAULT = [
   },
   {
     id: 'push-near-reward',
+    category: 'rewards',
     icon: Target,
     color: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600',
     accent: 'border-amber-500',
     title: 'Cerca del premio',
-    description: 'Se envía cuando al miembro le quedan pocos sellos para completar la tarjeta.',
+    description: 'Solo para sellos. Se envía cuando quedan N sellos para completar la tarjeta.',
     enabled: false,
     header: '¡Casi llegás! 🎯',
     body: 'Te faltan solo 2 sellos para tu próximo café gratis. ¡Pasá por Moon Café hoy y completá tu tarjeta!',
     extra: { type: 'stamps_remaining', value: 2 },
   },
+  // ── Comerciales ──
   {
-    id: 'push-streak',
-    icon: Flame,
-    color: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600',
-    accent: 'border-orange-500',
-    title: 'Racha de visitas',
-    description: 'Se envía cuando el miembro acumula varias visitas en pocos días.',
-    enabled: false,
-    header: '¡Estás en racha! 🔥',
-    body: 'Llevas 3 visitas esta semana. ¡Seguí así y completá tu tarjeta antes de que te des cuenta!',
-    extra: { type: 'streak_visits', value: 3 },
-  },
-  {
-    id: 'push-early-reactivation',
-    icon: Clock,
-    color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600',
-    accent: 'border-blue-400',
-    title: 'Reactivación temprana',
-    description: 'Se envía si el miembro no visitó en los últimos 14 días.',
-    enabled: false,
-    header: '¿Todo bien? ☕',
-    body: 'Hace 14 días que no pasás por Moon Café. Tus sellos te esperan — ¡volvé cuando quieras!',
-    extra: { type: 'days', value: 14 },
-  },
-  {
-    id: 'push-combo',
+    id: 'push-promo',
+    category: 'commercial',
     icon: ShoppingBag,
     color: 'bg-violet-100 dark:bg-violet-900/30 text-violet-600',
     accent: 'border-violet-400',
-    title: 'Combo sugerido',
-    description: 'Se envía en horario pico para sugerir un add-on y aumentar el ticket.',
+    title: 'Promo sugerida',
+    description: 'Se envía en el horario y días configurados para impulsar el ticket promedio.',
     enabled: false,
     header: '¿Ya tomaste tu café? ☕🥐',
     body: 'Hoy nuestro combo café + medialunas tiene 15% off. ¡Solo hasta las 12! Mostrá tu wallet en caja.',
-    extra: { type: 'hour', value: 10 },
+    extra: { type: 'scheduled', hour: 10, days: [1, 2, 3, 4, 5] },
   },
   {
-    id: 'push-featured',
-    icon: Megaphone,
-    color: 'bg-rose-100 dark:bg-rose-900/30 text-rose-600',
-    accent: 'border-rose-500',
-    title: 'Producto destacado',
-    description: 'Se envía manualmente para promocionar un producto nuevo o de temporada.',
+    id: 'push-geo',
+    category: 'commercial',
+    icon: MapPin,
+    color: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600',
+    accent: 'border-cyan-400',
+    title: 'Geolocalización',
+    description: 'Se envía cuando el miembro está cerca de una sucursal (requiere permiso de ubicación).',
     enabled: false,
-    header: 'Novedad en Moon Café ✨',
-    body: 'Llegó el chai latte de temporada. Pasá a probarlo y sumá sellos como siempre.',
-    extra: null,
+    header: '¡Estás cerca! ☕📍',
+    body: 'Moon Café está a pasos de vos. Pasá, tomá tu café favorito y sumá sellos.',
+    extra: { type: 'geo_proximity', radiusMeters: 500 },
   },
 ]
 
+const PUSH_CATEGORIES = [
+  { key: 'lifecycle', label: 'Ciclo de vida' },
+  { key: 'retention', label: 'Retención' },
+  { key: 'rewards', label: 'Premios' },
+  { key: 'commercial', label: 'Comerciales' },
+]
+
+const WEEK_DAYS = [
+  { value: 0, label: 'Dom' },
+  { value: 1, label: 'Lun' },
+  { value: 2, label: 'Mar' },
+  { value: 3, label: 'Mié' },
+  { value: 4, label: 'Jue' },
+  { value: 5, label: 'Vie' },
+  { value: 6, label: 'Sáb' },
+]
+
 const EMAIL_AUTOMATIONS_DEFAULT = [
+  // ── Ciclo de vida ──
   {
     id: 'email-welcome',
+    category: 'lifecycle',
     icon: Sparkles,
     color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600',
     accent: 'border-emerald-400',
@@ -192,6 +334,7 @@ const EMAIL_AUTOMATIONS_DEFAULT = [
   },
   {
     id: 'email-birthday',
+    category: 'lifecycle',
     icon: Cake,
     color: 'bg-rose-100 dark:bg-rose-900/30 text-rose-600',
     accent: 'border-rose-400',
@@ -204,7 +347,37 @@ const EMAIL_AUTOMATIONS_DEFAULT = [
     heroImage: null,
   },
   {
+    id: 'email-tier-up',
+    category: 'lifecycle',
+    icon: Crown,
+    color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600',
+    accent: 'border-yellow-400',
+    title: 'Subida de nivel',
+    description: 'Se envía cuando el miembro alcanza un nuevo nivel por visitas o gasto acumulado.',
+    enabled: false,
+    header: '¡Subiste de nivel en Moon Café! 👑',
+    body: 'Felicitaciones, alcanzaste un nuevo nivel en Moon Café. A partir de ahora tenés acceso a beneficios exclusivos para miembros de tu categoría. ¡Seguí visitándonos para seguir creciendo!',
+    extra: null,
+    heroImage: null,
+  },
+  // ── Retención ──
+  {
+    id: 'email-early-reactivation',
+    category: 'retention',
+    icon: Clock,
+    color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600',
+    accent: 'border-blue-400',
+    title: 'Reactivación temprana',
+    description: 'Se envía si el miembro no visitó en los últimos N días.',
+    enabled: false,
+    header: '¿Todo bien? Te esperamos en Moon Café ☕',
+    body: 'Hace un tiempo que no pasás por Moon Café. Tus sellos te esperan y estás cada vez más cerca de tu próximo café gratis. ¡Volvé cuando quieras, te recibimos con los brazos abiertos!',
+    extra: { type: 'days', value: 14 },
+    heroImage: null,
+  },
+  {
     id: 'email-inactivity',
+    category: 'retention',
     icon: Clock,
     color: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400',
     accent: 'border-slate-400',
@@ -215,9 +388,54 @@ const EMAIL_AUTOMATIONS_DEFAULT = [
     body: 'Hace tiempo que no pasás por Moon Café. Tus sellos te esperan y estás cada vez más cerca de tu próximo café gratis. Visitanos y seguí acumulando.',
     extra: { type: 'days', value: 30 },
     heroImage: null,
+    coupon: DEMO_COUPONS[0],
   },
   {
+    id: 'email-streak',
+    category: 'retention',
+    icon: Flame,
+    color: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600',
+    accent: 'border-orange-500',
+    title: 'Racha de visitas',
+    description: 'Se envía cuando el miembro alcanza X visitas en un período de días.',
+    enabled: false,
+    header: '¡Estás en racha! 🔥',
+    body: 'Estás visitando Moon Café con mucha frecuencia últimamente, ¡eso nos encanta! Seguí así y completá tu tarjeta antes de que te des cuenta.',
+    extra: { type: 'streak_visits', visits: 3, days: 7 },
+    heroImage: null,
+  },
+  {
+    id: 'email-unused-points',
+    category: 'retention',
+    icon: Gift,
+    color: 'bg-teal-100 dark:bg-teal-900/30 text-teal-600',
+    accent: 'border-teal-400',
+    title: 'Puntos sin utilizar',
+    description: 'Se envía cuando el miembro tiene puntos acumulados y no los canjeó en N días.',
+    enabled: false,
+    header: 'Tus puntos de Moon Café te esperan 🎁',
+    body: 'Acumulaste puntos en Moon Café y todavía no los canjeaste. Recordá que podés utilizarlos en tu próxima visita para obtener beneficios exclusivos. ¡No los dejes vencer!',
+    extra: { type: 'unused_points', minPoints: 100, days: 30 },
+    heroImage: null,
+  },
+  {
+    id: 'email-expiry',
+    category: 'retention',
+    icon: Timer,
+    color: 'bg-red-100 dark:bg-red-900/30 text-red-600',
+    accent: 'border-red-400',
+    title: 'Tarjeta por vencer',
+    description: 'Se envía cuando los sellos o puntos de la tarjeta están próximos a vencer.',
+    enabled: false,
+    header: '¡Tus sellos de Moon Café vencen pronto! ⏳',
+    body: 'Tus sellos acumulados en Moon Café están próximos a vencer. Pasá antes de la fecha de vencimiento para canjear tu premio y no perder lo que ganaste.',
+    extra: { type: 'card_expiry', days: 7 },
+    heroImage: null,
+  },
+  // ── Premios ──
+  {
     id: 'email-benefit',
+    category: 'rewards',
     icon: Star,
     color: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600',
     accent: 'border-amber-400',
@@ -230,7 +448,23 @@ const EMAIL_AUTOMATIONS_DEFAULT = [
     heroImage: null,
   },
   {
+    id: 'email-near-reward',
+    category: 'rewards',
+    icon: Target,
+    color: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600',
+    accent: 'border-amber-500',
+    title: 'Cerca del premio',
+    description: 'Solo para sellos. Se envía cuando quedan N sellos para completar la tarjeta.',
+    enabled: false,
+    header: '¡Casi llegás a tu café gratis! 🎯',
+    body: 'Estás muy cerca de completar tu tarjeta Moon Café y obtener tu café gratis. Solo te faltan unos sellos más. ¡Pasá a visitarnos y cerrá la tarjeta!',
+    extra: { type: 'stamps_remaining', value: 2 },
+    heroImage: null,
+  },
+  // ── Engagement ──
+  {
     id: 'email-monthly-summary',
+    category: 'engagement',
     icon: BarChart2,
     color: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600',
     accent: 'border-indigo-400',
@@ -244,17 +478,39 @@ const EMAIL_AUTOMATIONS_DEFAULT = [
   },
   {
     id: 'email-post-visit',
+    category: 'engagement',
     icon: Heart,
     color: 'bg-pink-100 dark:bg-pink-900/30 text-pink-600',
     accent: 'border-pink-400',
     title: 'Post-visita',
-    description: 'Se envía 2 horas después de cada visita para pedir feedback.',
+    description: 'Se envía N horas después de cada visita para pedir feedback.',
     enabled: false,
     header: '¿Cómo estuvo tu visita? 💛',
     body: 'Gracias por pasar hoy por Moon Café. ¿Qué te pareció? Tu opinión nos ayuda a mejorar cada taza. ¡Esperamos verte pronto!',
     extra: { type: 'hours_after_visit', value: 2 },
     heroImage: null,
   },
+  {
+    id: 'email-promo',
+    category: 'engagement',
+    icon: ShoppingBag,
+    color: 'bg-violet-100 dark:bg-violet-900/30 text-violet-600',
+    accent: 'border-violet-400',
+    title: 'Promo sugerida',
+    description: 'Se envía en el horario y días configurados para impulsar el ticket promedio.',
+    enabled: false,
+    header: '¡Oferta especial solo para vos! ☕🥐',
+    body: 'Hoy tenemos una promo especial para los miembros de Moon Café. Pasá por cualquiera de nuestras sucursales y mostrá este email en caja para acceder al beneficio.',
+    extra: { type: 'scheduled', hour: 10, days: [1, 2, 3, 4, 5] },
+    heroImage: null,
+  },
+]
+
+const EMAIL_CATEGORIES = [
+  { key: 'lifecycle', label: 'Ciclo de vida' },
+  { key: 'retention', label: 'Retención' },
+  { key: 'rewards', label: 'Premios' },
+  { key: 'engagement', label: 'Engagement' },
 ]
 
 // ─── Shared components ────────────────────────────────────────────────────────
@@ -267,6 +523,7 @@ function AutomationCard({
   headerMax,
   bodyMax,
   richBody = false,
+  showCoupon = false,
   expanded: expandedProp,
   onExpand,
   onCollapse,
@@ -277,8 +534,9 @@ function AutomationCard({
   const [draft, setDraft] = useState({
     header: auto.header,
     body: auto.body,
-    days: auto.extra?.value ?? 30,
+    extra: auto.extra ? { ...auto.extra } : null,
     heroImage: auto.heroImage ?? null,
+    coupon: auto.coupon ?? null,
   })
   const cardEditorRef = useRef(null)
   const cardImgRef = useRef(null)
@@ -304,8 +562,9 @@ function AutomationCard({
       setDraft({
         header: auto.header,
         body: auto.body,
-        days: auto.extra?.value ?? 30,
+        extra: auto.extra ? { ...auto.extra } : null,
         heroImage: auto.heroImage ?? null,
+        coupon: auto.coupon ?? null,
       })
     }
   }, [auto, expanded])
@@ -324,7 +583,8 @@ function AutomationCard({
       header: draft.header,
       body,
       heroImage: richBody ? draft.heroImage : undefined,
-      extra: auto.extra ? { ...auto.extra, value: draft.days } : null,
+      extra: draft.extra,
+      coupon: draft.coupon,
     })
     if (onCollapse) onCollapse()
     else setExpandedLocal(false)
@@ -332,7 +592,13 @@ function AutomationCard({
   }
 
   const handleCancel = () => {
-    setDraft({ header: auto.header, body: auto.body, days: auto.extra?.value ?? 30, heroImage: auto.heroImage ?? null })
+    setDraft({
+      header: auto.header,
+      body: auto.body,
+      extra: auto.extra ? { ...auto.extra } : null,
+      heroImage: auto.heroImage ?? null,
+      coupon: auto.coupon ?? null,
+    })
     if (richBody && cardEditorRef.current) cardEditorRef.current.innerHTML = auto.body
     if (onCollapse) onCollapse()
     else setExpandedLocal(false)
@@ -366,16 +632,52 @@ function AutomationCard({
               )}
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400">{auto.description}</p>
-            {auto.extra?.type === 'days' && auto.enabled && !expanded && (
+            {auto.extra?.type === 'days' && !expanded && (
               <p className="text-xs text-gray-400 mt-0.5">
                 Días sin visita: <strong>{auto.extra.value}</strong>
               </p>
             )}
-            {auto.extra?.type === 'birthday_days' && auto.enabled && !expanded && (
+            {auto.extra?.type === 'birthday_days' && !expanded && (
               <p className="text-xs text-gray-400 mt-0.5">
                 {auto.extra.value === 0
                   ? 'Se envía el mismo día'
                   : `Se envía ${auto.extra.value} día${auto.extra.value !== 1 ? 's' : ''} antes`}
+              </p>
+            )}
+            {auto.extra?.type === 'stamps_remaining' && !expanded && (
+              <p className="text-xs text-gray-400 mt-0.5">
+                Sellos restantes: <strong>{auto.extra.value}</strong>
+              </p>
+            )}
+            {auto.extra?.type === 'streak_visits' && !expanded && (
+              <p className="text-xs text-gray-400 mt-0.5">
+                <strong>{auto.extra.visits}</strong> visitas en <strong>{auto.extra.days}</strong> días
+              </p>
+            )}
+            {auto.extra?.type === 'unused_points' && !expanded && (
+              <p className="text-xs text-gray-400 mt-0.5">
+                &gt;<strong>{auto.extra.minPoints}</strong> pts · sin canjear <strong>{auto.extra.days}</strong> días
+              </p>
+            )}
+            {auto.extra?.type === 'scheduled' && !expanded && (
+              <p className="text-xs text-gray-400 mt-0.5">
+                {auto.extra.hour}:00 hs ·{' '}
+                {auto.extra.days.map((d) => ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][d]).join(', ')}
+              </p>
+            )}
+            {auto.extra?.type === 'card_expiry' && !expanded && (
+              <p className="text-xs text-gray-400 mt-0.5">
+                Avisar <strong>{auto.extra.days}</strong> días antes del vencimiento
+              </p>
+            )}
+            {auto.extra?.type === 'geo_proximity' && !expanded && (
+              <p className="text-xs text-gray-400 mt-0.5">
+                Radio:{' '}
+                <strong>
+                  {auto.extra.radiusMeters >= 1000
+                    ? `${auto.extra.radiusMeters / 1000} km`
+                    : `${auto.extra.radiusMeters} m`}
+                </strong>
               </p>
             )}
           </div>
@@ -388,14 +690,17 @@ function AutomationCard({
 
         {/* Collapsed message preview */}
         {!expanded && (
-          <div className="mx-5 mb-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700">
-            {auto.heroImage && <img src={auto.heroImage} alt="" className="w-full h-16 object-cover" />}
-            <div className="px-4 py-3">
-              <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-0.5 truncate">{auto.header}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">
-                {auto.body.replace(/<[^>]*>/g, '')}
-              </p>
+          <div className="mx-5 mb-4 space-y-2">
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700">
+              {auto.heroImage && <img src={auto.heroImage} alt="" className="w-full h-16 object-cover" />}
+              <div className="px-4 py-3">
+                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-0.5 truncate">{auto.header}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">
+                  {auto.body.replace(/<[^>]*>/g, '')}
+                </p>
+              </div>
             </div>
+            {showCoupon && auto.coupon && <CouponBadge coupon={auto.coupon} />}
           </div>
         )}
 
@@ -436,8 +741,10 @@ function AutomationCard({
                         type="number"
                         min={1}
                         max={365}
-                        value={draft.days}
-                        onChange={(e) => setDraft((d) => ({ ...d, days: Number(e.target.value) }))}
+                        value={draft.extra?.value ?? 30}
+                        onChange={(e) =>
+                          setDraft((d) => ({ ...d, extra: { ...d.extra, value: Number(e.target.value) } }))
+                        }
                         className="w-24 text-sm"
                       />
                       <span className="text-xs text-gray-400">días sin visita</span>
@@ -452,14 +759,201 @@ function AutomationCard({
                         type="number"
                         min={0}
                         max={30}
-                        value={draft.days}
-                        onChange={(e) => setDraft((d) => ({ ...d, days: Number(e.target.value) }))}
+                        value={draft.extra?.value ?? 0}
+                        onChange={(e) =>
+                          setDraft((d) => ({ ...d, extra: { ...d.extra, value: Number(e.target.value) } }))
+                        }
                         className="w-24 text-sm"
                       />
                       <span className="text-xs text-gray-400">
-                        {draft.days === 0 ? 'el mismo día del cumpleaños' : 'días antes del cumpleaños'}
+                        {(draft.extra?.value ?? 0) === 0 ? 'el mismo día del cumpleaños' : 'días antes del cumpleaños'}
                       </span>
                     </div>
+                  </div>
+                )}
+                {auto.extra?.type === 'stamps_remaining' && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Sellos restantes para el premio</Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        min={1}
+                        max={9}
+                        value={draft.extra?.value ?? 2}
+                        onChange={(e) =>
+                          setDraft((d) => ({ ...d, extra: { ...d.extra, value: Number(e.target.value) } }))
+                        }
+                        className="w-24 text-sm"
+                      />
+                      <span className="text-xs text-gray-400">sellos restantes</span>
+                    </div>
+                  </div>
+                )}
+                {auto.extra?.type === 'streak_visits' && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Condición de racha</Label>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Input
+                        type="number"
+                        min={2}
+                        max={20}
+                        value={draft.extra?.visits ?? 3}
+                        onChange={(e) =>
+                          setDraft((d) => ({ ...d, extra: { ...d.extra, visits: Number(e.target.value) } }))
+                        }
+                        className="w-20 text-sm"
+                      />
+                      <span className="text-xs text-gray-400">visitas en</span>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={30}
+                        value={draft.extra?.days ?? 7}
+                        onChange={(e) =>
+                          setDraft((d) => ({ ...d, extra: { ...d.extra, days: Number(e.target.value) } }))
+                        }
+                        className="w-20 text-sm"
+                      />
+                      <span className="text-xs text-gray-400">días</span>
+                    </div>
+                  </div>
+                )}
+                {auto.extra?.type === 'unused_points' && (
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Puntos mínimos acumulados</Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          min={1}
+                          value={draft.extra?.minPoints ?? 100}
+                          onChange={(e) =>
+                            setDraft((d) => ({ ...d, extra: { ...d.extra, minPoints: Number(e.target.value) } }))
+                          }
+                          className="w-28 text-sm"
+                        />
+                        <span className="text-xs text-gray-400">puntos</span>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Días sin canjear</Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          min={1}
+                          max={365}
+                          value={draft.extra?.days ?? 30}
+                          onChange={(e) =>
+                            setDraft((d) => ({ ...d, extra: { ...d.extra, days: Number(e.target.value) } }))
+                          }
+                          className="w-24 text-sm"
+                        />
+                        <span className="text-xs text-gray-400">días sin canjear puntos</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {auto.extra?.type === 'scheduled' && (
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Horario de envío</Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          min={0}
+                          max={23}
+                          value={draft.extra?.hour ?? 10}
+                          onChange={(e) =>
+                            setDraft((d) => ({ ...d, extra: { ...d.extra, hour: Number(e.target.value) } }))
+                          }
+                          className="w-20 text-sm"
+                        />
+                        <span className="text-xs text-gray-400">hs (formato 24h)</span>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Días de la semana</Label>
+                      <div className="flex gap-1.5 flex-wrap">
+                        {WEEK_DAYS.map((wd) => {
+                          const selected = (draft.extra?.days ?? []).includes(wd.value)
+                          return (
+                            <button
+                              key={wd.value}
+                              type="button"
+                              onClick={() =>
+                                setDraft((d) => {
+                                  const current = d.extra?.days ?? []
+                                  const next = selected
+                                    ? current.filter((v) => v !== wd.value)
+                                    : [...current, wd.value].sort((a, b) => a - b)
+                                  return { ...d, extra: { ...d.extra, days: next } }
+                                })
+                              }
+                              className={cn(
+                                'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
+                                selected
+                                  ? 'bg-violet-600 text-white'
+                                  : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700',
+                              )}
+                            >
+                              {wd.label}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {auto.extra?.type === 'card_expiry' && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Días antes del vencimiento</Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        min={1}
+                        max={60}
+                        value={draft.extra?.days ?? 7}
+                        onChange={(e) =>
+                          setDraft((d) => ({ ...d, extra: { ...d.extra, days: Number(e.target.value) } }))
+                        }
+                        className="w-24 text-sm"
+                      />
+                      <span className="text-xs text-gray-400">días antes de que venza la tarjeta</span>
+                    </div>
+                  </div>
+                )}
+                {auto.extra?.type === 'geo_proximity' && (
+                  <div className="space-y-2">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Radio de activación</Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          min={100}
+                          max={5000}
+                          step={100}
+                          value={draft.extra?.radiusMeters ?? 500}
+                          onChange={(e) =>
+                            setDraft((d) => ({ ...d, extra: { ...d.extra, radiusMeters: Number(e.target.value) } }))
+                          }
+                          className="w-28 text-sm"
+                        />
+                        <span className="text-xs text-gray-400">metros de la sucursal</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-amber-600 dark:text-amber-500 bg-amber-50 dark:bg-amber-900/20 rounded-lg px-3 py-2">
+                      Requiere que el miembro haya aceptado permisos de ubicación en su dispositivo.
+                    </p>
+                  </div>
+                )}
+                {showCoupon && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Cupón adjunto (opcional)</Label>
+                    {draft.coupon ? (
+                      <CouponBadge coupon={draft.coupon} onRemove={() => setDraft((d) => ({ ...d, coupon: null }))} />
+                    ) : (
+                      <CouponPicker value={draft.coupon} onChange={(c) => setDraft((d) => ({ ...d, coupon: c }))} />
+                    )}
                   </div>
                 )}
                 <div className="space-y-1.5">
@@ -560,33 +1054,87 @@ function formatDate(iso) {
 
 // ─── Push tab ─────────────────────────────────────────────────────────────────
 
+const PUSH_SEGMENTS = [
+  { id: 'vip', label: 'VIP', desc: 'Clientes frecuentes con 10+ visitas o 3+ premios', count: 34 },
+  { id: 'activos', label: 'Activos', desc: 'Visitaron el local en los últimos 30 días', count: 67 },
+  { id: 'en_riesgo', label: 'En riesgo', desc: 'Sin visitar hace entre 30 y 60 días', count: 25 },
+  { id: 'nuevos', label: 'Nuevos', desc: 'Se unieron en los últimos 30 días', count: 22 },
+  { id: 'inactivos', label: 'Inactivos', desc: 'Sin visitar hace más de 60 días', count: 18 },
+]
+
+const DEMO_PUSH_MEMBERS = [
+  { id: 1, name: 'Carlos Martínez', segment: 'vip' },
+  { id: 2, name: 'Sofía Ramírez', segment: 'vip' },
+  { id: 3, name: 'Andrés Morales', segment: 'vip' },
+  { id: 4, name: 'Valentina Cruz', segment: 'activo' },
+  { id: 5, name: 'Lucía Herrera', segment: 'activo' },
+  { id: 6, name: 'Mateo Flores', segment: 'vip' },
+  { id: 7, name: 'Camila Ortiz', segment: 'en_riesgo' },
+  { id: 8, name: 'Diego Vargas', segment: 'en_riesgo' },
+  { id: 9, name: 'Martina Rojas', segment: 'nuevo' },
+  { id: 10, name: 'Sebastián Castro', segment: 'inactivo' },
+  { id: 11, name: 'Isabella Méndez', segment: 'nuevo' },
+  { id: 12, name: 'Tomás Navarro', segment: 'activo' },
+]
+
 function PushTab() {
   const [tab, setTab] = useState('manual')
   const [audience, setAudience] = useState('todos')
-  const [sucursal, setSucursal] = useState('all')
+  const [sucursal, setSucursal] = useState('s1')
+  const [segment, setSegment] = useState('activos')
+  const [manualSelected, setManualSelected] = useState(new Set())
   const [header, setHeader] = useState('')
   const [body, setBody] = useState('')
-  const [history, setHistory] = useState([])
+  const [history, setHistory] = useState(() => getPushCampaigns())
   const [automations, setAutomations] = useState(PUSH_AUTOMATIONS_DEFAULT)
 
   const canSend = header.trim().length > 0 && body.trim().length > 0
   const activeCount = automations.filter((a) => a.enabled).length
 
+  const recipientCount =
+    audience === 'todos'
+      ? 148
+      : audience === 'segmento'
+        ? (PUSH_SEGMENTS.find((s) => s.id === segment)?.count ?? 0)
+        : audience === 'sucursal'
+          ? sucursal === 's1'
+            ? 89
+            : sucursal === 's2'
+              ? 59
+              : 148
+          : manualSelected.size
+
+  const programLabel =
+    audience === 'todos'
+      ? 'Todos los miembros'
+      : audience === 'segmento'
+        ? `Segmento: ${PUSH_SEGMENTS.find((s) => s.id === segment)?.label ?? ''}`
+        : audience === 'sucursal'
+          ? `Sucursal: ${sucursal === 's1' ? 'Centro' : 'Palermo'}`
+          : `${manualSelected.size} contactos`
+
+  const toggleManual = (id) =>
+    setManualSelected((prev) => {
+      const n = new Set(prev)
+      n.has(id) ? n.delete(id) : n.add(id)
+      return n
+    })
+
   const handleSend = () => {
-    setHistory([
-      {
-        id: Date.now(),
-        header,
-        body,
-        program: audience === 'todos' ? 'Todos los programas' : 'Por sucursal',
-        sent_at: new Date().toISOString(),
-        recipients: 148,
-      },
-      ...history,
-    ])
-    toast.success('Notificación enviada a 148 miembros')
+    const newItem = {
+      id: Date.now(),
+      header,
+      body,
+      program: programLabel,
+      sent_at: new Date().toISOString(),
+      recipients: recipientCount,
+    }
+    const updated = addPushCampaign(newItem)
+    setHistory(updated)
+    toast.success(`Notificación enviada a ${recipientCount} miembro${recipientCount !== 1 ? 's' : ''}`)
     setHeader('')
     setBody('')
+    setManualSelected(new Set())
   }
 
   const handleAutoChange = (updated) => setAutomations((prev) => prev.map((a) => (a.id === updated.id ? updated : a)))
@@ -643,38 +1191,142 @@ function PushTab() {
                 <h2 className="text-lg font-semibold text-foreground mb-4">Nueva campaña</h2>
                 <Card>
                   <CardContent className="pt-6 space-y-6">
-                    <div className="space-y-3">
-                      <Label>Enviar a</Label>
-                      <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1 gap-1">
-                        {[
-                          { id: 'todos', label: 'Todos' },
-                          { id: 'sucursal', label: 'Por sucursal' },
-                        ].map((opt) => (
-                          <button
-                            key={opt.id}
-                            onClick={() => setAudience(opt.id)}
-                            className={cn(
-                              'flex-1 py-2 text-sm font-medium rounded-lg transition-all duration-200',
-                              audience === opt.id
-                                ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm'
-                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300',
-                            )}
-                          >
-                            {opt.label}
-                          </button>
-                        ))}
+                    <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                      <div className="flex items-center gap-3 px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                        <span className="text-xs text-gray-400 flex-shrink-0">Enviar a</span>
+                        <div className="flex bg-white dark:bg-gray-900 rounded-lg p-0.5 gap-0.5 border border-gray-200 dark:border-gray-700">
+                          {[
+                            { id: 'todos', label: 'Todos' },
+                            { id: 'segmento', label: 'Segmento' },
+                            { id: 'sucursal', label: 'Sucursal' },
+                            { id: 'lista', label: 'Lista' },
+                          ].map((opt) => (
+                            <button
+                              key={opt.id}
+                              onClick={() => setAudience(opt.id)}
+                              className={cn(
+                                'px-3 py-1 text-xs font-medium rounded-md transition-all',
+                                audience === opt.id
+                                  ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900'
+                                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300',
+                              )}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                        <span className="text-xs text-gray-400 ml-auto">{recipientCount} destinatarios</span>
                       </div>
+
+                      {/* Sub-selector: segmento */}
+                      {audience === 'segmento' && (
+                        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 space-y-2">
+                          {PUSH_SEGMENTS.map((s) => (
+                            <button
+                              key={s.id}
+                              onClick={() => setSegment(s.id)}
+                              className={cn(
+                                'w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-left transition-all',
+                                segment === s.id
+                                  ? 'border-gray-900 bg-gray-900 text-white dark:border-gray-100 dark:bg-gray-100 dark:text-gray-900'
+                                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300',
+                              )}
+                            >
+                              <div className="min-w-0">
+                                <span className="text-sm font-medium">{s.label}</span>
+                                <p
+                                  className={cn(
+                                    'text-xs mt-0.5 truncate',
+                                    segment === s.id ? 'text-gray-300 dark:text-gray-600' : 'text-gray-400',
+                                  )}
+                                >
+                                  {s.desc}
+                                </p>
+                              </div>
+                              <span
+                                className={cn(
+                                  'text-xs font-semibold ml-3 flex-shrink-0',
+                                  segment === s.id ? 'text-gray-200 dark:text-gray-700' : 'text-gray-400',
+                                )}
+                              >
+                                {s.count}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Sub-selector: sucursal */}
                       {audience === 'sucursal' && (
-                        <Select value={sucursal} onValueChange={setSucursal}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">Todas las sucursales</SelectItem>
-                            <SelectItem value="s1">Moon Café · Centro</SelectItem>
-                            <SelectItem value="s2">Moon Café · Palermo</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+                          <Select value={sucursal} onValueChange={setSucursal}>
+                            <SelectTrigger className="h-9 text-sm">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Todas las sucursales (148)</SelectItem>
+                              <SelectItem value="s1">Moon Café · Centro (89)</SelectItem>
+                              <SelectItem value="s2">Moon Café · Palermo (59)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+
+                      {/* Sub-selector: lista manual */}
+                      {audience === 'lista' && (
+                        <div className="divide-y divide-gray-100 dark:divide-gray-800 max-h-48 overflow-y-auto">
+                          {DEMO_PUSH_MEMBERS.map((m) => (
+                            <button
+                              key={m.id}
+                              onClick={() => toggleManual(m.id)}
+                              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors"
+                            >
+                              <div
+                                className={cn(
+                                  'w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all',
+                                  manualSelected.has(m.id)
+                                    ? 'bg-gray-900 border-gray-900 dark:bg-gray-100 dark:border-gray-100'
+                                    : 'border-gray-300 dark:border-gray-600',
+                                )}
+                              >
+                                {manualSelected.has(m.id) && (
+                                  <svg viewBox="0 0 10 8" className="w-2.5 h-2">
+                                    <path
+                                      d="M1 4l2.5 2.5L9 1"
+                                      stroke="currentColor"
+                                      strokeWidth="1.5"
+                                      fill="none"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      className="text-white dark:text-gray-900"
+                                    />
+                                  </svg>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <span
+                                  className={
+                                    manualSelected.has(m.id)
+                                      ? 'text-gray-900 dark:text-gray-100 font-medium truncate'
+                                      : 'text-gray-600 dark:text-gray-400 truncate'
+                                  }
+                                >
+                                  {m.name}
+                                </span>
+                                {m.segment && SEGMENT_CHIP[m.segment] && (
+                                  <span
+                                    className={cn(
+                                      'flex-shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded-full',
+                                      SEGMENT_CHIP[m.segment].cls,
+                                    )}
+                                  >
+                                    {SEGMENT_CHIP[m.segment].label}
+                                  </span>
+                                )}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
                       )}
                     </div>
                     <div className="space-y-2">
@@ -793,25 +1445,38 @@ function PushTab() {
                 <span className="text-sm font-semibold">{activeCount} activas</span>
               </div>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {automations.map((auto, i) => (
-                <motion.div
-                  key={auto.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.06 }}
-                  className="h-full"
-                >
-                  <AutomationCard
-                    auto={auto}
-                    onChange={handleAutoChange}
-                    headerLabel="Título"
-                    bodyLabel="Mensaje"
-                    headerMax={PUSH_HEADER_MAX}
-                    bodyMax={PUSH_BODY_MAX}
-                  />
-                </motion.div>
-              ))}
+            <div className="space-y-8">
+              {PUSH_CATEGORIES.map((cat) => {
+                const items = automations.filter((a) => a.category === cat.key)
+                if (items.length === 0) return null
+                return (
+                  <div key={cat.key}>
+                    <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">
+                      {cat.label}
+                    </p>
+                    <div className="grid grid-cols-1 gap-4">
+                      {items.map((auto, i) => (
+                        <motion.div
+                          key={auto.id}
+                          initial={{ opacity: 0, y: 16 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.06 }}
+                          className="h-full"
+                        >
+                          <AutomationCard
+                            auto={auto}
+                            onChange={handleAutoChange}
+                            headerLabel="Título"
+                            bodyLabel="Mensaje"
+                            headerMax={PUSH_HEADER_MAX}
+                            bodyMax={PUSH_BODY_MAX}
+                          />
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </motion.div>
         )}
@@ -884,7 +1549,32 @@ function RichEditor({ editorRef, onContentChange }) {
   )
 }
 
-function EmailPreview({ subject, body, heroImage }) {
+function CouponEmailBlock({ coupon }) {
+  const code = `MOON-${coupon.id}${coupon.validityDays}${String(coupon.name.length).padStart(2, '0')}`
+  return (
+    <div className="my-5 border-2 border-dashed border-amber-300 rounded-xl overflow-hidden">
+      <div className="bg-amber-500 px-5 py-2.5 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Ticket className="w-4 h-4 text-white flex-shrink-0" />
+          <span className="text-white text-xs font-bold uppercase tracking-wider">Cupón exclusivo</span>
+        </div>
+        <span className="text-white/80 text-[11px]">Válido por {coupon.validityDays} días</span>
+      </div>
+      <div className="bg-amber-50 px-5 py-4">
+        <p className="text-xl font-black text-amber-700 leading-tight mb-0.5">{couponLabel(coupon)}</p>
+        <p className="text-[13px] text-amber-800 font-medium">{coupon.name}</p>
+        <div className="mt-3 flex items-center gap-2">
+          <span className="font-mono text-xs font-bold tracking-widest bg-white border border-amber-200 text-amber-700 px-3 py-1.5 rounded-lg">
+            {code}
+          </span>
+          <span className="text-[11px] text-amber-600">Presentá este código en caja</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function EmailPreview({ subject, body, heroImage, coupon = null }) {
   const isEmpty = !subject && !body && !heroImage
   const timeStr = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
   const dateStr = new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
@@ -991,6 +1681,9 @@ function EmailPreview({ subject, body, heroImage }) {
                     />
                   )}
 
+                  {/* Coupon block */}
+                  {coupon && !isEmpty && <CouponEmailBlock coupon={coupon} />}
+
                   {/* CTA */}
                   <div className="mt-7 mb-1">
                     <div className="bg-black text-white text-[13px] font-semibold text-center py-3.5 px-6 rounded-lg cursor-pointer hover:opacity-90 transition-opacity">
@@ -1053,6 +1746,7 @@ function EmailTab() {
   const [tab, setTab] = useState('manual')
   const [audience, setAudience] = useState('todos')
   const [sucursal, setSucursal] = useState('all')
+  const [emailSegment, setEmailSegment] = useState('activos')
   const [selectedMembers, setSelectedMembers] = useState(new Set())
   const [memberSearch, setMemberSearch] = useState('')
   const [subject, setSubject] = useState('')
@@ -1060,52 +1754,33 @@ function EmailTab() {
   const [htmlSource, setHtmlSource] = useState('')
   const [liveContent, setLiveContent] = useState('')
   const [heroImage, setHeroImage] = useState(null)
-  const [history, setHistory] = useState([
-    {
-      id: 1,
-      subject: '¡Nuevo menú de otoño disponible! 🍂',
-      preview:
-        'Esta temporada incorporamos nuevas opciones de café de especialidad y pastelería artesanal. Visitanos y descubrí los sabores de la estación.',
-      program: 'Todos los miembros',
-      sent_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      recipients: 148,
-      heroImage: null,
-      stats: { openRate: 61, clickRate: 18, unsubscribed: 1 },
-    },
-    {
-      id: 2,
-      subject: 'Doble sellos este fin de semana ☕✨',
-      preview:
-        'Sábado y domingo acumulás el doble de sellos en todas tus compras. ¡Es tu momento de completar la tarjeta más rápido!',
-      program: 'Todos los miembros',
-      sent_at: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString(),
-      recipients: 148,
-      heroImage: null,
-      stats: { openRate: 74, clickRate: 31, unsubscribed: 0 },
-    },
-    {
-      id: 3,
-      subject: 'Abrimos nueva sucursal en Palermo 📍',
-      preview:
-        'Ahora también estamos en Thames 1540. Pasá a conocernos, presentá tu tarjeta fidelidad y seguí acumulando sellos en cualquiera de nuestros locales.',
-      program: 'Sucursal Centro',
-      sent_at: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString(),
-      recipients: 92,
-      heroImage: null,
-      stats: { openRate: 58, clickRate: 22, unsubscribed: 2 },
-    },
-    {
-      id: 4,
-      subject: 'Tu opinión nos importa — contanos cómo fue tu visita',
-      preview:
-        'Queremos seguir mejorando. Respondé estas 3 preguntas rápidas sobre tu última experiencia en Moon Café y llevate un sello extra.',
-      program: 'Todos los miembros',
-      sent_at: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString(),
-      recipients: 131,
-      heroImage: null,
-      stats: { openRate: 49, clickRate: 14, unsubscribed: 3 },
-    },
-  ])
+  const [history, setHistory] = useState(() => {
+    const stored = getEmailCampaigns()
+    // Restore demo-only fields (stats, coupon) that aren't persisted in the store
+    const withExtras = stored.map((item) => {
+      if (item.id === 1)
+        return {
+          ...item,
+          heroImage: null,
+          coupon: DEMO_COUPONS[1],
+          couponStats: { sent: 148, redeemed: 38 },
+          stats: { openRate: 61, clickRate: 18, unsubscribed: 1 },
+        }
+      if (item.id === 2) return { ...item, heroImage: null, stats: { openRate: 74, clickRate: 31, unsubscribed: 0 } }
+      if (item.id === 3)
+        return {
+          ...item,
+          heroImage: null,
+          coupon: DEMO_COUPONS[0],
+          couponStats: { sent: 92, redeemed: 19 },
+          stats: { openRate: 58, clickRate: 22, unsubscribed: 2 },
+        }
+      if (item.id === 4) return { ...item, heroImage: null, stats: { openRate: 49, clickRate: 14, unsubscribed: 3 } }
+      return { ...item, heroImage: item.heroImage ?? null }
+    })
+    return withExtras
+  })
+  const [selectedCoupon, setSelectedCoupon] = useState(null)
   const [automations, setAutomations] = useState(EMAIL_AUTOMATIONS_DEFAULT)
   const [expandedAutoId, setExpandedAutoId] = useState(null)
   const [liveAutoPreview, setLiveAutoPreview] = useState({ subject: '', body: '', heroImage: null })
@@ -1178,15 +1853,17 @@ function EmailTab() {
   const recipientCount =
     audience === 'todos'
       ? 148
-      : audience === 'sucursal'
-        ? sucursal === 's1'
-          ? 92
-          : sucursal === 's2'
-            ? 56
-            : 148
-        : audience === 'lista'
-          ? selectedMembers.size
-          : csvContacts.length
+      : audience === 'segmento'
+        ? (PUSH_SEGMENTS.find((s) => s.id === emailSegment)?.count ?? 0)
+        : audience === 'sucursal'
+          ? sucursal === 's1'
+            ? 92
+            : sucursal === 's2'
+              ? 56
+              : 148
+          : audience === 'lista'
+            ? selectedMembers.size
+            : csvContacts.length
 
   const canSend = subject.trim().length > 0 && liveContent.replace(/<[^>]*>/g, '').trim().length > 0
 
@@ -1196,30 +1873,48 @@ function EmailTab() {
       .replace(/<[^>]*>/g, '')
       .trim()
       .slice(0, 120)
-    setHistory([
-      {
-        id: Date.now(),
-        subject,
-        preview,
-        heroImage,
-        program:
-          audience === 'todos'
-            ? 'Todos los programas'
+    const newItem = {
+      id: Date.now(),
+      subject,
+      preview,
+      heroImage,
+      coupon: selectedCoupon,
+      couponStats: selectedCoupon
+        ? { sent: recipientCount, redeemed: Math.round(recipientCount * (0.18 + Math.random() * 0.18)) }
+        : null,
+      program:
+        audience === 'todos'
+          ? 'Todos los miembros'
+          : audience === 'segmento'
+            ? `Segmento: ${PUSH_SEGMENTS.find((s) => s.id === emailSegment)?.label ?? ''}`
             : audience === 'sucursal'
               ? 'Por sucursal'
               : audience === 'lista'
                 ? `${selectedMembers.size} contactos`
                 : `CSV · ${csvContacts.length} contactos`,
-        sent_at: new Date().toISOString(),
-        recipients: recipientCount,
+      sent_at: new Date().toISOString(),
+      recipients: recipientCount,
+      stats: {
+        openRate: Math.round(45 + Math.random() * 35),
+        clickRate: Math.round(10 + Math.random() * 25),
+        unsubscribed: Math.round(Math.random() * 3),
       },
-      ...history,
-    ])
+    }
+    addEmailCampaign({
+      id: newItem.id,
+      subject: newItem.subject,
+      preview: newItem.preview,
+      program: newItem.program,
+      sent_at: newItem.sent_at,
+      recipients: newItem.recipients,
+    })
+    setHistory([newItem, ...history])
     toast.success(`Email enviado a ${recipientCount} miembro${recipientCount !== 1 ? 's' : ''}`)
     setSubject('')
     setHtmlSource('')
     setLiveContent('')
     setHeroImage(null)
+    setSelectedCoupon(null)
     setSelectedMembers(new Set())
     setCsvContacts([])
     setCsvError(null)
@@ -1317,6 +2012,7 @@ function EmailTab() {
                     <div className="flex bg-white dark:bg-gray-900 rounded-lg p-0.5 gap-0.5 border border-gray-200 dark:border-gray-700">
                       {[
                         { id: 'todos', label: 'Todos' },
+                        { id: 'segmento', label: 'Segmento' },
                         { id: 'sucursal', label: 'Sucursal' },
                         { id: 'lista', label: 'Lista' },
                         { id: 'csv', label: 'CSV' },
@@ -1343,6 +2039,43 @@ function EmailTab() {
                         : `${recipientCount} destinatarios`}
                     </span>
                   </div>
+
+                  {audience === 'segmento' && (
+                    <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 space-y-2">
+                      {PUSH_SEGMENTS.map((s) => (
+                        <button
+                          key={s.id}
+                          onClick={() => setEmailSegment(s.id)}
+                          className={cn(
+                            'w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-left transition-all',
+                            emailSegment === s.id
+                              ? 'border-gray-900 bg-gray-900 text-white dark:border-gray-100 dark:bg-gray-100 dark:text-gray-900'
+                              : 'border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300',
+                          )}
+                        >
+                          <div className="min-w-0">
+                            <span className="text-sm font-medium">{s.label}</span>
+                            <p
+                              className={cn(
+                                'text-xs mt-0.5 truncate',
+                                emailSegment === s.id ? 'text-gray-300 dark:text-gray-600' : 'text-gray-400',
+                              )}
+                            >
+                              {s.desc}
+                            </p>
+                          </div>
+                          <span
+                            className={cn(
+                              'text-xs font-semibold ml-3 flex-shrink-0',
+                              emailSegment === s.id ? 'text-gray-200 dark:text-gray-700' : 'text-gray-400',
+                            )}
+                          >
+                            {s.count}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
 
                   {audience === 'sucursal' && (
                     <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
@@ -1385,7 +2118,21 @@ function EmailTab() {
                               className="rounded border-gray-300 text-amber-500 focus:ring-amber-400"
                             />
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{m.name}</p>
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                                  {m.name}
+                                </p>
+                                {m.segment && SEGMENT_CHIP[m.segment] && (
+                                  <span
+                                    className={cn(
+                                      'flex-shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded-full',
+                                      SEGMENT_CHIP[m.segment].cls,
+                                    )}
+                                  >
+                                    {SEGMENT_CHIP[m.segment].label}
+                                  </span>
+                                )}
+                              </div>
                               <p className="text-xs text-gray-400 truncate">{m.email}</p>
                             </div>
                           </label>
@@ -1560,6 +2307,16 @@ function EmailTab() {
                   </div>
                 </div>
 
+                {/* Cupón adjunto */}
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Cupón adjunto (opcional)</Label>
+                  {selectedCoupon ? (
+                    <CouponBadge coupon={selectedCoupon} onRemove={() => setSelectedCoupon(null)} />
+                  ) : (
+                    <CouponPicker value={selectedCoupon} onChange={setSelectedCoupon} />
+                  )}
+                </div>
+
                 {/* Cuerpo del email */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
@@ -1634,7 +2391,7 @@ function EmailTab() {
 
               {/* ── Preview ── */}
               <div className="xl:col-span-2">
-                <EmailPreview subject={subject} body={liveContent} heroImage={heroImage} />
+                <EmailPreview subject={subject} body={liveContent} heroImage={heroImage} coupon={selectedCoupon} />
               </div>
             </div>
           </motion.div>
@@ -1667,7 +2424,7 @@ function EmailTab() {
                     >
                       <Card
                         onClick={() => setPreviewItem(n)}
-                        className="border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer hover:border-gray-300 dark:hover:border-gray-600"
+                        className="border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer"
                       >
                         {n.heroImage && <img src={n.heroImage} alt="" className="w-full h-24 object-cover" />}
                         <CardContent className="p-4">
@@ -1681,7 +2438,7 @@ function EmailTab() {
                               <span className="text-xs font-medium">Enviado</span>
                             </span>
                           </div>
-                          <div className="flex items-center gap-3 text-xs text-gray-400 mb-4">
+                          <div className="flex items-center gap-3 text-xs text-gray-400 mb-3">
                             <span className="flex items-center gap-1">
                               <Clock className="w-3 h-3" />
                               {formatDate(n.sent_at)}
@@ -1694,31 +2451,52 @@ function EmailTab() {
                               {n.program}
                             </span>
                           </div>
+                          {n.coupon && (
+                            <div className="mb-3">
+                              <CouponBadge coupon={n.coupon} />
+                            </div>
+                          )}
 
                           {/* Stats */}
-                          {n.stats && (
-                            <div className="flex items-center gap-4 pt-3 border-t border-gray-100 dark:border-gray-800">
-                              <div className="flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
-                                <span className="text-xs text-gray-400">Apertura</span>
-                                <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                                  {n.stats.openRate}%
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-violet-400 flex-shrink-0" />
-                                <span className="text-xs text-gray-400">Clicks</span>
-                                <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                                  {n.stats.clickRate}%
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-rose-300 flex-shrink-0" />
-                                <span className="text-xs text-gray-400">Desuscripciones</span>
-                                <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                                  {n.stats.unsubscribed}
-                                </span>
-                              </div>
+                          {(n.stats || n.couponStats) && (
+                            <div className="flex flex-col gap-2 pt-3 border-t border-gray-100 dark:border-gray-800">
+                              {n.stats && (
+                                <div className="flex items-center gap-4">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
+                                    <span className="text-xs text-gray-400">Apertura</span>
+                                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                      {n.stats.openRate}%
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-violet-400 flex-shrink-0" />
+                                    <span className="text-xs text-gray-400">Clicks</span>
+                                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                      {n.stats.clickRate}%
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-rose-300 flex-shrink-0" />
+                                    <span className="text-xs text-gray-400">Baja</span>
+                                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                      {n.stats.unsubscribed}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                              {n.couponStats && (
+                                <div className="inline-flex items-center gap-2 self-start bg-amber-50 dark:bg-amber-900/20 rounded-lg px-2.5 py-1.5">
+                                  <Ticket className="w-3 h-3 text-amber-500 flex-shrink-0" />
+                                  <span className="text-xs text-amber-700 dark:text-amber-400 whitespace-nowrap">
+                                    <strong>{n.couponStats.redeemed}</strong> cupones canjeados de{' '}
+                                    <strong>{n.couponStats.sent}</strong> enviados{' '}
+                                    <span className="font-semibold">
+                                      ({Math.round((n.couponStats.redeemed / n.couponStats.sent) * 100)}%)
+                                    </span>
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           )}
                         </CardContent>
@@ -1734,6 +2512,7 @@ function EmailTab() {
                         subject={previewItem.subject}
                         body={previewItem.preview}
                         heroImage={previewItem.heroImage}
+                        coupon={previewItem.coupon}
                       />
                     )}
                   </DialogContent>
@@ -1786,6 +2565,7 @@ function EmailTab() {
                             headerMax={EMAIL_SUBJECT_MAX}
                             bodyMax={800}
                             richBody
+                            showCoupon
                             expanded
                             onExpand={() => setExpandedAutoId(auto.id)}
                             onCollapse={() => setExpandedAutoId(null)}
@@ -1822,30 +2602,48 @@ function EmailTab() {
                       <span className="text-sm font-semibold">{activeCount} activos</span>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {automations.map((auto, i) => (
-                      <motion.div
-                        key={auto.id}
-                        initial={{ opacity: 0, y: 16 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.06 }}
-                        className="h-full"
-                      >
-                        <AutomationCard
-                          auto={auto}
-                          onChange={handleAutoChange}
-                          headerLabel="Asunto"
-                          bodyLabel="Cuerpo"
-                          headerMax={EMAIL_SUBJECT_MAX}
-                          bodyMax={800}
-                          richBody
-                          onExpand={() => {
-                            setLiveAutoPreview({ subject: auto.header, body: auto.body, heroImage: auto.heroImage })
-                            setExpandedAutoId(auto.id)
-                          }}
-                        />
-                      </motion.div>
-                    ))}
+                  <div className="space-y-8">
+                    {EMAIL_CATEGORIES.map((cat) => {
+                      const items = automations.filter((a) => a.category === cat.key)
+                      if (items.length === 0) return null
+                      return (
+                        <div key={cat.key}>
+                          <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">
+                            {cat.label}
+                          </p>
+                          <div className="grid grid-cols-1 gap-4">
+                            {items.map((auto, i) => (
+                              <motion.div
+                                key={auto.id}
+                                initial={{ opacity: 0, y: 16 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: i * 0.06 }}
+                                className="h-full"
+                              >
+                                <AutomationCard
+                                  auto={auto}
+                                  onChange={handleAutoChange}
+                                  headerLabel="Asunto"
+                                  bodyLabel="Cuerpo"
+                                  headerMax={EMAIL_SUBJECT_MAX}
+                                  bodyMax={800}
+                                  richBody
+                                  showCoupon
+                                  onExpand={() => {
+                                    setLiveAutoPreview({
+                                      subject: auto.header,
+                                      body: auto.body,
+                                      heroImage: auto.heroImage,
+                                    })
+                                    setExpandedAutoId(auto.id)
+                                  }}
+                                />
+                              </motion.div>
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </motion.div>
               )}
