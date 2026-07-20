@@ -170,7 +170,11 @@ export default function PublicMenu() {
   const pillsRef = useRef(null)
 
   useEffect(() => {
-    setCatalog(loadCatalog())
+    const data = loadCatalog()
+    setCatalog(data)
+    const available = data.items.filter((i) => i.available)
+    const firstCat = data.categories.find((c) => available.some((i) => i.category === c))
+    if (firstCat) setActiveCategory(firstCat)
   }, [])
 
   if (!catalog) return null

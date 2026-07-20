@@ -13,6 +13,7 @@ import {
   ExternalLink,
   Settings,
   Upload,
+  GripVertical,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -651,8 +652,11 @@ export default function Menu() {
   const [showCatManager, setShowCatManager] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
+  const [draggingCat, setDraggingCat] = useState(null)
   const [iframeKey, setIframeKey] = useState(0)
   const refreshTimer = useRef(null)
+  const dragCat = useRef(null)
+  const dragOverCat = useRef(null)
 
   const { items, categories, settings } = catalog
 
@@ -741,6 +745,16 @@ export default function Menu() {
     if (filterCat === cat) setFilterCat('all')
   }
 
+  const reorderCategories = () => {
+    const from = categories.indexOf(dragCat.current)
+    const to = categories.indexOf(dragOverCat.current)
+    if (from === -1 || to === -1 || from === to) return
+    const reordered = [...categories]
+    reordered.splice(from, 1)
+    reordered.splice(to, 0, dragCat.current)
+    setCatalog((prev) => ({ ...prev, categories: reordered }))
+  }
+
   const updateSettings = (newSettings) => setCatalog((prev) => ({ ...prev, settings: newSettings }))
 
   const loadSampleData = () => setCatalog(JSON.parse(JSON.stringify(SAMPLE_CATALOG)))
@@ -823,14 +837,29 @@ export default function Menu() {
                 {categories.map((cat) => (
                   <button
                     key={cat}
+                    draggable
+                    onDragStart={() => {
+                      dragCat.current = cat
+                      setDraggingCat(cat)
+                    }}
+                    onDragEnter={() => {
+                      dragOverCat.current = cat
+                    }}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDragEnd={() => {
+                      reorderCategories()
+                      setDraggingCat(null)
+                    }}
                     onClick={() => setFilterCat(cat)}
                     className={cn(
-                      'flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 transition-colors',
+                      'flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 transition-all',
                       filterCat === cat
                         ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
                         : 'bg-gray-100 dark:bg-gray-800 text-gray-600 hover:bg-gray-200',
+                      draggingCat === cat ? 'opacity-40 scale-95' : '',
                     )}
                   >
+                    <GripVertical className="w-3 h-3 opacity-30 cursor-grab active:cursor-grabbing -ml-0.5 flex-shrink-0" />
                     {cat}
                     <span className="text-xs opacity-60">{items.filter((i) => i.category === cat).length}</span>
                     <span
