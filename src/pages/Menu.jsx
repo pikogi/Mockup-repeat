@@ -26,6 +26,117 @@ import { cn } from '@/lib/utils'
 
 const STORAGE_KEY = 'repeat_catalog'
 
+// Sample data shown to developers on first load (no data in localStorage)
+const SAMPLE_CATALOG = {
+  categories: ['Bebidas', 'Comidas', 'Postres'],
+  settings: {
+    name: 'Moon Café',
+    subtitle: 'Gracias por elegirnos',
+    color: '#111827',
+    logo_url: '',
+    logo_type: 'square',
+    banner_url: '',
+  },
+  items: [
+    {
+      id: 'demo_1',
+      name: 'Café con leche',
+      description: 'Espresso doble con leche vaporizada. Perfecto para comenzar el día.',
+      image_url: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&q=75',
+      price_type: 'money',
+      price: 850,
+      category: 'Bebidas',
+      stock_enabled: false,
+      stock: null,
+      available: true,
+    },
+    {
+      id: 'demo_2',
+      name: 'Cappuccino',
+      description: 'Espresso con leche vaporizada y espuma cremosa. Clásico italiano.',
+      image_url: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=600&q=75',
+      price_type: 'money',
+      price: 950,
+      category: 'Bebidas',
+      stock_enabled: false,
+      stock: null,
+      available: true,
+    },
+    {
+      id: 'demo_3',
+      name: 'Jugo de naranja',
+      description: 'Jugo natural exprimido al momento.',
+      image_url: 'https://images.unsplash.com/photo-1613478223719-2ab802602423?w=600&q=75',
+      price_type: 'money',
+      price: 700,
+      category: 'Bebidas',
+      stock_enabled: false,
+      stock: null,
+      available: true,
+    },
+    {
+      id: 'demo_4',
+      name: 'Medialunas x3',
+      description: 'Tres medialunas de manteca, tiernas y doradas.',
+      image_url: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600&q=75',
+      price_type: 'points',
+      price: 50,
+      category: 'Comidas',
+      stock_enabled: false,
+      stock: null,
+      available: true,
+    },
+    {
+      id: 'demo_5',
+      name: 'Tostado jamón y queso',
+      description: 'Pan artesanal tostado con jamón natural y queso cremoso.',
+      image_url: 'https://images.unsplash.com/photo-1528736235302-52922df5c122?w=600&q=75',
+      price_type: 'money',
+      price: 1200,
+      category: 'Comidas',
+      stock_enabled: false,
+      stock: null,
+      available: true,
+    },
+    {
+      id: 'demo_6',
+      name: 'Bowl de granola',
+      description: 'Granola artesanal con yogur, frutas de temporada y miel.',
+      image_url: 'https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=600&q=75',
+      price_type: 'points',
+      price: 80,
+      category: 'Comidas',
+      stock_enabled: false,
+      stock: null,
+      available: true,
+    },
+    {
+      id: 'demo_7',
+      name: 'Brownie de chocolate',
+      description: 'Brownie húmedo con chips de chocolate negro. Irresistible.',
+      image_url: 'https://images.unsplash.com/photo-1564355808539-22fda35bed7e?w=600&q=75',
+      price_type: 'points',
+      price: 60,
+      category: 'Postres',
+      stock_enabled: true,
+      stock: 8,
+      available: true,
+    },
+    {
+      id: 'demo_8',
+      name: 'Cheesecake de frutos rojos',
+      description: 'Cheesecake cremoso con coulis de frutos rojos. Porción individual.',
+      image_url: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=600&q=75',
+      price_type: 'money',
+      price: 1100,
+      category: 'Postres',
+      stock_enabled: false,
+      stock: null,
+      available: true,
+    },
+  ],
+}
+
 function loadCatalog() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
@@ -53,18 +164,8 @@ function loadCatalog() {
   } catch {
     /* ignore */
   }
-  return {
-    items: [],
-    categories: [],
-    settings: {
-      name: '',
-      subtitle: 'Gracias por elegirnos',
-      color: '#111827',
-      logo_url: '',
-      logo_type: 'square',
-      banner_url: '',
-    },
-  }
+  // Nothing stored yet — seed with sample data so developers see a populated catalog
+  return JSON.parse(JSON.stringify(SAMPLE_CATALOG))
 }
 
 function saveCatalog(data) {
@@ -642,6 +743,8 @@ export default function Menu() {
 
   const updateSettings = (newSettings) => setCatalog((prev) => ({ ...prev, settings: newSettings }))
 
+  const loadSampleData = () => setCatalog(JSON.parse(JSON.stringify(SAMPLE_CATALOG)))
+
   return (
     <div className="px-4 py-8">
       <div className="max-w-6xl mx-auto flex gap-8 items-start">
@@ -656,6 +759,13 @@ export default function Menu() {
               </p>
             </div>
             <div className="flex items-center gap-2">
+              <button
+                onClick={loadSampleData}
+                title="Restablecer datos de ejemplo"
+                className="px-2.5 py-2 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 text-xs font-medium text-gray-400 hover:text-gray-600 hover:border-gray-400 transition-colors whitespace-nowrap"
+              >
+                Cargar ejemplo
+              </button>
               <button
                 onClick={() => setShowSettings((v) => !v)}
                 className={cn(
@@ -788,9 +898,14 @@ export default function Menu() {
                 <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">Sin ítems todavía</p>
                 <p className="text-sm text-gray-400 mt-1">Agregá tu primer producto o servicio.</p>
               </div>
-              <Button onClick={openAdd} className="flex items-center gap-2 mx-auto">
-                <Plus className="w-4 h-4" /> Agregar primer ítem
-              </Button>
+              <div className="flex items-center justify-center gap-3">
+                <Button onClick={openAdd} className="flex items-center gap-2">
+                  <Plus className="w-4 h-4" /> Agregar primer ítem
+                </Button>
+                <Button variant="outline" onClick={loadSampleData} className="flex items-center gap-2 text-gray-500">
+                  Cargar datos de ejemplo
+                </Button>
+              </div>
             </motion.div>
           )}
 
