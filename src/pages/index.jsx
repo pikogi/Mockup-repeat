@@ -113,6 +113,7 @@ const ScanDemoDelPilar = lazy(() => import('./ScanDemoDelPilar'))
 const ScanDemoDelPilarPoints = lazy(() => import('./ScanDemoDelPilarPoints'))
 const DashboardHintDelPilar = lazy(() => import('./DashboardHintDelPilar'))
 const DashboardHintDelPilarPoints = lazy(() => import('./DashboardHintDelPilarPoints'))
+const PublicMenu = lazy(() => import('./PublicMenu'))
 
 function LayoutWrapper({ children }) {
   const location = useLocation()
@@ -139,6 +140,7 @@ export default function Pages() {
           <Routes>
             <Route path="/publicprogram" element={<PublicCard />} />
             <Route path="/store/:storeId" element={<PublicStore />} />
+            <Route path="/catalog/my-menu" element={<PublicMenu />} />
             <Route path="/catalog/:programId" element={<PublicCatalog />} />
             <Route path="/membership/leroma-membership-demo" element={<PublicMembershipLeroma />} />
             <Route path="/membership/del-pilar-membership-demo" element={<PublicMembershipDelPilar />} />
@@ -148,6 +150,7 @@ export default function Pages() {
             <Route path="/cashback/:programId" element={<PublicCashback />} />
             <Route path="/demo" element={<Demo />} />
             <Route path="/demo-leroma" element={<Preview />} />
+            <Route path="/demo-pan-plano" element={<Preview />} />
             <Route path="/demo-del-pilar" element={<Preview />} />
             <Route path="/demo-del-pilar-points" element={<Preview />} />
             <Route path="/demo-mooncafe" element={<DemoShell flow="mooncafe" />} />

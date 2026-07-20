@@ -90,6 +90,7 @@ export default function Sidebar() {
     '/encuesta/roadmap',
     '/comunicacion/roadmap',
     '/referidos/roadmap',
+    '/menu',
   ]
 
   const MOONCAFE_ROADMAP_URLS = {
@@ -105,6 +106,7 @@ export default function Sidebar() {
     Team: '/team-demo/mooncafe',
     ScanQR: '/scanqr-demo?demo=selector&scan=1',
     Sorteo: '/sorteo/mooncafe-demo',
+    Menu: '/menu',
   }
 
   const MOONCAFE_PATHS = [
@@ -259,6 +261,8 @@ export default function Sidebar() {
       ? [{ name: 'Comunicación', icon: Megaphone, page: 'Comunicacion' }]
       : [{ name: t('notifications'), icon: Bell, page: 'Notifications' }]),
     { name: t('myPrograms'), icon: CreditCard, page: 'MyPrograms' },
+    ...(isMoonCafeRoadmap ? [{ name: 'Encuestas', icon: ClipboardList, page: 'Encuesta' }] : []),
+    ...(!isDemo || isMoonCafeRoadmap ? [{ name: t('menu'), icon: BookOpen, page: 'Menu' }] : []),
     ...(isGlowDemo || isMoonCafeDemo || isMoonCafeRoadmap || isDelPilarDemo
       ? [
           { name: 'Sorteo', icon: Ticket, page: 'Sorteo' },
@@ -266,8 +270,6 @@ export default function Sidebar() {
           { name: t('team'), icon: Users, page: 'Team' },
         ]
       : []),
-    ...(isMoonCafeRoadmap ? [{ name: 'Encuestas', icon: ClipboardList, page: 'Encuesta' }] : []),
-    ...(!isDemo ? [{ name: t('menu'), icon: BookOpen, page: 'Menu' }] : []),
     ...(user?.type_user === 'brand_admin' && !isDemo ? [{ name: t('stores'), icon: Store, page: 'Stores' }] : []),
   ]
 

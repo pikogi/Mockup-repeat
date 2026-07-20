@@ -883,7 +883,7 @@ function PricingScreen({ onRestart, onBack, country }) {
 export default function DemoShell({ flow, isRoadmap = false }) {
   const baseSteps = flow === 'mooncafe-points' ? MOONCAFE_POINTS_STEPS : MOONCAFE_STEPS
   const steps = isRoadmap
-    ? baseSteps.map((s) => {
+    ? baseSteps.slice(2).map((s) => {
         const replaceUrl = (url) => (url === '/dashboard-demo/mooncafe' ? '/dashboard/mooncafe-roadmap' : url)
         return {
           ...s,
@@ -895,7 +895,7 @@ export default function DemoShell({ flow, isRoadmap = false }) {
     : baseSteps
   const cafeImage = '/cafe-mostrador.jpg'
 
-  const [phase, setPhase] = useState('welcome') // 'welcome' | 'cafe' | 'steps'
+  const [phase, setPhase] = useState(isRoadmap ? 'steps' : 'welcome') // 'welcome' | 'cafe' | 'steps'
   const [currentStep, setCurrentStep] = useState(0)
   const [subStep, setSubStep] = useState(0)
   const [done, setDone] = useState(false)
@@ -1000,7 +1000,7 @@ export default function DemoShell({ flow, isRoadmap = false }) {
       setSubStep((s) => s - 1)
       return
     }
-    if (currentStep === 0) {
+    if (currentStep === 0 && !isRoadmap) {
       setPhase('cafe')
     } else {
       setCurrentStep((s) => s - 1)

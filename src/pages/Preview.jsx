@@ -439,6 +439,21 @@ const DEL_PILAR_POINTS_FLOW = [
   },
 ]
 
+const PAN_PLANO_FLOW = [
+  {
+    type: 'phone',
+    url: '/membership/pan-plano-demo',
+    label: 'Vista Mobile',
+    desc: 'Cómo ve el cliente la página de membresía desde su celular.',
+  },
+  {
+    type: 'laptop',
+    url: '/membership/pan-plano-demo',
+    label: 'Vista Desktop',
+    desc: 'Cómo se ve la página de membresía en pantalla grande.',
+  },
+]
+
 const LEROMA_FLOW = [
   {
     type: 'phone',
@@ -620,6 +635,7 @@ export default function Preview() {
   const isGlowPoints = location.pathname === '/demo-glow-points'
   const isDelPilar = location.pathname === '/demo-del-pilar'
   const isDelPilarPoints = location.pathname === '/demo-del-pilar-points'
+  const isPanPlano = location.pathname === '/demo-pan-plano'
   const activeFlow = isMoonCafePoints
     ? MOONCAFE_POINTS_FLOW
     : isMoonCafe
@@ -636,7 +652,9 @@ export default function Preview() {
                 ? DEL_PILAR_FLOW
                 : isDelPilarPoints
                   ? DEL_PILAR_POINTS_FLOW
-                  : LEROMA_FLOW
+                  : isPanPlano
+                    ? PAN_PLANO_FLOW
+                    : LEROMA_FLOW
   const isFlow = !url
 
   const showPhone = view === 'both' || view === 'phone'
