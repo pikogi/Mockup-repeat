@@ -14,6 +14,7 @@ import {
   Settings,
   Upload,
   GripVertical,
+  Search,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -648,6 +649,7 @@ export default function Menu() {
   const [editingId, setEditingId] = useState(null)
   const [formData, setFormData] = useState(EMPTY_FORM)
   const [filterCat, setFilterCat] = useState('all')
+  const [search, setSearch] = useState('')
   const [newCatInput, setNewCatInput] = useState('')
   const [showCatManager, setShowCatManager] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
@@ -667,7 +669,15 @@ export default function Menu() {
     return () => clearTimeout(refreshTimer.current)
   }, [catalog])
 
-  const filtered = filterCat === 'all' ? items : items.filter((i) => i.category === filterCat)
+  const searchQuery = search.trim().toLowerCase()
+  const filtered = items
+    .filter((i) => filterCat === 'all' || i.category === filterCat)
+    .filter(
+      (i) =>
+        !searchQuery ||
+        i.name.toLowerCase().includes(searchQuery) ||
+        (i.description && i.description.toLowerCase().includes(searchQuery)),
+    )
 
   const openAdd = () => {
     setEditingId(null)
@@ -818,6 +828,26 @@ export default function Menu() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Search */}
+          <div className="relative mb-3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar ítem..."
+              className="w-full pl-9 pr-8 py-2 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 transition"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
 
           {/* Categories row — always visible */}
           <div className="mb-5 space-y-2">
