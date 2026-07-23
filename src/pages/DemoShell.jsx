@@ -59,6 +59,12 @@ const MOONCAFE_STEPS = [
       },
     ],
   },
+  {
+    url: '/notifications/mooncafe-demo',
+    title: 'Notificaciones automáticas',
+    desc: 'Repeat envía notificaciones push automáticas según el comportamiento del cliente: bienvenida, cumpleaños, premio desbloqueado e inactividad.',
+    fullWidth: true,
+  },
 ]
 
 const MOONCAFE_POINTS_STEPS = [
