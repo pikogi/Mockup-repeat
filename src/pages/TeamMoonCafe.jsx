@@ -111,7 +111,7 @@ function InvitePersonalModal({ open, onOpenChange }) {
               ))}
             </div>
             <p className="text-xs text-gray-400 dark:text-gray-500">
-              Las acciones se aplican a todas las sucursales seleccionadas; luego podés ajustarlas por sucursal. La
+              Las acciones se aplican a todas las sucursales seleccionadas; luego puedes ajustarlas por sucursal. La
               visibilidad de datos del cliente vale para toda la marca.
             </p>
           </div>

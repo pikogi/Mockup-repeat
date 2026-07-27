@@ -37,7 +37,7 @@ const AUTOMATIONS_DEFAULT = [
     description: 'Se envía cuando un nuevo miembro se une al programa.',
     enabled: true,
     header: '¡Te damos la bienvenida! 🎉',
-    body: 'Gracias por unirte. A partir de ahora acumulás beneficios en cada visita.',
+    body: 'Gracias por unirte. A partir de ahora acumulas beneficios en cada visita.',
     extra: null,
   },
   {
@@ -48,8 +48,8 @@ const AUTOMATIONS_DEFAULT = [
     title: 'Premio desbloqueado',
     description: 'Se envía cuando el miembro desbloquea un nuevo beneficio.',
     enabled: true,
-    header: '¡Tenés un nuevo premio! 🎁',
-    body: 'Desbloqueaste un beneficio exclusivo. Presentá tu membresía en caja para canjearlo.',
+    header: '¡Tienes un nuevo premio! 🎁',
+    body: 'Desbloqueaste un beneficio exclusivo. Presenta tu membresía en caja para canjearlo.',
     extra: null,
   },
   {
@@ -61,7 +61,7 @@ const AUTOMATIONS_DEFAULT = [
     description: 'Se envía el día del cumpleaños del miembro.',
     enabled: true,
     header: '¡Feliz cumpleaños! 🎂',
-    body: 'En tu día tenemos una sorpresa para vos. Pasá a celebrar con nosotros.',
+    body: 'En tu día tenemos una sorpresa para ti. Pasa a celebrar con nosotros.',
     extra: null,
   },
   {
@@ -73,7 +73,7 @@ const AUTOMATIONS_DEFAULT = [
     description: 'Se envía si el miembro no visitó en los últimos N días.',
     enabled: false,
     header: 'Te extrañamos 👀',
-    body: 'Hace tiempo que no pasás. Volvé y seguí sumando puntos hacia tu próximo premio.',
+    body: 'Hace tiempo que no pasas. Vuelve y sigue sumando puntos hacia tu próximo premio.',
     extra: { type: 'days', value: 30 },
   },
 ]
@@ -394,7 +394,7 @@ export default function NotificationsMoonCafe() {
                         <Textarea
                           value={body}
                           onChange={(e) => setBody(e.target.value.slice(0, BODY_MAX))}
-                          placeholder="Ej: Pasá por Moon Café y sumá un sello extra en tu próxima visita."
+                          placeholder="Ej: Pasa por Moon Café y suma un sello extra en tu próxima visita."
                           maxLength={BODY_MAX}
                           rows={4}
                         />
@@ -404,7 +404,7 @@ export default function NotificationsMoonCafe() {
                           La notificación se enviará a todos los usuarios con tarjetas en Google Wallet y Apple Wallet.
                         </p>
                         <div className="flex items-center justify-between">
-                          <p className="text-xs text-muted-foreground">Podés enviar notificaciones cada 24 horas.</p>
+                          <p className="text-xs text-muted-foreground">Puedes enviar notificaciones cada 24 horas.</p>
                           <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">3/3 restantes</p>
                         </div>
                       </div>

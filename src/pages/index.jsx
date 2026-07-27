@@ -67,6 +67,7 @@ const NotificationsMoonCafe = lazy(() => import('./NotificationsMoonCafe'))
 const NotificationsRoadmap = lazy(() => import('./NotificationsRoadmap'))
 const ComunicacionRoadmap = lazy(() => import('./ComunicacionRoadmap'))
 const EncuestaRoadmap = lazy(() => import('./EncuestaRoadmap'))
+// const DescuentosAutomaticosRoadmap = lazy(() => import('./DescuentosAutomaticosRoadmap'))
 const PublicEncuesta = lazy(() => import('./PublicEncuesta'))
 const CustomersMoonCafe = lazy(() => import('./CustomersMoonCafe'))
 const DashboardHintMoonCafe = lazy(() => import('./DashboardHintMoonCafe'))
@@ -82,6 +83,12 @@ const NotificationsMoonCafePoints = lazy(() => import('./NotificationsMoonCafePo
 const ScanDemoMoonCafePoints = lazy(() => import('./ScanDemoMoonCafePoints'))
 const WalletDemoMoonCafePoints = lazy(() => import('./WalletDemoMoonCafePoints'))
 const DashboardHintMoonCafePoints = lazy(() => import('./DashboardHintMoonCafePoints'))
+const CatalogoDePremiosMoonCafe = lazy(() => import('./CatalogoDePremiosMoonCafe'))
+const PublicCatalogMoonCafe = lazy(() => import('./PublicCatalogMoonCafe'))
+const EncuestaMoonCafe = lazy(() => import('./EncuestaMoonCafe'))
+const CrearEncuestaMoonCafe = lazy(() => import('./CrearEncuestaMoonCafe'))
+const ResultadosEncuestaMoonCafe = lazy(() => import('./ResultadosEncuestaMoonCafe'))
+const PublicEncuestaMoonCafe = lazy(() => import('./PublicEncuestaMoonCafe'))
 const WalletDemoGym = lazy(() => import('./WalletDemoGym'))
 const ScanDemoGym = lazy(() => import('./ScanDemoGym'))
 // const DashboardGym = lazy(() => import('./DashboardGym'))
@@ -141,6 +148,7 @@ export default function Pages() {
             <Route path="/publicprogram" element={<PublicCard />} />
             <Route path="/store/:storeId" element={<PublicStore />} />
             <Route path="/catalog/my-menu" element={<PublicMenu />} />
+            <Route path="/catalog/mooncafe-puntos-demo" element={<PublicCatalogMoonCafe />} />
             <Route path="/catalog/:programId" element={<PublicCatalog />} />
             <Route path="/membership/leroma-membership-demo" element={<PublicMembershipLeroma />} />
             <Route path="/membership/del-pilar-membership-demo" element={<PublicMembershipDelPilar />} />
@@ -243,6 +251,38 @@ export default function Pages() {
                 </LayoutWrapper>
               }
             />
+            <Route
+              path="/catalogo-demo/mooncafe"
+              element={
+                <LayoutWrapper>
+                  <CatalogoDePremiosMoonCafe />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/encuesta/mooncafe-demo"
+              element={
+                <LayoutWrapper>
+                  <EncuestaMoonCafe />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/encuesta/mooncafe-demo/crear"
+              element={
+                <LayoutWrapper>
+                  <CrearEncuestaMoonCafe />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/encuesta/mooncafe-demo/resultados"
+              element={
+                <LayoutWrapper>
+                  <ResultadosEncuestaMoonCafe />
+                </LayoutWrapper>
+              }
+            />
             <Route path="/dashboard-hint/mooncafe" element={<DashboardHintMoonCafe />} />
             <Route path="/scan-demo/mooncafe-points" element={<ScanDemoMoonCafePoints />} />
             <Route path="/wallet-demo/mooncafe-points" element={<WalletDemoMoonCafePoints />} />
@@ -335,7 +375,16 @@ export default function Pages() {
                 </LayoutWrapper>
               }
             />
+            {/* <Route
+              path="/descuentos/roadmap"
+              element={
+                <LayoutWrapper>
+                  <DescuentosAutomaticosRoadmap />
+                </LayoutWrapper>
+              }
+            /> */}
             <Route path="/encuesta/demo" element={<PublicEncuesta />} />
+            <Route path="/encuesta/moon-cafe-demo" element={<PublicEncuestaMoonCafe />} />
             <Route
               path="/dashboard/mooncafe-demo"
               element={

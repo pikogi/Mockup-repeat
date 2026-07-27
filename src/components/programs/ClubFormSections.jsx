@@ -74,9 +74,9 @@ const CASHBACK_TYPE_ID = '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc154'
 
 const TYPE_DESCRIPTIONS = {
   [POINTS_TYPE_ID]:
-    'Los clientes acumulan puntos según el monto gastado. Vos definís cuánto dinero equivale a 1 punto y cuánto vale cada punto al canjear.',
+    'Los clientes acumulan puntos según el monto gastado. Tú defines cuánto dinero equivale a 1 punto y cuánto vale cada punto al canjear.',
   [COUPON_TYPE_ID]:
-    'Emitís cupones digitales con descuentos o beneficios. Los clientes los reciben automáticamente y los presentan en caja para usarlos.',
+    'Emites cupones digitales con descuentos o beneficios. Los clientes los reciben automáticamente y los presentan en caja para usarlos.',
   [MEMBERSHIP_TYPE_ID]:
     'Los clientes pagan una cuota mensual o anual para acceder a beneficios exclusivos. Ideal para fidelizar con servicios recurrentes.',
   [CASHBACK_TYPE_ID]:
@@ -303,7 +303,7 @@ function PointsValueSection({ formData, setFormData }) {
     <div className="space-y-5">
       <div>
         <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Valor del punto</h4>
-        <p className="text-sm text-gray-500 dark:text-gray-400">Definí la tasa a la que ganan y canjean los puntos.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Define la tasa a la que ganan y canjean los puntos.</p>
       </div>
 
       <AccumulationField formData={formData} setFormData={setFormData} />
@@ -565,7 +565,7 @@ export function PointsConversionSection({ formData, setFormData }) {
       <div>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Configuración de puntos</h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Definí cómo acumulan y cómo canjean puntos tus clientes.
+          Define cómo acumulan y cómo canjean puntos tus clientes.
         </p>
       </div>
 
@@ -1077,7 +1077,7 @@ export function SecuritySection({ formData, setFormData }) {
               <li className="flex items-start gap-2">
                 <span className="mt-0.5 flex-shrink-0">③</span>
                 <span>
-                  Podés cruzar los reportes de Repeat con los de tu sistema de ventas para detectar inconsistencias.
+                  Puedes cruzar los reportes de Repeat con los de tu sistema de ventas para detectar inconsistencias.
                 </span>
               </li>
             </ul>
@@ -1219,7 +1219,7 @@ function getReferralConfig(programTypeId, formData) {
 
 const MEMBERSHIP_REFERRAL_TYPES = [
   { value: 'days', label: 'Días gratis', desc: 'Días extra de membresía para el que refiere.' },
-  { value: 'benefit', label: 'Beneficio exclusivo', desc: 'Un producto, servicio o regalo que vos definís.' },
+  { value: 'benefit', label: 'Beneficio exclusivo', desc: 'Un producto, servicio o regalo que tú defines.' },
 ]
 
 function getReferredRewardConfig(programTypeId, formData) {
@@ -1312,7 +1312,7 @@ export function ReferralSection({ formData, setFormData }) {
             <div className="flex items-center justify-between mb-2">
               <div>
                 <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Tu link de referido</p>
-                <p className="text-xs text-gray-400 mt-0.5">Compartilo en redes, WhatsApp o en el local.</p>
+                <p className="text-xs text-gray-400 mt-0.5">Compártelo en redes, WhatsApp o en el local.</p>
               </div>
               <Button type="button" size="sm" variant="outline" onClick={handleCopy} className="gap-1.5 flex-shrink-0">
                 {copied ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
@@ -1371,7 +1371,7 @@ export function ReferralSection({ formData, setFormData }) {
           ) : config.fieldType === 'text' ? (
             /* Membresía — beneficio exclusivo (texto libre) */
             <div className="space-y-2">
-              <Label htmlFor="referral_reward_benefit">Describí el beneficio que recibe</Label>
+              <Label htmlFor="referral_reward_benefit">Describe el beneficio que recibe</Label>
               <Input
                 id="referral_reward_benefit"
                 type="text"
@@ -1497,7 +1497,7 @@ const COUPON_TRIGGERS = [
   {
     value: 'manual',
     label: 'Manual',
-    desc: 'Vos entregás el cupón manualmente desde el panel, por ejemplo enviándolo por correo.',
+    desc: 'Tú entregas el cupón manualmente desde el panel, por ejemplo enviándolo por correo.',
   },
 ]
 
@@ -1535,14 +1535,14 @@ export function CouponConfigSection({ formData, setFormData }) {
       <div>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Configuración del cupón</h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Definí cómo se obtiene el cupón y qué beneficio ofrece.
+          Define cómo se obtiene el cupón y qué beneficio ofrece.
         </p>
       </div>
 
       {/* Cómo se obtiene */}
       <div className="space-y-3">
         <Label>¿Cómo obtiene el cupón el cliente?</Label>
-        <p className="text-xs text-gray-400 dark:text-gray-500 -mt-2">Podés tildar más de una opción.</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 -mt-2">Puedes tildar más de una opción.</p>
         <div className="grid grid-cols-1 gap-2">
           {COUPON_TRIGGERS.map((opt) => {
             const isSelected = triggers.includes(opt.value)
@@ -1668,7 +1668,7 @@ export function CouponConfigSection({ formData, setFormData }) {
           </p>
         ) : (
           <p className="text-sm text-orange-900 dark:text-orange-200">
-            Seleccioná al menos una forma de entrega del cupón.
+            Selecciona al menos una forma de entrega del cupón.
           </p>
         )}
       </div>
@@ -1838,7 +1838,7 @@ export function MembershipConfigSection({ formData, setFormData }) {
       <div>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Configuración de membresía</h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Definí cómo acceden los clientes y qué beneficios tienen según su nivel.
+          Define cómo acceden los clientes y qué beneficios tienen según su nivel.
         </p>
       </div>
 
@@ -1851,7 +1851,7 @@ export function MembershipConfigSection({ formData, setFormData }) {
             {
               value: 'tiers',
               label: 'Por niveles',
-              desc: 'Los clientes suben de nivel según cuánto gastan. Opcionalmente podés habilitar suscripción paga por nivel para que puedan saltear el gasto.',
+              desc: 'Los clientes suben de nivel según cuánto gastan. Opcionalmente puedes habilitar suscripción paga por nivel para que puedan omitir el gasto.',
             },
           ].map((opt) => {
             const isSelected = activation === opt.value
@@ -1938,7 +1938,7 @@ export function MembershipConfigSection({ formData, setFormData }) {
                 </span>
               </div>
               <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-snug">
-                Si definís un precio, los clientes pueden pagar para acceder a este nivel sin necesidad de alcanzar el
+                Si defines un precio, los clientes pueden pagar para acceder a este nivel sin necesidad de alcanzar el
                 gasto mínimo.
               </p>
               <div className="grid grid-cols-2 gap-3">
@@ -2067,7 +2067,7 @@ export function MembershipConfigSection({ formData, setFormData }) {
             </div>
           ) : (
             <div className="text-center py-4 text-gray-400 dark:text-gray-500 border border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
-              <p className="text-sm">Agregá al menos un nivel para continuar.</p>
+              <p className="text-sm">Agrega al menos un nivel para continuar.</p>
             </div>
           )}
         </div>
@@ -2090,7 +2090,7 @@ export function MembershipConfigSection({ formData, setFormData }) {
               )}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              Agregá descuentos, productos o servicios propios.
+              Agrega descuentos, productos o servicios propios.
             </p>
           </div>
           <ChevronDown
@@ -2318,7 +2318,7 @@ export function CashbackConfigSection({ formData, setFormData }) {
       <div>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Configuración de cashback</h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Definí cuánto cashback acumulan tus clientes y cuándo pueden usarlo.
+          Define cuánto cashback acumulan tus clientes y cuándo pueden usarlo.
         </p>
       </div>
 
@@ -2579,7 +2579,7 @@ export function PartnerBenefitsSection({ formData, setFormData }) {
             )}
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            Sumá negocios aliados que ofrezcan beneficios exclusivos a tus miembros.
+            Suma negocios aliados que ofrezcan beneficios exclusivos a tus miembros.
           </p>
         </div>
         <ChevronDown
@@ -3078,7 +3078,7 @@ export function NovedadesSection({ formData, setFormData }) {
               <Textarea
                 value={newPost.body}
                 onChange={(e) => setNewPost((p) => ({ ...p, body: e.target.value }))}
-                placeholder="Contá más detalles..."
+                placeholder="Cuenta más detalles..."
                 rows={2}
                 className="resize-none"
               />

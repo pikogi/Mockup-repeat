@@ -356,14 +356,19 @@ const PRICING_PLANS = [
     highlight: false,
     features: [
       'Clientes ilimitados',
-      'Hasta 5 condiciones de club',
+      'Todas las condiciones de clubes (sellos, puntos, etc.)',
       'Base de datos de clientes',
-      'Sin necesidad de app',
     ],
-    notIncluded: ['Notificaciones push', 'Miembros de equipo ilimitados', 'Sorteo'],
+    notIncluded: [
+      'Notificaciones push',
+      'Herramienta de Sorteo',
+      'Notificaciones push automatizadas',
+      'Miembros de equipo ilimitados',
+    ],
     prices: {
       ar: { mensual: 19999, semianual: 16999, anual: 14999 },
       mx: { mensual: 299, semianual: 254, anual: 224 },
+      usd: { mensual: 19, semianual: 16, anual: 14 },
     },
   },
   {
@@ -374,26 +379,39 @@ const PRICING_PLANS = [
       'Clientes ilimitados',
       'Miembros de equipo ilimitados',
       'Notificaciones push',
-      'Sorteo',
-      'Sin necesidad de app',
+      'Herramienta de Sorteo',
+      'Notificaciones push automatizadas',
     ],
     notIncluded: ['Encuesta de satisfacción', 'Menú y catálogo digital'],
     prices: {
       ar: { mensual: 29999, semianual: 25499, anual: 22499 },
       mx: { mensual: 499, semianual: 424, anual: 374 },
+      usd: { mensual: 39, semianual: 33, anual: 29 },
     },
   },
   {
     name: 'Club Full',
     desc: 'Todo lo del plan base más encuesta de satisfacción y menú digital.',
     highlight: true,
-    features: ['Todo lo del Club de Lealtad', 'Encuesta de satisfacción', 'Menú y catálogo digital'],
+    features: [
+      'Todo lo del Club de Lealtad',
+      'Encuesta de satisfacción',
+      'Menú y catálogo digital',
+      'Tu propia página de catálogo de premios',
+    ],
     notIncluded: [],
     prices: {
       ar: { mensual: 49999, semianual: 42499, anual: 37499 },
       mx: { mensual: 799, semianual: 679, anual: 599 },
+      usd: { mensual: 69, semianual: 59, anual: 52 },
     },
   },
+]
+
+const CURRENCIES = [
+  { code: 'MXN', priceKey: 'mx', locale: 'es-MX' },
+  { code: 'ARS', priceKey: 'ar', locale: 'es-AR' },
+  { code: 'USD', priceKey: 'usd', locale: 'en-US' },
 ]
 
 const BILLING_CYCLES = [
@@ -402,18 +420,17 @@ const BILLING_CYCLES = [
   { key: 'anual', label: 'Anual', badge: '25% off 🔥' },
 ]
 
-function fmtPrice(n, isAR) {
-  return isAR ? new Intl.NumberFormat('es-AR').format(n) : new Intl.NumberFormat('es-MX').format(n)
+function fmtPrice(n, locale) {
+  return new Intl.NumberFormat(locale).format(n)
 }
 
 function PricingScreen({ onRestart, onBack, country }) {
   const [billing, setBilling] = useState('mensual')
   const [branches, setBranches] = useState(0)
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 640)
+  const [currency, setCurrency] = useState(() => (country === 'AR' ? 'ARS' : 'MXN'))
   const cardRefs = useRef([])
-  const isAR = country === 'AR'
-  const priceKey = isAR ? 'ar' : 'mx'
-  const currency = isAR ? 'ARS' : 'MXN'
+  const { priceKey, locale } = CURRENCIES.find((c) => c.code === currency) ?? CURRENCIES[0]
   const isEnterprise = branches === 'enterprise'
   const branchCount = isEnterprise ? 0 : branches
 
@@ -458,8 +475,14 @@ function PricingScreen({ onRestart, onBack, country }) {
         fontFamily: 'system-ui, -apple-system, sans-serif',
       }}
     >
-      {/* Header */}
+      {/* Header — el eyebrow "Precios" es un interruptor oculto: cada clic pasa a la
+          siguiente moneda (MXN → ARS → USD). No tiene affordance visual a propósito;
+          es un atajo para cambiar la moneda en vivo durante videollamadas con clientes. */}
       <span
+        onClick={() => {
+          const idx = CURRENCIES.findIndex((c) => c.code === currency)
+          setCurrency(CURRENCIES[(idx + 1) % CURRENCIES.length].code)
+        }}
         style={{
           fontSize: 11,
           fontWeight: 700,
@@ -495,7 +518,7 @@ function PricingScreen({ onRestart, onBack, country }) {
           maxWidth: 340,
         }}
       >
-        🎁 <strong>Prueba gratis por 7 días</strong> · Cancelá cuando quieras
+        🎁 <strong>Prueba gratis por 7 días</strong> · Cancela cuando quieras
       </p>
 
       {/* Billing toggle — full-width en mobile, pill en desktop */}
@@ -596,9 +619,7 @@ function PricingScreen({ onRestart, onBack, country }) {
 
       {/* Selector de sucursales */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, marginBottom: 28 }}>
-        <label style={{ fontSize: 13, fontWeight: 500, color: '#374151' }}>
-          {isAR ? '¿Cuántas sucursales tenés?' : '¿Cuántas sucursales tienes?'}
-        </label>
+        <label style={{ fontSize: 13, fontWeight: 500, color: '#374151' }}>¿Cuántas sucursales tienes?</label>
         <select
           value={branches}
           onChange={(e) => setBranches(e.target.value === 'enterprise' ? 'enterprise' : Number(e.target.value))}
@@ -713,7 +734,7 @@ function PricingScreen({ onRestart, onBack, country }) {
                   <>
                     <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2 }}>
                       <span style={{ fontSize: 44, fontWeight: 800, color: '#111827', lineHeight: 1 }}>
-                        ${fmtPrice(totalPrice, isAR)}
+                        ${fmtPrice(totalPrice, locale)}
                       </span>
                       <span style={{ fontSize: 16, color: '#9ca3af', fontWeight: 500, marginBottom: 4 }}>/mes</span>
                     </div>
@@ -724,7 +745,7 @@ function PricingScreen({ onRestart, onBack, country }) {
                     )}
                     {showOld && (
                       <span style={{ fontSize: 12, color: '#d1d5db', textDecoration: 'line-through', marginTop: 2 }}>
-                        ${fmtPrice(totalMonthly, isAR)}/mes
+                        ${fmtPrice(totalMonthly, locale)}/mes
                       </span>
                     )}
                     <span style={{ fontSize: 11, color: '#d1d5db', marginTop: 2 }}>{currency}</span>
@@ -742,7 +763,7 @@ function PricingScreen({ onRestart, onBack, country }) {
                           textAlign: 'center',
                         }}
                       >
-                        💰 Pago semestral: ${fmtPrice(periodTotal, isAR)} {currency}
+                        💰 Pago semestral: ${fmtPrice(periodTotal, locale)} {currency}
                       </p>
                     )}
                     {billing === 'anual' && (
@@ -759,7 +780,7 @@ function PricingScreen({ onRestart, onBack, country }) {
                           textAlign: 'center',
                         }}
                       >
-                        💰 Pago anual: ${fmtPrice(periodTotal, isAR)} {currency}
+                        💰 Pago anual: ${fmtPrice(periodTotal, locale)} {currency}
                       </p>
                     )}
                   </>
@@ -973,17 +994,27 @@ export default function DemoShell({ flow, isRoadmap = false }) {
 
   // Flujo principal de pasos
   const step = steps[currentStep]
-  const isLastStep = currentStep === steps.length - 1
   const activeSubSteps = isDesktop ? step.desktopSubSteps : step.mobileSubSteps
-  const useSubSteps = isLastStep && activeSubSteps
+  const useSubSteps = Boolean(activeSubSteps)
   const activeSubStepUrl = useSubSteps ? activeSubSteps[subStep]?.url : null
   const rawUrl = activeSubStepUrl ?? step.url
   const iframeUrl = rawUrl + (rawUrl.includes('?') ? '&shell=1' : '?shell=1')
   const showPhoneFrame = step.phoneFrame && isDesktop
-  const lastStep = steps[steps.length - 1]
-  const displaySubSteps = isDesktop ? lastStep.desktopSubSteps : lastStep.mobileSubSteps
-  const displaySteps = displaySubSteps ? [...steps.slice(0, -1), ...displaySubSteps] : steps
-  const displayCurrentStep = useSubSteps ? steps.length - 1 + subStep : currentStep
+  // El paso con sub-pasos puede no ser el último del flujo (p. ej. "Registrar visita"
+  // seguido de "Notificaciones automáticas"), así que lo ubicamos por índice en vez de
+  // asumir que siempre es steps[steps.length - 1].
+  const subStepsIndex = steps.findIndex((s) => (isDesktop ? s.desktopSubSteps : s.mobileSubSteps))
+  const stepSubSteps =
+    subStepsIndex >= 0 ? (isDesktop ? steps[subStepsIndex].desktopSubSteps : steps[subStepsIndex].mobileSubSteps) : null
+  const displaySteps = stepSubSteps
+    ? [...steps.slice(0, subStepsIndex), ...stepSubSteps, ...steps.slice(subStepsIndex + 1)]
+    : steps
+  const displayCurrentStep =
+    subStepsIndex < 0 || currentStep < subStepsIndex
+      ? currentStep
+      : currentStep === subStepsIndex
+        ? subStepsIndex + subStep
+        : currentStep + stepSubSteps.length - 1
   const mobileSubStepsActive = !isDesktop && !!useSubSteps
 
   const handleNext = () => {

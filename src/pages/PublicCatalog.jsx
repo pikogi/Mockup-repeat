@@ -554,6 +554,120 @@ const MOCK_ACTIVITY_HELADERIA = [
   { id: 5, type: 'earned', label: 'Visita', points: 80, date: '28 mar 2026' },
 ]
 
+const MOCK_PROGRAM_MOONCAFE = {
+  name: 'Café Moon',
+  logo_url: '/moon-cafe-logo.png',
+  brand_color: '#1a4a2e',
+  money_per_point: 1,
+  money_per_point_redeem: 1,
+}
+
+const MOCK_ITEMS_MOONCAFE = [
+  {
+    id: 1,
+    name: 'Medialunas',
+    points_cost: 5,
+    image_url: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Una porción de 3 medialunas de manteca artesanales.',
+  },
+  {
+    id: 2,
+    name: 'Flat white',
+    points_cost: 10,
+    image_url: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Café espresso doble con leche vaporizada. Nuestro clásico.',
+  },
+  {
+    id: 3,
+    name: 'Combo desayuno',
+    points_cost: 15,
+    image_url: 'https://images.unsplash.com/photo-1493770348161-369560ae357d?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Café + medialuna + jugo. El desayuno completo.',
+  },
+  {
+    id: 4,
+    name: 'Descuento 20%',
+    points_cost: 20,
+    image_url: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&h=400&fit=crop&q=80',
+    stock_enabled: false,
+    stock: null,
+    description: 'Aplicable a cualquier compra en una sola visita.',
+  },
+  {
+    id: 5,
+    name: 'Torta artesanal',
+    points_cost: 50,
+    image_url: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=400&fit=crop&q=80',
+    stock_enabled: true,
+    stock: 2,
+    description: 'Torta artesanal de 1 kg a elección. Reservar con 24hs de anticipación.',
+  },
+]
+
+const MOCK_POSTS_MOONCAFE = [
+  {
+    id: 1,
+    type: 'promo',
+    title: '2x1 en cafés todos los jueves',
+    body: 'En cafés todos los jueves — pedís uno y te traemos dos. Válido en cualquier sucursal.',
+    image_url: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=600&h=400&fit=crop&q=80',
+    date: '3 jul',
+  },
+  {
+    id: 2,
+    type: 'promo',
+    title: 'Desayuno completo a precio especial',
+    body: 'Café + medialuna + jugo. Solo hasta fin de julio.',
+    image_url: 'https://images.unsplash.com/photo-1493770348161-369560ae357d?w=600&h=400&fit=crop&q=80',
+    date: '15 jul',
+  },
+  {
+    id: 3,
+    type: 'novedad',
+    title: 'Nuevos fríos de temporada',
+    body: 'Tereré de limón, cold brew con naranja y limonada de jengibre. Solo por julio.',
+    image_url: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=600&h=400&fit=crop&q=80',
+    date: '7 jul',
+  },
+  {
+    id: 4,
+    type: 'evento',
+    title: 'Cata de cafés de origen — sáb 19',
+    body: 'Junto a nuestros baristas, exploramos 4 orígenes distintos. Cupos limitados.',
+    image_url: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=600&h=400&fit=crop&q=80',
+    date: '25 jun',
+  },
+]
+
+const MOCK_ACTIVITY_MOONCAFE = [
+  { id: 1, type: 'earned', label: 'Visita', points: 45, date: '15 jul 2026' },
+  { id: 7, type: 'referral', label: 'Referido — Sofía Torres', points: 50, date: '12 jul 2026' },
+  {
+    id: 2,
+    type: 'redeemed',
+    label: 'Flat white',
+    points: 10,
+    date: '10 jul 2026',
+    image_url: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=80&h=80&fit=crop&q=80',
+  },
+  { id: 3, type: 'earned', label: 'Visita', points: 30, date: '5 jul 2026' },
+  {
+    id: 4,
+    type: 'redeemed',
+    label: 'Medialunas',
+    points: 5,
+    date: '1 jul 2026',
+    image_url: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=80&h=80&fit=crop&q=80',
+  },
+  { id: 5, type: 'earned', label: 'Visita', points: 22, date: '25 jun 2026' },
+]
+
 const MOCK_PROGRAM_DEL_PILAR = {
   name: 'Del Pilar',
   logo_url: '/del-pilar-logo.jpg',
@@ -1681,43 +1795,52 @@ export default function PublicCatalog() {
   const isBarber = programId === 'barber-demo'
   const isHeladeria = programId === 'heladeria-demo'
   const isDelPilar = programId === 'del-pilar-demo'
+  const isMooncafe = programId === 'mooncafe-puntos-demo'
 
-  const program = isBarber
-    ? MOCK_PROGRAM_BARBER
-    : isBeauty
-      ? MOCK_PROGRAM_BEAUTY
-      : isHeladeria
-        ? MOCK_PROGRAM_HELADERIA
-        : isDelPilar
-          ? MOCK_PROGRAM_DEL_PILAR
-          : MOCK_PROGRAM
-  const items = isBarber
-    ? MOCK_ITEMS_BARBER
-    : isBeauty
-      ? MOCK_ITEMS_BEAUTY
-      : isHeladeria
-        ? MOCK_ITEMS_HELADERIA
-        : isDelPilar
-          ? MOCK_ITEMS_DEL_PILAR
-          : MOCK_ITEMS
-  const posts = isBarber
-    ? MOCK_POSTS_BARBER
-    : isBeauty
-      ? MOCK_POSTS_BEAUTY
-      : isHeladeria
-        ? MOCK_POSTS_HELADERIA
-        : isDelPilar
-          ? MOCK_POSTS_DEL_PILAR
-          : MOCK_POSTS
-  const activity = isBarber
-    ? MOCK_ACTIVITY_BARBER
-    : isBeauty
-      ? MOCK_ACTIVITY_BEAUTY
-      : isHeladeria
-        ? MOCK_ACTIVITY_HELADERIA
-        : isDelPilar
-          ? MOCK_ACTIVITY_DEL_PILAR
-          : MOCK_ACTIVITY_CAFE
+  const program = isMooncafe
+    ? MOCK_PROGRAM_MOONCAFE
+    : isBarber
+      ? MOCK_PROGRAM_BARBER
+      : isBeauty
+        ? MOCK_PROGRAM_BEAUTY
+        : isHeladeria
+          ? MOCK_PROGRAM_HELADERIA
+          : isDelPilar
+            ? MOCK_PROGRAM_DEL_PILAR
+            : MOCK_PROGRAM
+  const items = isMooncafe
+    ? MOCK_ITEMS_MOONCAFE
+    : isBarber
+      ? MOCK_ITEMS_BARBER
+      : isBeauty
+        ? MOCK_ITEMS_BEAUTY
+        : isHeladeria
+          ? MOCK_ITEMS_HELADERIA
+          : isDelPilar
+            ? MOCK_ITEMS_DEL_PILAR
+            : MOCK_ITEMS
+  const posts = isMooncafe
+    ? MOCK_POSTS_MOONCAFE
+    : isBarber
+      ? MOCK_POSTS_BARBER
+      : isBeauty
+        ? MOCK_POSTS_BEAUTY
+        : isHeladeria
+          ? MOCK_POSTS_HELADERIA
+          : isDelPilar
+            ? MOCK_POSTS_DEL_PILAR
+            : MOCK_POSTS
+  const activity = isMooncafe
+    ? MOCK_ACTIVITY_MOONCAFE
+    : isBarber
+      ? MOCK_ACTIVITY_BARBER
+      : isBeauty
+        ? MOCK_ACTIVITY_BEAUTY
+        : isHeladeria
+          ? MOCK_ACTIVITY_HELADERIA
+          : isDelPilar
+            ? MOCK_ACTIVITY_DEL_PILAR
+            : MOCK_ACTIVITY_CAFE
 
   const [selectedItem, setSelectedItem] = useState(null)
   const [showSurvey, setShowSurvey] = useState(false)
@@ -1814,7 +1937,9 @@ export default function PublicCatalog() {
                   ? '✂️ Refiere a un amigo y gana 100 puntos · 💈 Acumula puntos en cada visita · 🎁 Canjea servicios exclusivos para miembros'
                   : isBeauty
                     ? '✨ Refiere a una amiga y gana 150 puntos · 💅 Acumula puntos en cada servicio · 🎁 Canjea servicios exclusivos para socias'
-                    : '🚀 Refiere a un amigo y gana 100 puntos · 🎁 Acumula puntos en cada compra · ⭐ Canjea premios exclusivos para miembros'}
+                    : isMooncafe
+                      ? '☕ Acumulás 1 punto por cada $1 gastado · 🥐 Canjeá medialunas, cafés y más · 🎁 Premios exclusivos para miembros del Club'
+                      : '🚀 Refiere a un amigo y gana 100 puntos · 🎁 Acumula puntos en cada compra · ⭐ Canjea premios exclusivos para miembros'}
               </span>
             ))}
           </div>

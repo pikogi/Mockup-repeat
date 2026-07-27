@@ -254,7 +254,7 @@ export default function Sorteo() {
             <Ticket className="w-8 h-8 text-gray-700 dark:text-gray-300" />
             <h1 className="text-4xl font-bold leading-tight text-foreground">Sorteos</h1>
           </div>
-          <p className="text-gray-600 dark:text-gray-400">Realizá sorteos entre tus miembros y premiá su fidelidad</p>
+          <p className="text-gray-600 dark:text-gray-400">Realiza sorteos entre tus miembros y premia su fidelidad</p>
         </motion.div>
 
         {/* Tabs */}
@@ -454,7 +454,7 @@ export default function Sorteo() {
                       </div>
                       <p className="font-semibold text-gray-600 dark:text-gray-400">El resultado aparecerá aquí</p>
                       <p className="text-sm text-gray-400 dark:text-gray-500">
-                        Configurá el sorteo y hacé clic en <strong>Realizar sorteo</strong>
+                        Configura el sorteo y haz clic en <strong>Realizar sorteo</strong>
                       </p>
                     </motion.div>
                   )}

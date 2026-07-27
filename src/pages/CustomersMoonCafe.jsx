@@ -740,7 +740,7 @@ function ActionPicker({ type, count, onSend, onClose }) {
           </DialogTitle>
         </DialogHeader>
         <p className="text-xs text-gray-400 -mt-2 mb-3">
-          Elegí cuál de tus {isEmail ? 'emails enviados' : 'notificaciones enviadas'} reenviar a los miembros
+          Elige cuál de tus {isEmail ? 'emails enviados' : 'notificaciones enviadas'} reenviar a los miembros
           seleccionados.
         </p>
 
@@ -753,11 +753,11 @@ function ActionPicker({ type, count, onSend, onClose }) {
               Todavía no enviaste ningún {isEmail ? 'email' : 'push'}
             </p>
             <p className="text-xs text-gray-400">
-              Primero creá y enviá una campaña desde{' '}
+              Primero crea y envía una campaña desde{' '}
               <a href="/comunicacion/roadmap" className="text-indigo-500 hover:underline font-medium">
                 Comunicación
               </a>
-              . Una vez enviada, aparecerá acá para reenviarla a segmentos específicos.
+              . Una vez enviada, aparecerá aquí para reenviarla a segmentos específicos.
             </p>
           </div>
         ) : (
@@ -836,7 +836,7 @@ export default function CustomersMoonCafe() {
     const numbers = withPhone.map((m) => `${m.full_name}: ${m.raw.phone}`).join('\n')
     navigator.clipboard.writeText(numbers).then(() =>
       toast.success(`${withPhone.length} números copiados para lista de difusión`, {
-        description: 'Pegá los contactos en WhatsApp para crear la lista.',
+        description: 'Pega los contactos en WhatsApp para crear la lista.',
       }),
     )
     clearSelection()
@@ -946,7 +946,7 @@ export default function CustomersMoonCafe() {
             <Users className="w-8 h-8 text-gray-700 dark:text-gray-300" />
             <h1 className="text-4xl font-bold text-foreground">Miembros</h1>
           </div>
-          <p className="text-gray-600 dark:text-gray-400">Seguí la actividad de los miembros de tu programa.</p>
+          <p className="text-gray-600 dark:text-gray-400">Sigue la actividad de los miembros de tu programa.</p>
         </motion.div>
 
         {/* Metric cards */}

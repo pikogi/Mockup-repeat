@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, Save } from 'lucide-react'
+import { ArrowLeft, Save, Zap, ArrowRightLeft, Package } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import ProgramPreviewSection from '@/components/programs/ProgramPreviewSection'
 import {
   StoreSelector,
@@ -16,13 +18,10 @@ import {
   CustomerDataFields,
   SecuritySection,
   BusinessInfoSection,
-  PointsConversionSection,
   CouponConfigSection,
   MembershipConfigSection,
   PartnerBenefitsSection,
   CashbackConfigSection,
-  CatalogFields,
-  ReferralSection,
 } from '@/components/programs/ClubFormSections'
 import {
   MOONCAFE_CLUBS,
@@ -31,6 +30,147 @@ import {
   POINTS_TYPE_ID,
   getValidityTermsText,
 } from '@/constants/moonCafeClubs'
+
+const REDEEM_MODES = [
+  {
+    value: 'threshold',
+    icon: Zap,
+    title: 'Umbral automático',
+    desc: 'Al alcanzar la cantidad de puntos se entrega la recompensa',
+  },
+  {
+    value: 'direct',
+    icon: ArrowRightLeft,
+    title: 'Conversión directa',
+    desc: 'Staff canjea puntos por dinero o crédito en caja',
+  },
+  { value: 'catalog', icon: Package, title: 'Catálogo', desc: 'El cliente elige un producto o servicio' },
+]
+
+const CATALOG_TYPES = [
+  {
+    value: 'repeat',
+    icon: Package,
+    title: 'Catálogo en Repeat',
+    desc: 'Creas los premios aquí y los clientes los ven en una página pública',
+  },
+  {
+    value: 'own',
+    icon: ArrowRightLeft,
+    title: 'Catálogo propio del comercio',
+    desc: 'Los premios se gestionan fuera de Repeat; el canje registra una referencia',
+  },
+]
+
+function DemoPointsConversionSection({ formData, setFormData }) {
+  const redeemMode = formData.redeem_mode || 'direct'
+  const catalogType = formData.catalog_type || 'repeat'
+  const moneyPerPoint = formData.money_per_point ?? 1
+  const exampleSpend = moneyPerPoint * 5
+  const earnedPoints = moneyPerPoint > 0 ? Math.floor(exampleSpend / moneyPerPoint) : 0
+
+  return (
+    <div className="border-t pt-6 pb-6 space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Configuración de puntos</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Define cómo acumulan y cómo canjean puntos tus clientes.
+        </p>
+      </div>
+
+      {/* Modo de canje */}
+      <div className="space-y-3">
+        <Label>Modo de canje</Label>
+        <div className="grid grid-cols-3 gap-3">
+          {REDEEM_MODES.map(({ value, icon: Icon, title, desc }) => {
+            const isSelected = redeemMode === value
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setFormData((prev) => ({ ...prev, redeem_mode: value }))}
+                className={`flex flex-col items-start gap-2 p-4 rounded-xl border-2 bg-white dark:bg-gray-900 transition-all text-left ${isSelected ? 'border-gray-900 dark:border-gray-100' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'}`}
+              >
+                <div
+                  className={`w-9 h-9 rounded-lg flex items-center justify-center ${isSelected ? 'bg-gray-900 dark:bg-gray-100' : 'bg-gray-100 dark:bg-gray-800'}`}
+                >
+                  <Icon className={`w-4 h-4 ${isSelected ? 'text-white dark:text-gray-900' : 'text-gray-400'}`} />
+                </div>
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{title}</p>
+                <p className="text-xs leading-tight text-gray-400 dark:text-gray-500">{desc}</p>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Tipo de catálogo */}
+      {redeemMode === 'catalog' && (
+        <div className="space-y-3">
+          <Label>Tipo de catálogo</Label>
+          <div className="grid grid-cols-2 gap-3">
+            {CATALOG_TYPES.map(({ value, icon: Icon, title, desc }) => {
+              const isSelected = catalogType === value
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setFormData((prev) => ({ ...prev, catalog_type: value }))}
+                  className={`flex flex-col items-start gap-2 p-4 rounded-xl border-2 bg-white dark:bg-gray-900 transition-all text-left ${isSelected ? 'border-gray-900 dark:border-gray-100' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'}`}
+                >
+                  <div
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center ${isSelected ? 'bg-gray-900 dark:bg-gray-100' : 'bg-gray-100 dark:bg-gray-800'}`}
+                  >
+                    <Icon className={`w-4 h-4 ${isSelected ? 'text-white dark:text-gray-900' : 'text-gray-400'}`} />
+                  </div>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{title}</p>
+                  <p className="text-xs leading-tight text-gray-400 dark:text-gray-500">{desc}</p>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Valor del punto */}
+      <div className="space-y-5">
+        <div>
+          <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Valor del punto</h4>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {redeemMode === 'catalog'
+              ? 'Define cuánto gasto equivale a 1 punto. Los puntos acumulados se canjean por premios del catálogo.'
+              : 'Define la tasa a la que ganan y canjean los puntos.'}
+          </p>
+        </div>
+        <div className="space-y-2">
+          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Acumulación</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Monto en moneda necesario para ganar 1 punto</p>
+          <div className="flex items-center gap-3">
+            <div className="relative flex items-center">
+              <span className="absolute left-3 text-sm text-gray-500">$</span>
+              <Input
+                type="number"
+                min="1"
+                value={moneyPerPoint}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value)
+                  if (!isNaN(v) && v >= 1) setFormData((prev) => ({ ...prev, money_per_point: v }))
+                }}
+                className="pl-7 w-36"
+              />
+            </div>
+            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">= 1 punto</span>
+          </div>
+        </div>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Ej: Gasta <strong className="text-gray-700 dark:text-gray-300">${exampleSpend.toLocaleString()}</strong> →
+          gana <strong className="text-gray-700 dark:text-gray-300">{earnedPoints} puntos</strong>.{' '}
+          {redeemMode === 'catalog' ? 'Canjea sus puntos por premios del catálogo.' : ''}
+        </p>
+      </div>
+    </div>
+  )
+}
 
 const COUPON_TYPE_ID = '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc156'
 const MEMBERSHIP_TYPE_ID = '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc155'
@@ -148,14 +288,11 @@ export default function EditClubMoonCafe() {
 
                 <ColorPickerGroup formData={formData} setFormData={setFormData} />
 
-                {isPointsProgram && <PointsConversionSection formData={formData} setFormData={setFormData} />}
-                {isPointsProgram && <CatalogFields formData={formData} setFormData={setFormData} />}
+                {isPointsProgram && <DemoPointsConversionSection formData={formData} setFormData={setFormData} />}
                 {isCouponProgram && <CouponConfigSection formData={formData} setFormData={setFormData} />}
                 {isMembershipProgram && <MembershipConfigSection formData={formData} setFormData={setFormData} />}
                 {isMembershipProgram && <PartnerBenefitsSection formData={formData} setFormData={setFormData} />}
                 {isCashbackProgram && <CashbackConfigSection formData={formData} setFormData={setFormData} />}
-
-                <ReferralSection formData={formData} setFormData={setFormData} />
 
                 <ValiditySection
                   formData={formData}

@@ -54,7 +54,7 @@ const BENEFITS = [
   {
     id: 1002,
     name: '2x1 en bebidas calientes los miércoles',
-    description: 'Pedís uno y te llevás dos. Válido en todas las bebidas calientes de la carta.',
+    description: 'Pides uno y te llevas dos. Válido en todas las bebidas calientes de la carta.',
     use_type: 'monthly',
     tier_required: 'all',
     image_url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&h=400&fit=crop&q=80',
@@ -70,7 +70,7 @@ const BENEFITS = [
   {
     id: 1004,
     name: 'Mesa reservada sin espera',
-    description: 'Reservá tu lugar con prioridad en cualquier sucursal. Llamando o por la app.',
+    description: 'Reserva tu lugar con prioridad en cualquier sucursal. Llamando o por la app.',
     use_type: 'unlimited',
     tier_required: 'tier-premium',
     image_url: 'https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=400&h=400&fit=crop&q=80',
@@ -82,7 +82,7 @@ const PARTNERS = [
     id: 2001,
     partner_name: 'La Madeleine',
     benefit_name: '15% en pastelería artesanal',
-    description: 'Presentá tu tarjeta Moon Club en el local. Av. Santa Fe 1842.',
+    description: 'Presenta tu tarjeta Moon Club en el local. Av. Santa Fe 1842.',
     use_type: 'unlimited',
     tier_required: 'all',
     emoji: '🥐',
@@ -129,7 +129,7 @@ const POSTS = [
     id: 2,
     type: 'promo',
     title: 'Julio: 2x1 todos los miércoles',
-    body: 'Aprovechá el beneficio de tu membresía. Válido en todas las bebidas calientes.',
+    body: 'Aprovecha el beneficio de tu membresía. Válido en todas las bebidas calientes.',
     image_url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&h=400&fit=crop&q=80',
     date: '1 jul',
   },
@@ -145,7 +145,7 @@ const POSTS = [
     id: 4,
     type: 'novedad',
     title: 'Abrimos en Palermo — Thames 1540',
-    body: 'Nuestra segunda sucursal ya está abierta. Seguís acumulando beneficios en cualquiera.',
+    body: 'Nuestra segunda sucursal ya está abierta. Sigues acumulando beneficios en cualquiera.',
     image_url: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600&h=400&fit=crop&q=80',
     date: '18 jun',
   },
@@ -246,14 +246,14 @@ function SubscribeDrawer({ onClose, onSuccess }) {
                   </div>
                   <div>
                     <p className="text-white font-bold text-base leading-tight">Moon Club Premium</p>
-                    <p className="text-white/50 text-xs mt-0.5">Desbloqueá todos los beneficios</p>
+                    <p className="text-white/50 text-xs mt-0.5">Desbloquea todos los beneficios</p>
                   </div>
                 </div>
                 <div className="flex items-end gap-1">
                   <span className="text-4xl font-black text-white">$1.500</span>
                   <span className="text-white/60 text-sm mb-1">/mes</span>
                 </div>
-                <p className="text-white/40 text-xs mt-1">Cancelás cuando quieras. Sin permanencia.</p>
+                <p className="text-white/40 text-xs mt-1">Cancelas cuando quieras. Sin permanencia.</p>
               </div>
               <div className="px-5 py-5 space-y-3">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Incluye</p>
@@ -335,7 +335,7 @@ function SubscribeDrawer({ onClose, onSuccess }) {
                   </div>
                 </div>
                 <p className="text-xs text-gray-400 text-center leading-relaxed">
-                  Al confirmar, autorizás el cobro de <strong>$1.500</strong> hoy y cada mes hasta cancelar.
+                  Al confirmar, autorizas el cobro de <strong>$1.500</strong> hoy y cada mes hasta cancelar.
                 </p>
                 <Button
                   className="w-full h-12 rounded-xl font-semibold text-white flex items-center justify-center gap-2"
@@ -374,7 +374,7 @@ function SubscribeDrawer({ onClose, onSuccess }) {
                 <CheckCircle2 className="w-10 h-10 text-white" />
               </motion.div>
               <div>
-                <p className="text-2xl font-black text-gray-900">¡Ya sos Premium!</p>
+                <p className="text-2xl font-black text-gray-900">¡Ya eres Premium!</p>
                 <p className="text-sm text-gray-500 mt-1">
                   Tu suscripción está activa. Todos tus beneficios están desbloqueados.
                 </p>
@@ -445,7 +445,7 @@ function GiftCardModal({ card, onClose }) {
               </div>
               <div className="p-5 space-y-4">
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">¿A quién se la regalás?</p>
+                  <p className="text-sm font-semibold text-gray-900">¿A quién se la regalas?</p>
                   <p className="text-xs text-gray-400 mt-0.5">Le enviamos la gift card por email.</p>
                 </div>
                 <form onSubmit={handleSend} className="space-y-3">
@@ -518,7 +518,7 @@ function GiftCardSection() {
         >
           <div className="flex items-center gap-2">
             <Gift className="w-4 h-4 text-gray-400" />
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Regalá Moon Club</p>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Regala Moon Club</p>
           </div>
           <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
             <ChevronDown className="w-4 h-4 text-gray-400" />
@@ -750,7 +750,7 @@ function PartnerModal({ partner, onClose, onSuccess }) {
               <div>
                 <h2 className="text-xl font-bold text-gray-900">¡Cupón generado!</h2>
                 <p className="text-sm text-gray-500 mt-1">
-                  Mostrá este código en <strong>{partner.partner_name}</strong> para usar tu beneficio.
+                  Muestra este código en <strong>{partner.partner_name}</strong> para usar tu beneficio.
                 </p>
               </div>
               <div
@@ -1322,7 +1322,7 @@ function BenefitModal({ benefit, onClose, onSuccess }) {
               </motion.div>
               <div>
                 <h2 className="text-xl font-bold text-gray-900">¡Cupón generado!</h2>
-                <p className="text-sm text-gray-500 mt-1">Mostrá este código en caja para usar tu beneficio.</p>
+                <p className="text-sm text-gray-500 mt-1">Muestra este código en caja para usar tu beneficio.</p>
               </div>
               <div
                 className="rounded-2xl p-5 space-y-1"
@@ -1471,7 +1471,7 @@ export default function PublicMembershipMoonCafe() {
                 </div>
                 <div className="flex items-center justify-between text-white text-xs opacity-70">
                   <span>
-                    Desbloqueá <span className="font-bold opacity-100 text-amber-300">todos los beneficios</span> con
+                    Desbloquea <span className="font-bold opacity-100 text-amber-300">todos los beneficios</span> con
                     Premium
                   </span>
                   <button
@@ -1504,7 +1504,7 @@ export default function PublicMembershipMoonCafe() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-white text-xs font-bold leading-tight">Invitar amigos</p>
-                <p className="text-white/50 text-xs leading-tight mt-0.5">Compartí Moon Club con quien quieras</p>
+                <p className="text-white/50 text-xs leading-tight mt-0.5">Comparte Moon Club con quien quieras</p>
               </div>
               <AnimatePresence mode="wait">
                 {shareDone ? (
@@ -1604,16 +1604,16 @@ export default function PublicMembershipMoonCafe() {
                       <Gift className="w-5 h-5" style={{ color: COLOR }} />
                     </div>
                     <div className="min-w-0">
-                      <p className="font-semibold text-gray-900 text-sm leading-tight">¿Todavía no sos parte?</p>
+                      <p className="font-semibold text-gray-900 text-sm leading-tight">¿Todavía no eres parte?</p>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        Accedé a beneficios exclusivos y comercios aliados.
+                        Accede a beneficios exclusivos y comercios aliados.
                       </p>
                       <button
                         onClick={() => setShowEmailLookup(true)}
                         className="text-xs mt-1.5 font-medium underline underline-offset-2"
                         style={{ color: COLOR }}
                       >
-                        ¿Ya sos socio? Ver mis beneficios →
+                        ¿Ya eres socio? Ver mis beneficios →
                       </button>
                     </div>
                   </div>
@@ -1635,7 +1635,7 @@ export default function PublicMembershipMoonCafe() {
                 >
                   <div className="flex items-center gap-2">
                     <Mail className="w-4 h-4 flex-shrink-0" style={{ color: COLOR }} />
-                    <p className="text-sm font-semibold text-gray-800">Ingresá tu email para ver tus beneficios</p>
+                    <p className="text-sm font-semibold text-gray-800">Ingresa tu email para ver tus beneficios</p>
                   </div>
                   <form onSubmit={handleEmailLookup} className="flex gap-2">
                     <input
@@ -1694,13 +1694,13 @@ export default function PublicMembershipMoonCafe() {
                   {[
                     {
                       step: '1',
-                      text: 'Registrate gratis y accedés automáticamente al nivel Básico con beneficios inmediatos.',
+                      text: 'Regístrate gratis y accedes automáticamente al nivel Básico con beneficios inmediatos.',
                     },
                     {
                       step: '2',
-                      text: 'Suscribite a Premium por $1.500/mes para desbloquear todos los beneficios y comercios adheridos.',
+                      text: 'Suscríbete a Premium por $1.500/mes para desbloquear todos los beneficios y comercios adheridos.',
                     },
-                    { step: '3', text: 'Generá un cupón por cada beneficio y presentalo en caja para usarlo.' },
+                    { step: '3', text: 'Genera un cupón por cada beneficio y preséntalo en caja para usarlo.' },
                   ].map((s) => (
                     <div key={s.step} className="flex items-center gap-3 text-sm text-gray-600">
                       <span

@@ -106,7 +106,7 @@ export default function ScanDemoMoonCafe() {
           <div
             style={{
               position: 'fixed',
-              top: demoSubStep === 2 ? 136 : 455,
+              top: demoSubStep === 2 ? 136 : 507,
               left: 260,
               zIndex: 30,
               display: 'flex',

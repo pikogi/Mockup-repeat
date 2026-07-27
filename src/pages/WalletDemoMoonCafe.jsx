@@ -1,6 +1,6 @@
 const STEPS = [
   {
-    title: 'Guardá tu tarjeta',
+    title: 'Guarda tu tarjeta',
     desc: 'El cliente agrega la tarjeta de sellos a su Google Wallet o Apple Wallet.',
     btn: 'Siguiente paso →',
   },

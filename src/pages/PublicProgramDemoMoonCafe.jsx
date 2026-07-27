@@ -102,7 +102,7 @@ function StoreScene({ onNext }) {
           <div style={{ height: 4, flex: 1, borderRadius: 2, background: '#eab308' }} />
           <div style={{ height: 4, flex: 1, borderRadius: 2, background: '#e5e7eb' }} />
         </div>
-        <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Escaneá el QR para unirte</p>
+        <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Escanea el QR para unirte</p>
         <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 14px', lineHeight: 1.5 }}>
           El cliente escanea el QR y accede al formulario de registro del programa.
         </p>

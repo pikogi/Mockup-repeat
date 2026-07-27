@@ -77,7 +77,8 @@ export default function Sidebar() {
     Customers: '/customers/mooncafe-demo',
     Notifications: '/notifications/mooncafe-demo',
     MyPrograms: '/myprograms-demo/mooncafe',
-    CreateClub: '/dashboard-demo/mooncafe',
+    CreateClub: '/myprograms-demo/mooncafe',
+    Encuesta: '/encuesta/mooncafe-demo',
     Stores: '/stores-demo/mooncafe',
     Profile: '/dashboard-demo/mooncafe',
     Team: '/team-demo/mooncafe',
@@ -90,6 +91,7 @@ export default function Sidebar() {
     '/encuesta/roadmap',
     '/comunicacion/roadmap',
     '/referidos/roadmap',
+    // '/descuentos/roadmap',
     '/menu',
   ]
 
@@ -99,6 +101,7 @@ export default function Sidebar() {
     Notifications: '/comunicacion/roadmap',
     Comunicacion: '/comunicacion/roadmap',
     Encuesta: '/encuesta/roadmap',
+    // Descuentos: '/descuentos/roadmap',
     MyPrograms: '/myprograms-demo/mooncafe',
     CreateClub: '/dashboard/mooncafe-roadmap',
     Stores: '/stores-demo/mooncafe',
@@ -130,6 +133,8 @@ export default function Sidebar() {
     '/team-demo/mooncafe-points',
     '/stores-demo/mooncafe-points',
     '/sorteo/mooncafe-demo',
+    '/catalogo-demo/mooncafe',
+    '/encuesta/mooncafe-demo',
   ]
 
   const MOONCAFE_POINTS_DEMO_URLS = {
@@ -261,7 +266,8 @@ export default function Sidebar() {
       ? [{ name: 'Comunicación', icon: Megaphone, page: 'Comunicacion' }]
       : [{ name: t('notifications'), icon: Bell, page: 'Notifications' }]),
     { name: t('myPrograms'), icon: CreditCard, page: 'MyPrograms' },
-    ...(isMoonCafeRoadmap ? [{ name: 'Encuestas', icon: ClipboardList, page: 'Encuesta' }] : []),
+    ...(isMoonCafeRoadmap || isMoonCafeDemo ? [{ name: 'Encuesta', icon: ClipboardList, page: 'Encuesta' }] : []),
+    // ...(isMoonCafeRoadmap ? [{ name: 'Descuentos', icon: Percent, page: 'Descuentos' }] : []),
     ...(!isDemo || isMoonCafeRoadmap ? [{ name: t('menu'), icon: BookOpen, page: 'Menu' }] : []),
     ...(isGlowDemo || isMoonCafeDemo || isMoonCafeRoadmap || isDelPilarDemo
       ? [

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Users,
   Star,
@@ -22,6 +22,14 @@ import {
   Flag,
   UploadCloud,
   Info,
+  MapPin,
+  Link2,
+  Unlink,
+  MessageSquare,
+  Send,
+  Loader2,
+  AlertTriangle,
+  X,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
@@ -29,8 +37,12 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 
 const CARD_COLORS = ['#1B5E5A', '#4C1D95', '#92400E', '#064E3B', '#1E3A5F', '#831843', '#713F12', '#134E4A']
 const OPTION_EMOJIS = ['😊', '👪', '👥', '☕', '🥪', '🍰', '🎁', '⭐']
@@ -1010,6 +1022,510 @@ const GLOBAL_STATS = [
   },
 ]
 
+// ─── Google reviews ────────────────────────────────────────────────────────────
+
+const GOOGLE_BUSINESS = {
+  name: 'Moon Café — Sucursal Centro',
+  address: 'Av. Colón 1234, Córdoba',
+}
+
+const INITIAL_GOOGLE_REVIEWS = [
+  {
+    id: 1,
+    author: 'Sofía Ramírez',
+    rating: 5,
+    date: '2026-07-20',
+    text: 'Excelente atención y el café espectacular. ¡Volvemos siempre!',
+    reply: { text: '¡Gracias Sofía! Nos encanta que vuelvan 💛', date: '2026-07-21' },
+  },
+  {
+    id: 2,
+    author: 'Martín Gómez',
+    rating: 2,
+    date: '2026-07-18',
+    text: 'La última vez tardaron mucho en atender y el pedido llegó frío.',
+    reply: null,
+  },
+  {
+    id: 3,
+    author: 'Lucía Fernández',
+    rating: 5,
+    date: '2026-07-15',
+    text: 'El mejor café de la zona, el ambiente es hermoso para trabajar.',
+    reply: { text: '¡Gracias Lucía! Te esperamos pronto ☕', date: '2026-07-16' },
+  },
+  {
+    id: 4,
+    author: 'Diego Torres',
+    rating: 4,
+    date: '2026-07-10',
+    text: 'Muy rico todo, aunque un poco caro para la porción.',
+    reply: null,
+  },
+  {
+    id: 5,
+    author: 'Valentina Ruiz',
+    rating: 5,
+    date: '2026-07-05',
+    text: 'Amo el club de fidelidad, ya junté para mi café gratis 😍',
+    reply: { text: '¡Así se hace, Valentina! Gracias por ser parte del club 🎉', date: '2026-07-06' },
+  },
+  {
+    id: 6,
+    author: 'Nicolás Paz',
+    rating: 3,
+    date: '2026-06-29',
+    text: 'Bien en general, pero faltan más opciones sin gluten.',
+    reply: null,
+  },
+]
+
+function StarRow({ rating, className }) {
+  return (
+    <div className={cn('flex items-center gap-0.5', className)}>
+      {[1, 2, 3, 4, 5].map((i) => (
+        <Star
+          key={i}
+          className={cn(
+            'w-3.5 h-3.5',
+            i <= rating ? 'fill-amber-400 text-amber-400' : 'text-gray-200 dark:text-gray-700',
+          )}
+        />
+      ))}
+    </div>
+  )
+}
+
+function ReviewCard({ review, onReply }) {
+  const [isReplying, setIsReplying] = useState(false)
+  const [draft, setDraft] = useState('')
+
+  const initials = review.author
+    .split(' ')
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+  const color = CARD_COLORS[review.id % CARD_COLORS.length]
+  const isNegative = review.rating <= 2
+
+  const handleSend = () => {
+    if (!draft.trim()) return toast.error('Escribí una respuesta antes de enviarla')
+    onReply(review.id, draft.trim())
+    setIsReplying(false)
+    setDraft('')
+    toast.success('Respuesta publicada en Google')
+  }
+
+  return (
+    <Card
+      className={cn(
+        'border shadow-sm',
+        isNegative
+          ? 'border-l-4 border-l-rose-400 border-gray-100 dark:border-gray-800'
+          : 'border-gray-100 dark:border-gray-800',
+      )}
+    >
+      <CardContent className="p-4">
+        <div className="flex items-start gap-3">
+          <Avatar className="w-9 h-9 flex-shrink-0">
+            <AvatarFallback className="text-xs font-semibold text-white" style={{ backgroundColor: color }}>
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-0.5">
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{review.author}</span>
+              <span className="text-xs text-gray-400">
+                {new Date(review.date + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
+              </span>
+              {isNegative && (
+                <span className="inline-flex items-center gap-0.5 text-[11px] font-semibold px-2 py-0.5 rounded-full text-rose-700 bg-rose-50 dark:bg-rose-900/20 dark:text-rose-400">
+                  <AlertTriangle className="w-2.5 h-2.5" />
+                  Requiere atención
+                </span>
+              )}
+            </div>
+            <StarRow rating={review.rating} className="mb-2" />
+            <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{review.text}</p>
+
+            {review.reply ? (
+              <div className="mt-3 pl-3 border-l-2 border-gray-200 dark:border-gray-700">
+                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-0.5">Tu respuesta</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">{review.reply.text}</p>
+              </div>
+            ) : isReplying ? (
+              <div className="mt-3 space-y-2">
+                <Textarea
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  placeholder="Escribí tu respuesta pública..."
+                  className="text-sm min-h-[70px]"
+                />
+                <div className="flex gap-2">
+                  <Button variant="ghost" size="sm" onClick={() => setIsReplying(false)} className="h-8 text-xs">
+                    Cancelar
+                  </Button>
+                  <Button size="sm" onClick={handleSend} className="h-8 text-xs gap-1">
+                    <Send className="w-3 h-3" /> Enviar respuesta
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsReplying(true)}
+                className="mt-2 flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+              >
+                <MessageSquare className="w-3 h-3" /> Responder
+              </button>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function GoogleAccountPicker({ open, onOpenChange, onSelect, isConnecting }) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-sm p-0 overflow-hidden">
+        <div className="p-6 pb-4 text-center">
+          <p className="text-lg tracking-tight mb-4">
+            <span className="text-blue-500 font-medium">G</span>
+            <span className="text-red-500 font-medium">o</span>
+            <span className="text-amber-500 font-medium">o</span>
+            <span className="text-blue-500 font-medium">g</span>
+            <span className="text-emerald-500 font-medium">l</span>
+            <span className="text-red-500 font-medium">e</span>
+          </p>
+          <DialogHeader className="items-center">
+            <DialogTitle className="text-xl font-normal">Elegí una cuenta</DialogTitle>
+            <DialogDescription>para continuar a Repeat</DialogDescription>
+          </DialogHeader>
+        </div>
+
+        <button
+          onClick={() => onSelect(MOCK_GOOGLE_ACCOUNT)}
+          disabled={isConnecting}
+          className="flex items-center gap-3 px-6 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left disabled:opacity-60"
+        >
+          <Avatar className="w-9 h-9 flex-shrink-0">
+            <AvatarFallback
+              className="text-xs font-semibold text-white"
+              style={{ backgroundColor: MOCK_GOOGLE_ACCOUNT.color }}
+            >
+              {MOCK_GOOGLE_ACCOUNT.initials}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{MOCK_GOOGLE_ACCOUNT.name}</p>
+            <p className="text-xs text-gray-500 truncate">{MOCK_GOOGLE_ACCOUNT.email}</p>
+          </div>
+          {isConnecting && <Loader2 className="w-4 h-4 animate-spin text-gray-400 ml-auto flex-shrink-0" />}
+        </button>
+
+        <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800">
+          <p className="text-[11px] text-gray-400">
+            Cuenta ficticia para esta demo — no se conecta ningún Google real.
+          </p>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+const MOCK_GOOGLE_ACCOUNT = {
+  name: 'Moon Café',
+  email: 'hola@mooncafe.com',
+  initials: 'MC',
+  color: '#1a4a2e',
+}
+
+const SORT_OPTIONS = [
+  { value: 'relevant', label: 'Más relevantes' },
+  { value: 'recent', label: 'Más recientes' },
+  { value: 'oldest', label: 'Más antiguas' },
+  { value: 'highest', label: 'Calificación más alta' },
+  { value: 'lowest', label: 'Calificación más baja' },
+]
+
+function RatingBreakdown({ reviews, avg, starFilter, onToggleStar }) {
+  const total = reviews.length
+
+  return (
+    <Card className="border border-gray-100 dark:border-gray-800 shadow-sm">
+      <CardContent className="p-5 flex flex-col sm:flex-row gap-6">
+        <div className="flex flex-col items-center justify-center sm:border-r sm:border-gray-100 dark:sm:border-gray-800 sm:pr-6 flex-shrink-0">
+          <p className="text-4xl font-bold text-gray-900 dark:text-gray-100 leading-none">{avg}</p>
+          <StarRow rating={Math.round(avg)} className="my-1.5" />
+          <p className="text-xs text-gray-400">{total} reseñas</p>
+        </div>
+        <div className="flex-1 space-y-1.5 min-w-0">
+          {[5, 4, 3, 2, 1].map((star) => {
+            const count = reviews.filter((r) => r.rating === star).length
+            const pct = total > 0 ? Math.round((count / total) * 100) : 0
+            const isActive = starFilter === star
+            return (
+              <button
+                key={star}
+                onClick={() => onToggleStar(star)}
+                className={cn(
+                  'w-full flex items-center gap-2 px-1.5 py-1 rounded-lg transition-colors',
+                  isActive ? 'bg-amber-50 dark:bg-amber-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-800',
+                )}
+              >
+                <span className="text-xs text-gray-500 dark:text-gray-400 w-2.5 flex-shrink-0">{star}</span>
+                <Star className="w-3 h-3 text-amber-400 fill-amber-400 flex-shrink-0" />
+                <div className="flex-1 h-1.5 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                  <div className="h-full rounded-full bg-amber-400" style={{ width: `${pct}%` }} />
+                </div>
+                <span className="text-xs text-gray-400 w-5 text-right flex-shrink-0">{count}</span>
+              </button>
+            )
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function GoogleReviewsPanel({ onPendingChange }) {
+  const [isConnected, setIsConnected] = useState(false)
+  const [isConnecting, setIsConnecting] = useState(false)
+  const [isPickerOpen, setIsPickerOpen] = useState(false)
+  const [reviews, setReviews] = useState(INITIAL_GOOGLE_REVIEWS)
+  const [filter, setFilter] = useState('all')
+  const [starFilter, setStarFilter] = useState(null)
+  const [sortBy, setSortBy] = useState('relevant')
+
+  const handleSelectAccount = () => {
+    setIsConnecting(true)
+    setTimeout(() => {
+      setIsConnecting(false)
+      setIsPickerOpen(false)
+      setIsConnected(true)
+      toast.success('Cuenta de Google vinculada')
+    }, 900)
+  }
+
+  const handleDisconnect = () => {
+    setIsConnected(false)
+    toast.success('Se desvinculó tu cuenta de Google')
+  }
+
+  const handleReply = (id, text) =>
+    setReviews((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, reply: { text, date: new Date().toISOString().slice(0, 10) } } : r)),
+    )
+
+  const handleToggleStar = (star) => setStarFilter((prev) => (prev === star ? null : star))
+
+  const handleShowWorstFirst = () => {
+    setStarFilter(null)
+    setFilter('all')
+    setSortBy('lowest')
+  }
+
+  const stats = useMemo(() => {
+    const total = reviews.length
+    const avg = total > 0 ? (reviews.reduce((s, r) => s + r.rating, 0) / total).toFixed(1) : '0.0'
+    const pending = reviews.filter((r) => !r.reply).length
+    const negative = reviews.filter((r) => r.rating <= 2).length
+    return { total, avg, pending, negative }
+  }, [reviews])
+
+  useEffect(() => {
+    onPendingChange?.(isConnected ? stats.pending : 0)
+  }, [isConnected, stats.pending, onPendingChange])
+
+  const filtered = useMemo(
+    () =>
+      reviews.filter((r) => {
+        if (filter === 'pending' && r.reply) return false
+        if (filter === 'replied' && !r.reply) return false
+        if (starFilter && r.rating !== starFilter) return false
+        return true
+      }),
+    [reviews, filter, starFilter],
+  )
+
+  const sorted = useMemo(() => {
+    const arr = [...filtered]
+    if (sortBy === 'recent') arr.sort((a, b) => new Date(b.date) - new Date(a.date))
+    else if (sortBy === 'oldest') arr.sort((a, b) => new Date(a.date) - new Date(b.date))
+    else if (sortBy === 'highest') arr.sort((a, b) => b.rating - a.rating)
+    else if (sortBy === 'lowest') arr.sort((a, b) => a.rating - b.rating)
+    return arr
+  }, [filtered, sortBy])
+
+  if (!isConnected) {
+    return (
+      <>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+          <Card className="border border-dashed border-gray-200 dark:border-gray-700">
+            <CardContent className="p-10 flex flex-col items-center text-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                <MapPin className="w-6 h-6 text-blue-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Vinculá tu perfil de Google</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm">
+                Conectá tu ficha de Google Business para ver todas las reseñas de tus clientes y responderlas sin salir
+                de Repeat.
+              </p>
+              <Button onClick={() => setIsPickerOpen(true)} className="gap-2 mt-2">
+                <Link2 className="w-4 h-4" />
+                Vincular con Google
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+        <GoogleAccountPicker
+          open={isPickerOpen}
+          onOpenChange={setIsPickerOpen}
+          onSelect={handleSelectAccount}
+          isConnecting={isConnecting}
+        />
+      </>
+    )
+  }
+
+  return (
+    <>
+      {/* Business summary */}
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+        <Card className="border border-gray-100 dark:border-gray-800 shadow-sm">
+          <CardContent className="p-5 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0">
+                <MapPin className="w-5 h-5 text-blue-500" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{GOOGLE_BUSINESS.name}</p>
+                <p className="text-xs text-gray-400">{GOOGLE_BUSINESS.address}</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Vinculado como <span className="text-gray-500 dark:text-gray-300">{MOCK_GOOGLE_ACCOUNT.email}</span>
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleDisconnect}
+              className="flex items-center gap-1 text-xs text-gray-400 hover:text-rose-500 transition-colors"
+            >
+              <Unlink className="w-3 h-3" /> Desvincular
+            </button>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Rating breakdown, Google-style */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="mb-6"
+      >
+        <RatingBreakdown reviews={reviews} avg={stats.avg} starFilter={starFilter} onToggleStar={handleToggleStar} />
+      </motion.div>
+
+      {/* Stats */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.08 }}
+        className="grid grid-cols-2 gap-4 mb-6"
+      >
+        <Card className="border border-gray-200 dark:border-gray-800 shadow-sm">
+          <CardContent className="p-5">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3 bg-orange-50 dark:bg-orange-900/20">
+              <Clock className="w-4 h-4 text-orange-500" />
+            </div>
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 leading-none mb-1">{stats.pending}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Sin responder</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">esperando tu respuesta</p>
+          </CardContent>
+        </Card>
+        <button onClick={handleShowWorstFirst} className="text-left">
+          <Card className="border border-gray-200 dark:border-gray-800 shadow-sm hover:border-rose-200 dark:hover:border-rose-900 transition-colors h-full">
+            <CardContent className="p-5">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3 bg-rose-50 dark:bg-rose-900/20">
+                <AlertTriangle className="w-4 h-4 text-rose-500" />
+              </div>
+              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 leading-none mb-1">{stats.negative}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Reseñas negativas</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">1-2 estrellas · ver primero</p>
+            </CardContent>
+          </Card>
+        </button>
+      </motion.div>
+
+      {/* Filter + sort, Google-style */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1 w-fit">
+          {[
+            { id: 'all', label: 'Todas' },
+            { id: 'pending', label: 'Sin responder' },
+            { id: 'replied', label: 'Respondidas' },
+          ].map((f) => (
+            <button
+              key={f.id}
+              onClick={() => setFilter(f.id)}
+              className={cn(
+                'px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap',
+                filter === f.id
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300',
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-2">
+          {starFilter && (
+            <button
+              onClick={() => setStarFilter(null)}
+              className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400"
+            >
+              {starFilter} <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+              <X className="w-3 h-3" />
+            </button>
+          )}
+          <label className="flex items-center gap-1.5 text-xs text-gray-400">
+            Ordenar por
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="text-xs rounded-md border border-input bg-background px-2 py-1.5 h-8"
+            >
+              {SORT_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </div>
+
+      {/* Reviews list */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="space-y-3"
+      >
+        {sorted.length === 0 ? (
+          <p className="text-sm text-gray-400 italic text-center py-8">No hay reseñas en este filtro</p>
+        ) : (
+          sorted.map((r) => <ReviewCard key={r.id} review={r} onReply={handleReply} />)
+        )}
+      </motion.div>
+    </>
+  )
+}
+
 export function EncuestasContent() {
   return (
     <>
@@ -1099,9 +1615,12 @@ export function EncuestasContent() {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function EncuestaRoadmap() {
+  const [activeTab, setActiveTab] = useState('encuestas')
   const [surveys, setSurveys] = useState(INITIAL_SURVEYS)
   const [selectedId, setSelectedId] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [googlePendingCount, setGooglePendingCount] = useState(0)
+  const handleGooglePendingChange = useCallback((count) => setGooglePendingCount(count), [])
 
   const selectedSurvey = surveys.find((s) => s.id === selectedId) ?? null
   const filtered = surveys.filter((s) => s.name.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -1143,48 +1662,81 @@ export default function EncuestaRoadmap() {
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <ClipboardList className="w-8 h-8 text-gray-700 dark:text-gray-300" />
-                <h1 className="text-4xl font-bold leading-tight text-foreground">Encuestas</h1>
-              </div>
-              <p className="text-gray-600 dark:text-gray-400">
-                Conocé la opinión de tus clientes con preguntas de imagen y NPS.
-              </p>
-            </div>
-            <Button
-              size="lg"
-              onClick={createSurvey}
-              className="w-full md:w-fit bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black gap-2 shadow-md border-0"
-            >
-              <Plus className="w-5 h-5" />
-              Nueva encuesta
-            </Button>
+          <div className="flex items-center gap-3 mb-2">
+            <ClipboardList className="w-8 h-8 text-gray-700 dark:text-gray-300" />
+            <h1 className="text-4xl font-bold leading-tight text-foreground">Encuestas</h1>
           </div>
-
-          <div className="relative w-full md:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <Input
-              placeholder="Buscar encuestas..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 rounded-xl border-gray-200 dark:border-gray-700 focus:border-yellow-500"
-            />
-          </div>
+          <p className="text-gray-600 dark:text-gray-400">
+            Conocé la opinión de tus clientes con preguntas de imagen, NPS y las reseñas de Google Maps.
+          </p>
         </motion.div>
 
-        <div className="space-y-4">
-          {filtered.map((survey) => (
-            <SurveyListItem
-              key={survey.id}
-              survey={survey}
-              onEdit={setSelectedId}
-              onDelete={deleteSurvey}
-              onToggleActive={toggleActive}
-            />
-          ))}
+        <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 mb-6">
+          <div className="inline-flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1 min-w-max">
+            {[
+              { id: 'encuestas', label: 'Encuestas' },
+              { id: 'google', label: 'Reseñas de Google', badge: googlePendingCount },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  'flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap',
+                  activeTab === tab.id
+                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300',
+                )}
+              >
+                {tab.label}
+                {!!tab.badge && (
+                  <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold leading-none">
+                    {tab.badge}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
+
+        {activeTab === 'google' ? (
+          <GoogleReviewsPanel onPendingChange={handleGooglePendingChange} />
+        ) : (
+          <>
+            <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="relative w-full md:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Input
+                    placeholder="Buscar encuestas..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 h-10 rounded-xl border-gray-200 dark:border-gray-700 focus:border-yellow-500"
+                  />
+                </div>
+                <Button
+                  size="lg"
+                  onClick={createSurvey}
+                  className="w-full md:w-fit bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black gap-2 shadow-md border-0"
+                >
+                  <Plus className="w-5 h-5" />
+                  Nueva encuesta
+                </Button>
+              </div>
+            </motion.div>
+
+            <div className="space-y-4">
+              {filtered.map((survey) => (
+                <SurveyListItem
+                  key={survey.id}
+                  survey={survey}
+                  onEdit={setSelectedId}
+                  onDelete={deleteSurvey}
+                  onToggleActive={toggleActive}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   )
