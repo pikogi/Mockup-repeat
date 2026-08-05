@@ -42,6 +42,13 @@ const Onboarding = lazy(() => import('./Onboarding'))
 const Survey = lazy(() => import('./Survey'))
 const Sorteo = lazy(() => import('./Sorteo'))
 const Menu = lazy(() => import('./Menu'))
+const MembershipsDashboard = lazy(() => import('./memberships/MembershipsDashboard'))
+const MembershipPlans = lazy(() => import('./memberships/MembershipPlans'))
+const MembershipMembers = lazy(() => import('./memberships/MembershipMembers'))
+const MembershipMemberProfile = lazy(() => import('./memberships/MembershipMemberProfile'))
+const MembershipAutomations = lazy(() => import('./memberships/MembershipAutomations'))
+const MembershipAnalytics = lazy(() => import('./memberships/MembershipAnalytics'))
+const PublicMembershipPlansDemo = lazy(() => import('./PublicMembershipPlansDemo'))
 const ShortUrlRedirect = lazy(() => import('./ShortUrlRedirect'))
 const Preview = lazy(() => import('./Preview'))
 const PublicNetwork = lazy(() => import('./PublicNetwork'))
@@ -697,6 +704,55 @@ export default function Pages() {
                 </LayoutWrapper>
               }
             />
+            <Route
+              path="/memberships"
+              element={
+                <LayoutWrapper>
+                  <MembershipsDashboard />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/memberships/plans"
+              element={
+                <LayoutWrapper>
+                  <MembershipPlans />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/memberships/members"
+              element={
+                <LayoutWrapper>
+                  <MembershipMembers />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/memberships/members/:memberId"
+              element={
+                <LayoutWrapper>
+                  <MembershipMemberProfile />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/memberships/automations"
+              element={
+                <LayoutWrapper>
+                  <MembershipAutomations />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/memberships/analytics"
+              element={
+                <LayoutWrapper>
+                  <MembershipAnalytics />
+                </LayoutWrapper>
+              }
+            />
+            <Route path="/join/:slug" element={<PublicMembershipPlansDemo />} />
 
             <Route
               path="*"

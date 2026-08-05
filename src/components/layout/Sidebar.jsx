@@ -20,6 +20,7 @@ import {
   X,
   Ticket,
   Megaphone,
+  Crown,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLanguage } from '@/components/auth/LanguageContext'
@@ -269,6 +270,7 @@ export default function Sidebar() {
     ...(isMoonCafeRoadmap || isMoonCafeDemo ? [{ name: 'Encuesta', icon: ClipboardList, page: 'Encuesta' }] : []),
     // ...(isMoonCafeRoadmap ? [{ name: 'Descuentos', icon: Percent, page: 'Descuentos' }] : []),
     ...(!isDemo || isMoonCafeRoadmap ? [{ name: t('menu'), icon: BookOpen, page: 'Menu' }] : []),
+    ...(!isDemo ? [{ name: 'Membresías', icon: Crown, page: 'Memberships' }] : []),
     ...(isGlowDemo || isMoonCafeDemo || isMoonCafeRoadmap || isDelPilarDemo
       ? [
           { name: 'Sorteo', icon: Ticket, page: 'Sorteo' },
