@@ -1,11 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
+import { formatDateUTC } from '@/utils/date'
 import CustomerDetailModal from '@/components/customers/CustomerDetailModal'
 import { getEmailCampaigns, getPushCampaigns } from '@/constants/moonCafeCampaigns'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 import {
   AlertCircle,
   ArrowLeft,
@@ -14,10 +17,14 @@ import {
   Calendar,
   Check,
   CheckCircle2,
+  ChevronLeft,
   ChevronRight,
   Clock,
+  Copy,
+  CreditCard,
   Gift,
   Mail,
+  MapPin,
   Plus,
   Search,
   Smartphone,
@@ -37,9 +44,16 @@ import { cn } from '@/lib/utils'
 // ─── Program ──────────────────────────────────────────────────────────────────
 
 const PROGRAM = {
+  program_id: 'mooncafe-sellos',
   program_name: 'Club de Fidelidad Moon Cafe',
-  program_rules: { stamps_required: 5 },
+  program_rules: { stamps_required: 5, required_customer_fields: { phone: true, birth_date: true } },
 }
+
+// Sucursales para el alta manual — el paso de sucursal solo se muestra si hay más de una.
+const MOCK_STORES = [
+  { store_id: 'store-1', store_name: 'Café Moon · Sucursal Centro' },
+  { store_id: 'store-2', store_name: 'Café Moon · Sucursal Nueva Córdoba' },
+]
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -209,27 +223,34 @@ const RAW_MEMBERS = [
   },
 ]
 
-const USER_STATS_MAP = Object.fromEntries(
-  RAW_MEMBERS.map((m) => [
-    m.id,
-    {
-      full_name: m.name,
-      email: m.email,
-      registered_at: `${m.joined}T00:00:00Z`,
-      loyalty_cards: [makeCard(m.id, m.balance, m.visits, m.rewards, m.firstTxDaysAgo)],
-      ...(m.phone && { phone: m.phone }),
-      ...(m.birthday && { birth_date: m.birthday }),
-    },
-  ]),
-)
+// Estas 3 funciones antes eran constantes de módulo calculadas solo a partir de
+// RAW_MEMBERS; ahora son funciones para poder recalcularlas también con los clientes
+// que se agregan en vivo desde el asistente de "Nuevo cliente".
+function buildUserStatsMap(rawMembers) {
+  return Object.fromEntries(
+    rawMembers.map((m) => [
+      m.id,
+      {
+        full_name: m.name,
+        email: m.email,
+        registered_at: `${m.joined}T00:00:00Z`,
+        loyalty_cards: [makeCard(m.id, m.balance, m.visits, m.rewards, m.firstTxDaysAgo)],
+        ...(m.phone && { phone: m.phone }),
+        ...(m.birthday && { birth_date: m.birthday }),
+      },
+    ]),
+  )
+}
 
-const MEMBERS = RAW_MEMBERS.map((m) => ({
-  user_id: m.id,
-  full_name: m.name,
-  email: m.email,
-  created_at: `${m.joined}T00:00:00Z`,
-  programs: [{ program_name: PROGRAM.program_name }],
-}))
+function buildMembers(rawMembers) {
+  return rawMembers.map((m) => ({
+    user_id: m.id,
+    full_name: m.name,
+    email: m.email,
+    created_at: `${m.joined}T00:00:00Z`,
+    programs: [{ program_name: PROGRAM.program_name }],
+  }))
+}
 
 // ─── Segmentation ─────────────────────────────────────────────────────────────
 
@@ -263,8 +284,8 @@ const SEGMENTS = {
 
 const SEGMENT_ORDER = { en_riesgo: 0, activo: 1, vip: 2, nuevo: 3, inactivo: 4 }
 
-function getLastVisit(userId) {
-  const txs = USER_STATS_MAP[userId]?.loyalty_cards?.[0]?.transactions ?? []
+function getLastVisit(userId, userStatsMap) {
+  const txs = userStatsMap[userId]?.loyalty_cards?.[0]?.transactions ?? []
   if (!txs.length) return null
   return new Date(Math.max(...txs.map((t) => new Date(t.created_at))))
 }
@@ -291,12 +312,13 @@ function timeAgo(date) {
   return `Hace ${Math.round(days / 30)} meses`
 }
 
-// Enrich once at module level
-const ENRICHED = MEMBERS.map((m) => {
-  const raw = RAW_MEMBERS.find((r) => r.id === m.user_id)
-  const lastVisit = getLastVisit(m.user_id)
-  return { ...m, raw, lastVisit, segment: getSegment(raw, lastVisit) }
-})
+function buildEnriched(rawMembers, members, userStatsMap) {
+  return members.map((m) => {
+    const raw = rawMembers.find((r) => r.id === m.user_id)
+    const lastVisit = getLastVisit(m.user_id, userStatsMap)
+    return { ...m, raw, lastVisit, segment: getSegment(raw, lastVisit) }
+  })
+}
 
 // ─── SegmentBadge ─────────────────────────────────────────────────────────────
 
@@ -334,6 +356,19 @@ function WhatsAppIcon({ className }) {
 
 function cleanPhone(phone) {
   return phone?.replace(/\D/g, '') ?? ''
+}
+
+// Link real de autoservicio: al abrirlo desde SU propio celular, el cliente ve el
+// flujo público real y ahí sí se detecta su sistema operativo para armar el pase
+// correcto (Apple Wallet o Google Wallet) — ver nota en PublicCard.jsx.
+function buildWalletLink() {
+  return `${window.location.origin}/publicprogram?demo=mooncafe`
+}
+
+function buildWaMessage(member, device) {
+  const walletLabel = device === 'apple' ? 'Apple Wallet' : device === 'android' ? 'Google Wallet' : 'tu wallet'
+  const firstName = member.name.split(' ')[0]
+  return `¡Hola ${firstName}! Ya sos parte de ${PROGRAM.program_name}. Abrí este link desde tu celular para guardar tu tarjeta en ${walletLabel}: ${buildWalletLink()}`
 }
 
 // ─── MemberCard (CustomerCard with inline segment badge) ─────────────────────
@@ -463,14 +498,18 @@ function MemberCard({ member, userData, segment, lastVisit, phone, isSelected, o
 
 // ─── Activity feed ────────────────────────────────────────────────────────────
 
-const ALL_TRANSACTIONS = ENRICHED.flatMap((m) =>
-  (USER_STATS_MAP[m.user_id]?.loyalty_cards?.[0]?.transactions ?? []).map((tx) => ({ ...tx, member: m })),
-).sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+function buildAllTransactions(enriched, userStatsMap) {
+  return enriched
+    .flatMap((m) =>
+      (userStatsMap[m.user_id]?.loyalty_cards?.[0]?.transactions ?? []).map((tx) => ({ ...tx, member: m })),
+    )
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+}
 
-function ActivityFeed() {
+function ActivityFeed({ transactions }) {
   return (
     <div className="space-y-2">
-      {ALL_TRANSACTIONS.map((tx) => (
+      {transactions.map((tx) => (
         <div
           key={tx.transaction_id}
           className="flex items-center gap-3 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-3"
@@ -500,9 +539,9 @@ function ActivityFeed() {
 
 // ─── MemberDetailPanel ────────────────────────────────────────────────────────
 
-function MemberDetailPanel({ member, onClose }) {
+function MemberDetailPanel({ member, onClose, userStatsMap }) {
   const [showStampSuccess, setShowStampSuccess] = useState(false)
-  const stats = USER_STATS_MAP[member.user_id]
+  const stats = userStatsMap[member.user_id]
   const card = stats?.loyalty_cards?.[0]
   const stampsRequired = PROGRAM.program_rules.stamps_required
   const currentBalance = card?.current_balance ?? 0
@@ -789,6 +828,286 @@ function ActionPicker({ type, count, onSend, onClose }) {
   )
 }
 
+// ─── NewCustomerWizard — alta manual de clientes ──────────────────────────────
+
+function WizardOptionCard({ selected, onClick, icon: Icon, title, subtitle }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'w-full flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-colors',
+        selected
+          ? 'border-gray-900 dark:border-white bg-gray-50 dark:bg-gray-800/50'
+          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600',
+      )}
+    >
+      <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+        <Icon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{title}</p>
+        {subtitle && <p className="text-xs text-gray-400">{subtitle}</p>}
+      </div>
+      {selected && <Check className="w-4 h-4 text-gray-900 dark:text-white flex-shrink-0" />}
+    </button>
+  )
+}
+
+const DEVICE_OPTIONS = [
+  { id: 'apple', label: 'iPhone' },
+  { id: 'android', label: 'Android' },
+]
+
+function NewCustomerWizard({ open, onClose, onCreate }) {
+  const steps = useMemo(
+    () => (MOCK_STORES.length > 1 ? ['store', 'club', 'data', 'device'] : ['club', 'data', 'device']),
+    [],
+  )
+
+  const [stepIndex, setStepIndex] = useState(0)
+  const [storeId, setStoreId] = useState(MOCK_STORES[0]?.store_id ?? null)
+  const [form, setForm] = useState({ name: '', email: '', phone: '', birthday: '' })
+  const [device, setDevice] = useState(null)
+  const [createdMember, setCreatedMember] = useState(null)
+
+  const reset = () => {
+    setStepIndex(0)
+    setStoreId(MOCK_STORES[0]?.store_id ?? null)
+    setForm({ name: '', email: '', phone: '', birthday: '' })
+    setDevice(null)
+    setCreatedMember(null)
+  }
+
+  const handleClose = () => {
+    reset()
+    onClose()
+  }
+
+  const currentStepKey = createdMember ? 'success' : steps[stepIndex]
+  const requiredFields = PROGRAM.program_rules.required_customer_fields
+
+  const canGoNext = () => {
+    if (currentStepKey === 'store') return !!storeId
+    if (currentStepKey === 'club') return true
+    if (currentStepKey === 'data') return form.name.trim() && form.email.trim()
+    if (currentStepKey === 'device') return !!device
+    return true
+  }
+
+  const goNext = () => {
+    if (currentStepKey === 'device') {
+      const newRaw = {
+        id: `new-${Date.now()}`,
+        name: form.name.trim(),
+        email: form.email.trim(),
+        joined: formatDateUTC(new Date()),
+        balance: 0,
+        visits: 0,
+        rewards: 0,
+        firstTxDaysAgo: 0,
+        ...(form.phone.trim() && { phone: form.phone.trim() }),
+        ...(form.birthday && { birthday: form.birthday }),
+      }
+      onCreate(newRaw)
+      setCreatedMember(newRaw)
+      toast.success(`${newRaw.name} agregado/a a Miembros`)
+      return
+    }
+    setStepIndex((i) => i + 1)
+  }
+
+  const goBack = () => setStepIndex((i) => Math.max(0, i - 1))
+
+  const waLink = createdMember?.phone
+    ? `https://wa.me/${cleanPhone(createdMember.phone)}?text=${encodeURIComponent(buildWaMessage(createdMember, device))}`
+    : null
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(buildWalletLink()).then(() => toast.success('Link copiado'))
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>{createdMember ? 'Cliente registrado' : 'Nuevo cliente'}</DialogTitle>
+        </DialogHeader>
+
+        {!createdMember && (
+          <div className="flex items-center justify-center gap-2 py-2">
+            {steps.map((s, i) => (
+              <Fragment key={s}>
+                <div
+                  className={cn(
+                    'w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0',
+                    i === stepIndex
+                      ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900'
+                      : i < stepIndex
+                        ? 'bg-gray-900/70 text-white dark:bg-white/70 dark:text-gray-900'
+                        : 'bg-gray-100 text-gray-400 dark:bg-gray-800',
+                  )}
+                >
+                  {i + 1}
+                </div>
+                {i < steps.length - 1 && (
+                  <div
+                    className={cn(
+                      'h-0.5 w-8',
+                      i < stepIndex ? 'bg-gray-900 dark:bg-white' : 'bg-gray-200 dark:bg-gray-700',
+                    )}
+                  />
+                )}
+              </Fragment>
+            ))}
+          </div>
+        )}
+
+        {currentStepKey === 'store' && (
+          <div className="space-y-2 py-2">
+            <p className="text-sm text-gray-500 mb-2">¿En qué sucursal se registra?</p>
+            {MOCK_STORES.map((store) => (
+              <WizardOptionCard
+                key={store.store_id}
+                icon={MapPin}
+                title={store.store_name}
+                selected={storeId === store.store_id}
+                onClick={() => setStoreId(store.store_id)}
+              />
+            ))}
+          </div>
+        )}
+
+        {currentStepKey === 'club' && (
+          <div className="space-y-2 py-2">
+            <p className="text-sm text-gray-500 mb-2">Club de fidelidad</p>
+            <WizardOptionCard
+              icon={CreditCard}
+              title={PROGRAM.program_name}
+              subtitle={`${PROGRAM.program_rules.stamps_required} sellos para el premio`}
+              selected
+              onClick={() => {}}
+            />
+          </div>
+        )}
+
+        {currentStepKey === 'data' && (
+          <div className="space-y-3 py-2">
+            <div className="space-y-1.5">
+              <Label>Nombre *</Label>
+              <Input
+                value={form.name}
+                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                placeholder="Nombre y apellido"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Email *</Label>
+              <Input
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                placeholder="cliente@email.com"
+              />
+            </div>
+            {requiredFields.phone && (
+              <div className="space-y-1.5">
+                <Label>Teléfono (opcional)</Label>
+                <Input
+                  value={form.phone}
+                  onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                  placeholder="+54 9 351 123-4567"
+                />
+              </div>
+            )}
+            {requiredFields.birth_date && (
+              <div className="space-y-1.5">
+                <Label>Fecha de nacimiento (opcional)</Label>
+                <Input
+                  type="date"
+                  value={form.birthday}
+                  onChange={(e) => setForm((f) => ({ ...f, birthday: e.target.value }))}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {currentStepKey === 'device' && (
+          <div className="space-y-3 py-2">
+            <p className="text-sm text-gray-500">¿Qué celular tiene el cliente?</p>
+            <div className="grid grid-cols-2 gap-3">
+              {DEVICE_OPTIONS.map((opt) => (
+                <WizardOptionCard
+                  key={opt.id}
+                  icon={Smartphone}
+                  title={opt.label}
+                  selected={device === opt.id}
+                  onClick={() => setDevice(opt.id)}
+                />
+              ))}
+            </div>
+            <p className="text-xs text-gray-400">
+              Sirve para saber qué instrucción mostrarle al enviarle la tarjeta — el pase se genera bien recién cuando
+              el cliente abre el link desde su propio celular.
+            </p>
+          </div>
+        )}
+
+        {createdMember && (
+          <div className="text-center space-y-4 py-2">
+            <div className="w-16 h-16 rounded-full bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div>
+              <p className="font-bold text-lg text-gray-900 dark:text-gray-100">{createdMember.name}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Ya está en tu lista de Miembros — {PROGRAM.program_name}
+              </p>
+            </div>
+            <div className="space-y-2">
+              {waLink ? (
+                <a
+                  href={waLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full h-11 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold flex items-center justify-center gap-2 transition-colors"
+                >
+                  <WhatsAppIcon className="w-4 h-4" /> Enviar tarjeta por WhatsApp
+                </a>
+              ) : (
+                <p className="text-xs text-amber-600 dark:text-amber-400">
+                  No cargaste teléfono — copiá el link y enviáselo por otro medio.
+                </p>
+              )}
+              <Button variant="outline" className="w-full gap-2" onClick={handleCopyLink}>
+                <Copy className="w-4 h-4" /> Copiar link de la tarjeta
+              </Button>
+            </div>
+          </div>
+        )}
+
+        <div className="flex gap-3 pt-2">
+          {!createdMember && stepIndex > 0 && (
+            <Button variant="outline" onClick={goBack} className="gap-1">
+              <ChevronLeft className="w-4 h-4" /> Volver
+            </Button>
+          )}
+          {!createdMember ? (
+            <Button className="flex-1" disabled={!canGoNext()} onClick={goNext}>
+              {currentStepKey === 'device' ? 'Registrar cliente' : 'Continuar'}
+            </Button>
+          ) : (
+            <Button className="flex-1" onClick={handleClose}>
+              Listo
+            </Button>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function CustomersMoonCafe() {
@@ -800,12 +1119,24 @@ export default function CustomersMoonCafe() {
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [actionType, setActionType] = useState(null)
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 1024)
+  const [addedMembers, setAddedMembers] = useState([])
+  const [showNewCustomer, setShowNewCustomer] = useState(false)
 
   useEffect(() => {
     const handler = () => setIsMobile(window.innerWidth < 1024)
     window.addEventListener('resize', handler)
     return () => window.removeEventListener('resize', handler)
   }, [])
+
+  const rawMembers = useMemo(() => [...addedMembers, ...RAW_MEMBERS], [addedMembers])
+  const userStatsMap = useMemo(() => buildUserStatsMap(rawMembers), [rawMembers])
+  const members = useMemo(() => buildMembers(rawMembers), [rawMembers])
+  const enriched = useMemo(() => buildEnriched(rawMembers, members, userStatsMap), [rawMembers, members, userStatsMap])
+  const allTransactions = useMemo(() => buildAllTransactions(enriched, userStatsMap), [enriched, userStatsMap])
+
+  const handleCreateCustomer = (newRawMember) => {
+    setAddedMembers((prev) => [newRawMember, ...prev])
+  }
 
   const toggleSelect = (userId) =>
     setSelectedIds((prev) => {
@@ -823,7 +1154,7 @@ export default function CustomersMoonCafe() {
   }
 
   const handleWhatsApp = () => {
-    const withPhone = ENRICHED.filter((m) => selectedIds.has(m.user_id) && m.raw?.phone)
+    const withPhone = enriched.filter((m) => selectedIds.has(m.user_id) && m.raw?.phone)
     if (withPhone.length === 0) {
       toast.error('Ningún miembro seleccionado tiene número de WhatsApp')
       return
@@ -844,16 +1175,16 @@ export default function CustomersMoonCafe() {
 
   const metrics = useMemo(() => {
     const now = new Date()
-    const active = ENRICHED.filter((m) => m.segment === 'activo' || m.segment === 'vip').length
-    const atRisk = ENRICHED.filter((m) => m.segment === 'en_riesgo').length
-    const newThisMonth = ENRICHED.filter((m) => {
+    const active = enriched.filter((m) => m.segment === 'activo' || m.segment === 'vip').length
+    const atRisk = enriched.filter((m) => m.segment === 'en_riesgo').length
+    const newThisMonth = enriched.filter((m) => {
       const d = new Date(m.created_at)
       return d.getUTCFullYear() === now.getFullYear() && d.getUTCMonth() === now.getMonth()
     }).length
     return [
       {
         label: 'Total',
-        value: ENRICHED.length,
+        value: enriched.length,
         icon: Users,
         color: 'text-blue-600',
         bg: 'bg-blue-50 dark:bg-blue-900/20',
@@ -880,19 +1211,19 @@ export default function CustomersMoonCafe() {
         bg: 'bg-sky-50 dark:bg-sky-900/20',
       },
     ]
-  }, [])
+  }, [enriched])
 
   const segCounts = useMemo(() => {
-    const c = { all: ENRICHED.length }
+    const c = { all: enriched.length }
     Object.keys(SEGMENTS).forEach((s) => {
-      c[s] = ENRICHED.filter((m) => m.segment === s).length
+      c[s] = enriched.filter((m) => m.segment === s).length
     })
     return c
-  }, [])
+  }, [enriched])
 
   const filtered = useMemo(() => {
     const q = searchQuery.toLowerCase()
-    let list = ENRICHED.filter((m) => {
+    let list = enriched.filter((m) => {
       const matchSearch = !q || m.full_name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q)
       const matchSeg = segmentFilter === 'all' || m.segment === segmentFilter
       return matchSearch && matchSeg
@@ -907,13 +1238,13 @@ export default function CustomersMoonCafe() {
       list = [...list].sort((a, b) => a.full_name.localeCompare(b.full_name))
     } else if (sortBy === 'visits') {
       list = [...list].sort((a, b) => {
-        const va = USER_STATS_MAP[a.user_id]?.loyalty_cards?.[0]?.total_visits ?? 0
-        const vb = USER_STATS_MAP[b.user_id]?.loyalty_cards?.[0]?.total_visits ?? 0
+        const va = userStatsMap[a.user_id]?.loyalty_cards?.[0]?.total_visits ?? 0
+        const vb = userStatsMap[b.user_id]?.loyalty_cards?.[0]?.total_visits ?? 0
         return vb - va
       })
     }
     return list
-  }, [searchQuery, segmentFilter, sortBy])
+  }, [enriched, userStatsMap, searchQuery, segmentFilter, sortBy])
 
   const allFilteredSelected = useMemo(
     () => filtered.length > 0 && filtered.every((m) => selectedIds.has(m.user_id)),
@@ -941,12 +1272,21 @@ export default function CustomersMoonCafe() {
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-          <div className="flex items-center gap-3 mb-1">
-            <Users className="w-8 h-8 text-gray-700 dark:text-gray-300" />
-            <h1 className="text-4xl font-bold text-foreground">Miembros</h1>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 flex items-start justify-between gap-4 flex-wrap"
+        >
+          <div>
+            <div className="flex items-center gap-3 mb-1">
+              <Users className="w-8 h-8 text-gray-700 dark:text-gray-300" />
+              <h1 className="text-4xl font-bold text-foreground">Miembros</h1>
+            </div>
+            <p className="text-gray-600 dark:text-gray-400">Sigue la actividad de los miembros de tu programa.</p>
           </div>
-          <p className="text-gray-600 dark:text-gray-400">Sigue la actividad de los miembros de tu programa.</p>
+          <Button onClick={() => setShowNewCustomer(true)} className="gap-2">
+            <UserPlus className="w-4 h-4" /> Nuevo cliente
+          </Button>
         </motion.div>
 
         {/* Metric cards */}
@@ -1069,7 +1409,7 @@ export default function CustomersMoonCafe() {
                       >
                         <MemberCard
                           member={member}
-                          userData={USER_STATS_MAP[member.user_id]}
+                          userData={userStatsMap[member.user_id]}
                           segment={member.segment}
                           lastVisit={member.lastVisit}
                           phone={member.raw?.phone}
@@ -1095,7 +1435,11 @@ export default function CustomersMoonCafe() {
                     className="hidden lg:flex flex-col w-[360px] flex-shrink-0 sticky top-6 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden"
                     style={{ maxHeight: 'calc(100vh - 5rem)' }}
                   >
-                    <MemberDetailPanel member={selectedCustomer} onClose={() => setSelectedCustomer(null)} />
+                    <MemberDetailPanel
+                      member={selectedCustomer}
+                      onClose={() => setSelectedCustomer(null)}
+                      userStatsMap={userStatsMap}
+                    />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -1106,7 +1450,7 @@ export default function CustomersMoonCafe() {
         {/* Activity tab */}
         {activeView === 'activity' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.12 }}>
-            <ActivityFeed />
+            <ActivityFeed transactions={allTransactions} />
           </motion.div>
         )}
       </div>
@@ -1115,7 +1459,7 @@ export default function CustomersMoonCafe() {
       <CustomerDetailModal
         customer={isMobile ? selectedCustomer : null}
         brandId={null}
-        initialData={USER_STATS_MAP[selectedCustomer?.user_id]}
+        initialData={userStatsMap[selectedCustomer?.user_id]}
         onClose={() => setSelectedCustomer(null)}
       />
 
@@ -1124,6 +1468,12 @@ export default function CustomersMoonCafe() {
         count={selectedIds.size}
         onSend={handleSend}
         onClose={() => setActionType(null)}
+      />
+
+      <NewCustomerWizard
+        open={showNewCustomer}
+        onClose={() => setShowNewCustomer(false)}
+        onCreate={handleCreateCustomer}
       />
 
       {/* Floating action bar */}
@@ -1163,7 +1513,7 @@ export default function CustomersMoonCafe() {
             >
               <WhatsAppIcon className="w-4 h-4" />
               {(() => {
-                const n = ENRICHED.filter((m) => selectedIds.has(m.user_id) && m.raw?.phone).length
+                const n = enriched.filter((m) => selectedIds.has(m.user_id) && m.raw?.phone).length
                 return n > 1 ? `Lista (${n})` : 'WhatsApp'
               })()}
             </button>
