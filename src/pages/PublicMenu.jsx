@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Package, Coins, X, ShoppingBag } from 'lucide-react'
+import { Package, Coins, X, ShoppingBag, ChevronDown, Minus, Plus } from 'lucide-react'
+import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
 // ─── Storage ──────────────────────────────────────────────────────────────────
@@ -26,15 +27,100 @@ function loadCatalog() {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+function formatCurrency(value, priceType) {
+  if (value == null) return null
+  return priceType === 'points'
+    ? `${Math.round(value).toLocaleString('es-AR')} pts`
+    : `$${Math.round(value).toLocaleString('es-AR')}`
+}
+
 function formatPrice(item) {
-  if (item.price == null) return null
-  if (item.price_type === 'points') return `${item.price.toLocaleString('es-AR')} pts`
-  return `$${item.price.toLocaleString('es-AR')}`
+  return formatCurrency(item.price, item.price_type)
+}
+
+// ─── Ordering options (static demo data, same for every product) ──────────────
+
+const VARIANT_OPTIONS = [
+  { id: 'simple', label: 'Simple', multiplier: 1 },
+  { id: 'doble', label: 'Doble', multiplier: 1.25 },
+  { id: 'triple', label: 'Triple', multiplier: 1.42 },
+]
+
+const ADDON_OPTIONS = [
+  { id: 'queso', label: 'Queso extra', pct: 0.08 },
+  { id: 'panceta', label: 'Panceta', pct: 0.15 },
+  { id: 'huevo', label: 'Huevo frito', pct: 0.1 },
+  { id: 'papas', label: 'Papas grandes', pct: 0.2 },
+]
+
+const OBSERVATIONS_MAX = 150
+
+function roundToStep(value, priceType) {
+  const step = priceType === 'points' ? 10 : 100
+  return Math.round(value / step) * step
+}
+
+// Base variant (multiplier 1) always resolves to the catalog's exact price — only the
+// delta added by bigger presentations gets rounded to a clean step.
+function getVariantPrice(item, option) {
+  return item.price + roundToStep(item.price * (option.multiplier - 1), item.price_type)
+}
+
+// ─── Variant option (radio row) ────────────────────────────────────────────────
+
+function VariantOption({ option, item, color, selected, onSelect }) {
+  const price = getVariantPrice(item, option)
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(option.id)}
+      className="w-full flex items-center justify-between px-4 py-3 rounded-2xl border text-left transition-colors"
+      style={
+        selected ? { borderColor: color, borderWidth: 2, backgroundColor: `${color}0d` } : { borderColor: '#e5e7eb' }
+      }
+    >
+      <span className="flex items-center gap-3">
+        <span
+          className="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0"
+          style={{ borderColor: selected ? color : '#d1d5db' }}
+        >
+          {selected && <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />}
+        </span>
+        <span className="text-sm font-medium text-gray-900">{option.label}</span>
+      </span>
+      <span className="text-sm font-semibold text-gray-900">{formatCurrency(price, item.price_type)}</span>
+    </button>
+  )
 }
 
 // ─── Item detail modal ────────────────────────────────────────────────────────
 
 function ItemModal({ item, color, onClose }) {
+  const [variant, setVariant] = useState(VARIANT_OPTIONS[0].id)
+  const [selectedAddons, setSelectedAddons] = useState([])
+  const [addonsOpen, setAddonsOpen] = useState(false)
+  const [observations, setObservations] = useState('')
+  const [quantity, setQuantity] = useState(1)
+
+  const activeVariant = VARIANT_OPTIONS.find((v) => v.id === variant) ?? VARIANT_OPTIONS[0]
+  const basePrice = getVariantPrice(item, activeVariant)
+  const addonsTotal = selectedAddons.reduce((sum, id) => {
+    const addon = ADDON_OPTIONS.find((a) => a.id === id)
+    return sum + (addon ? roundToStep(item.price * addon.pct, item.price_type) : 0)
+  }, 0)
+  const unitPrice = basePrice + addonsTotal
+  const total = unitPrice * quantity
+  const canAdd = item.available && !(item.stock_enabled && item.stock === 0)
+
+  const toggleAddon = (id) => {
+    setSelectedAddons((prev) => (prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]))
+  }
+
+  const handleAddClick = () => {
+    toast(`Agregaste ${quantity} × ${item.name} — ${formatCurrency(total, item.price_type)}`)
+    onClose()
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -49,10 +135,10 @@ function ItemModal({ item, color, onClose }) {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 60, opacity: 0 }}
         transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-        className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl"
+        className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[88vh] sm:max-h-[85vh]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative h-52 bg-gray-100">
+        <div className="relative h-52 bg-gray-100 flex-shrink-0">
           {item.image_url ? (
             <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
           ) : (
@@ -74,44 +160,159 @@ function ItemModal({ item, color, onClose }) {
             </div>
           )}
         </div>
-        <div className="p-6 space-y-4">
-          <div>
-            {item.category && (
-              <span className="text-xs font-semibold uppercase tracking-wide mb-1 block" style={{ color }}>
-                {item.category}
-              </span>
-            )}
-            <h2 className="text-xl font-bold text-gray-900">{item.name}</h2>
-            {item.description && <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">{item.description}</p>}
-          </div>
-          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+
+        <div className="overflow-y-auto flex-1">
+          <div className="p-6 space-y-5">
+            <div>
+              {item.category && (
+                <span className="text-xs font-semibold uppercase tracking-wide mb-1 block" style={{ color }}>
+                  {item.category}
+                </span>
+              )}
+              <h2 className="text-xl font-bold text-gray-900">{item.name}</h2>
+              {item.description && <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">{item.description}</p>}
+              {item.stock_enabled && (
+                <span
+                  className={cn(
+                    'inline-block mt-2 text-xs font-semibold px-3 py-1.5 rounded-full',
+                    item.stock === 0 || item.stock == null
+                      ? 'bg-red-50 text-red-500'
+                      : 'bg-emerald-50 text-emerald-600',
+                  )}
+                >
+                  {item.stock === 0 || item.stock == null ? 'Sin stock' : `${item.stock} disponibles`}
+                </span>
+              )}
+            </div>
+
             {formatPrice(item) ? (
-              <div className="flex items-center gap-2">
-                {item.price_type === 'points' && (
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center"
-                    style={{ backgroundColor: `${color}18`, color }}
-                  >
-                    <Coins className="w-4 h-4" />
+              <>
+                {/* Presentaciones */}
+                <section>
+                  <h3 className="text-sm font-bold text-gray-900 mb-2">Presentaciones</h3>
+                  <div className="space-y-2">
+                    {VARIANT_OPTIONS.map((opt) => (
+                      <VariantOption
+                        key={opt.id}
+                        option={opt}
+                        item={item}
+                        color={color}
+                        selected={variant === opt.id}
+                        onSelect={setVariant}
+                      />
+                    ))}
                   </div>
-                )}
-                <span className="text-2xl font-bold text-gray-900">{formatPrice(item)}</span>
-              </div>
+                </section>
+
+                {/* Adicionales */}
+                <section className="border border-gray-200 rounded-2xl overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setAddonsOpen((v) => !v)}
+                    className="w-full flex items-center justify-between px-4 py-3 bg-gray-50"
+                  >
+                    <span className="text-left">
+                      <span className="block text-sm font-bold text-gray-900">Complementos para tu pedido</span>
+                      <span className="block text-xs text-gray-400 mt-0.5">Adicionales · elegí las que quieras</span>
+                    </span>
+                    <ChevronDown
+                      className={cn('w-4 h-4 text-gray-400 transition-transform', addonsOpen && 'rotate-180')}
+                    />
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {addonsOpen && (
+                      <motion.div
+                        initial={{ height: 0 }}
+                        animate={{ height: 'auto' }}
+                        exit={{ height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="p-3 space-y-1">
+                          {ADDON_OPTIONS.map((addon) => {
+                            const price = roundToStep(item.price * addon.pct, item.price_type)
+                            const checked = selectedAddons.includes(addon.id)
+                            return (
+                              <label
+                                key={addon.id}
+                                className="flex items-center justify-between px-2 py-2 rounded-xl hover:bg-gray-50 cursor-pointer"
+                              >
+                                <span className="flex items-center gap-2.5">
+                                  <input
+                                    type="checkbox"
+                                    checked={checked}
+                                    onChange={() => toggleAddon(addon.id)}
+                                    className="w-4 h-4 rounded border-gray-300"
+                                    style={{ accentColor: color }}
+                                  />
+                                  <span className="text-sm text-gray-700">{addon.label}</span>
+                                </span>
+                                <span className="text-sm text-gray-500">
+                                  + {formatCurrency(price, item.price_type)}
+                                </span>
+                              </label>
+                            )
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </section>
+
+                {/* Observaciones */}
+                <section>
+                  <h3 className="text-sm font-bold text-gray-900 mb-2">Observaciones</h3>
+                  <textarea
+                    value={observations}
+                    maxLength={OBSERVATIONS_MAX}
+                    onChange={(e) => setObservations(e.target.value)}
+                    placeholder="Ej: sin cebolla, poca sal..."
+                    rows={3}
+                    className="w-full rounded-2xl border border-gray-200 px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 resize-none"
+                    style={{ '--tw-ring-color': `${color}55` }}
+                  />
+                  <div className="text-right text-xs text-gray-400 mt-1">
+                    {observations.length}/{OBSERVATIONS_MAX}
+                  </div>
+                </section>
+              </>
             ) : (
               <span className="text-sm text-gray-400">Precio no disponible</span>
             )}
-            {item.stock_enabled && (
-              <span
-                className={cn(
-                  'text-xs font-semibold px-3 py-1.5 rounded-full',
-                  item.stock === 0 || item.stock == null ? 'bg-red-50 text-red-500' : 'bg-emerald-50 text-emerald-600',
-                )}
-              >
-                {item.stock === 0 || item.stock == null ? 'Sin stock' : `${item.stock} disponibles`}
-              </span>
-            )}
           </div>
         </div>
+
+        {formatPrice(item) && (
+          <div className="flex-shrink-0 border-t border-gray-100 p-4 flex items-center gap-3 bg-white">
+            <div className="flex items-center border border-gray-200 rounded-full flex-shrink-0">
+              <button
+                type="button"
+                disabled={!item.available}
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                className="w-9 h-9 flex items-center justify-center text-gray-600 disabled:opacity-40"
+              >
+                <Minus className="w-4 h-4" />
+              </button>
+              <span className="w-6 text-center text-sm font-semibold text-gray-900">{quantity}</span>
+              <button
+                type="button"
+                disabled={!item.available}
+                onClick={() => setQuantity((q) => q + 1)}
+                className="w-9 h-9 flex items-center justify-center text-gray-600 disabled:opacity-40"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+            <button
+              type="button"
+              disabled={!canAdd}
+              onClick={handleAddClick}
+              className="flex-1 h-11 rounded-full text-white font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+              style={{ backgroundColor: color }}
+            >
+              Agregar · {formatCurrency(total, item.price_type)}
+            </button>
+          </div>
+        )}
       </motion.div>
     </motion.div>
   )
@@ -306,7 +507,9 @@ export default function PublicMenu() {
       </main>
 
       <AnimatePresence>
-        {selectedItem && <ItemModal item={selectedItem} color={color} onClose={() => setSelectedItem(null)} />}
+        {selectedItem && (
+          <ItemModal key={selectedItem.id} item={selectedItem} color={color} onClose={() => setSelectedItem(null)} />
+        )}
       </AnimatePresence>
     </div>
   )
