@@ -22,6 +22,7 @@ import {
   MembershipConfigSection,
   PartnerBenefitsSection,
   CashbackConfigSection,
+  ReferralSection,
 } from '@/components/programs/ClubFormSections'
 import {
   MOONCAFE_CLUBS,
@@ -298,11 +299,18 @@ export default function EditClubMoonCafe() {
                   formData={formData}
                   setFormData={setFormData}
                   getValidityTermsText={getValidityTermsText}
+                  programTypeId={formData.program_type_id}
                 />
 
                 <CustomerDataFields formData={formData} setFormData={setFormData} />
 
-                <SecuritySection formData={formData} setFormData={setFormData} />
+                <ReferralSection formData={formData} setFormData={setFormData} />
+
+                <SecuritySection
+                  formData={formData}
+                  setFormData={setFormData}
+                  programTypeId={formData.program_type_id}
+                />
 
                 <BusinessInfoSection formData={formData} setFormData={setFormData} setIsFlipped={setIsFlipped} />
 

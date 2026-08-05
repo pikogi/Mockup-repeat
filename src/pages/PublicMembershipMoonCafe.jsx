@@ -25,131 +25,56 @@ import {
   Building2,
   Coffee,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { MOONCAFE_CLUBS } from '@/constants/moonCafeClubs'
 
 // ─── Data ──────────────────────────────────────────────────────────────────────
+// Sourced from the real "Moon Club" membership club config (moonCafeClubs.js) so the
+// admin edit screen (EditClubMoonCafe.jsx) and this public page never drift apart.
 
-const COLOR = '#2d1b69'
+const CLUB = MOONCAFE_CLUBS.find((c) => c.id === 'mooncafe-membresia')
+
+const PARTNER_CATEGORY_EMOJI = {
+  gastronomia: '🍽️',
+  salud: '🧘',
+  deportes: '⚽',
+  moda: '👗',
+  entretenimiento: '📚',
+  servicios: '✂️',
+  otro: '⭐',
+}
+
+const COLOR = CLUB.card_color
 
 const PROGRAM = {
-  name: 'Moon Club',
-  logo_url: '/moon-cafe-logo.png',
+  name: CLUB.club_name,
+  logo_url: CLUB.logo_url,
   brand: 'Moon Café',
 }
 
-const TIERS = [
-  { id: 'tier-basico', name: 'Básico', color: '#6b7280', sub_price: null },
-  { id: 'tier-premium', name: 'Premium', color: '#f59e0b', sub_price: 1500, sub_period: 'monthly' },
+const TIERS = CLUB.membership_tiers
+
+const BENEFITS = CLUB.membership_catalog
+
+const PARTNERS = CLUB.membership_partners.map((p) => ({
+  ...p,
+  emoji: PARTNER_CATEGORY_EMOJI[p.category] || '⭐',
+}))
+
+const POSTS = CLUB.novedades
+
+const PREMIUM_TIER = TIERS.find((t) => t.sub_price) || TIERS[TIERS.length - 1]
+const PREMIUM_PLAN_NAME = `${PROGRAM.name} ${PREMIUM_TIER.name}`
+const PREMIUM_PRICE_LABEL = PREMIUM_TIER.sub_price ? `$${PREMIUM_TIER.sub_price.toLocaleString('es-AR')}` : ''
+const PREMIUM_PERIOD_LABEL = PREMIUM_TIER.sub_period === 'monthly' ? 'mes' : PREMIUM_TIER.sub_period || 'mes'
+const PREMIUM_INCLUDED = [
+  ...BENEFITS.filter((b) => b.tier_required === 'all' || b.tier_required === PREMIUM_TIER.id).map((b) => b.name),
+  'Descuentos en comercios adheridos',
 ]
 
-const BENEFITS = [
-  {
-    id: 1001,
-    name: 'Café gratis en tu cumpleaños',
-    description: 'Un café de tu elección sin costo el día de tu cumple. Válido en cualquier sucursal.',
-    use_type: 'onetime',
-    tier_required: 'all',
-    image_url: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&h=400&fit=crop&q=80',
-  },
-  {
-    id: 1002,
-    name: '2x1 en bebidas calientes los miércoles',
-    description: 'Pides uno y te llevas dos. Válido en todas las bebidas calientes de la carta.',
-    use_type: 'monthly',
-    tier_required: 'all',
-    image_url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&h=400&fit=crop&q=80',
-  },
-  {
-    id: 1003,
-    name: '10% de descuento en todo el menú',
-    description: 'Descuento automático en cada visita. Sin mínimo de compra.',
-    use_type: 'unlimited',
-    tier_required: 'tier-premium',
-    image_url: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&h=400&fit=crop&q=80',
-  },
-  {
-    id: 1004,
-    name: 'Mesa reservada sin espera',
-    description: 'Reserva tu lugar con prioridad en cualquier sucursal. Llamando o por la app.',
-    use_type: 'unlimited',
-    tier_required: 'tier-premium',
-    image_url: 'https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=400&h=400&fit=crop&q=80',
-  },
-]
-
-const PARTNERS = [
-  {
-    id: 2001,
-    partner_name: 'La Madeleine',
-    benefit_name: '15% en pastelería artesanal',
-    description: 'Presenta tu tarjeta Moon Club en el local. Av. Santa Fe 1842.',
-    use_type: 'unlimited',
-    tier_required: 'all',
-    emoji: '🥐',
-  },
-  {
-    id: 2002,
-    partner_name: 'Pilates Studio BA',
-    benefit_name: 'Clase de prueba gratuita',
-    description: 'Primera clase sin cargo para nuevos miembros. Con reserva previa.',
-    use_type: 'onetime',
-    tier_required: 'all',
-    emoji: '🧘',
-  },
-  {
-    id: 2003,
-    partner_name: 'Libros & Idea',
-    benefit_name: '10% en libros seleccionados',
-    description: 'Descuento en toda la colección de novedades y bestsellers.',
-    use_type: 'unlimited',
-    tier_required: 'all',
-    emoji: '📚',
-  },
-  {
-    id: 2004,
-    partner_name: 'Barbería Urban',
-    benefit_name: 'Corte + barba a $2.500',
-    description: 'Valor normal $3.800. Sujeto a disponibilidad, con turno previo.',
-    use_type: 'monthly',
-    tier_required: 'tier-premium',
-    emoji: '✂️',
-  },
-]
-
-const POSTS = [
-  {
-    id: 1,
-    type: 'novedad',
-    title: 'Nueva línea de fríos de temporada',
-    body: 'Tereré de limón, cold brew con naranja y limonada de jengibre. Solo por julio.',
-    image_url: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=600&h=400&fit=crop&q=80',
-    date: '7 jul',
-  },
-  {
-    id: 2,
-    type: 'promo',
-    title: 'Julio: 2x1 todos los miércoles',
-    body: 'Aprovecha el beneficio de tu membresía. Válido en todas las bebidas calientes.',
-    image_url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&h=400&fit=crop&q=80',
-    date: '1 jul',
-  },
-  {
-    id: 3,
-    type: 'evento',
-    title: 'Cata de cafés de origen — sáb 19',
-    body: 'Junto a nuestros baristas, exploramos 4 orígenes distintos. Cupos limitados.',
-    image_url: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=600&h=400&fit=crop&q=80',
-    date: '25 jun',
-  },
-  {
-    id: 4,
-    type: 'novedad',
-    title: 'Abrimos en Palermo — Thames 1540',
-    body: 'Nuestra segunda sucursal ya está abierta. Sigues acumulando beneficios en cualquiera.',
-    image_url: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600&h=400&fit=crop&q=80',
-    date: '18 jun',
-  },
-]
+const BASIC_TIER = TIERS.find((t) => !t.sub_price) || TIERS[0]
+const BASIC_INCLUDED = BENEFITS.filter((b) => b.tier_required === 'all').map((b) => b.name)
 
 const ACTIVITY = [
   { id: 1, type: 'visit', label: 'Visita — Cappuccino + medialunas', date: '9 jul 2026' },
@@ -187,10 +112,26 @@ const BADGE_STYLES = {
   evento: { label: 'Evento', bg: 'bg-amber-500', icon: Calendar },
 }
 
-const USE_TYPE_META = {
-  unlimited: { label: '∞ Ilimitado', color: 'text-emerald-600 bg-emerald-50' },
-  monthly: { label: '↻ 1x por mes', color: 'text-blue-600 bg-blue-50' },
-  onetime: { label: '⚡ 1 solo uso', color: 'text-amber-600 bg-amber-50' },
+function getLimitDays(item) {
+  return item.use_type === 'monthly' ? 30 : item.use_limit_days || 30 // 'monthly' kept for legacy data
+}
+
+function getLimitCount(item) {
+  return item.use_type === 'monthly' ? 1 : item.use_limit_count || 1 // 'monthly' kept for legacy data
+}
+
+function isPeriodicUse(item) {
+  return item.use_type === 'limited' || item.use_type === 'monthly' // 'monthly' kept for legacy data
+}
+
+function usedPeriodLabel(item) {
+  return `Usado · vuelve en ${getLimitDays(item)} días`
+}
+
+function getUseTypeMeta(item) {
+  if (item.use_type === 'unlimited') return { label: '∞ Ilimitado', color: 'text-emerald-600 bg-emerald-50' }
+  if (item.use_type === 'onetime') return { label: '⚡ 1 solo uso', color: 'text-amber-600 bg-amber-50' }
+  return { label: `↻ ${getLimitCount(item)}x cada ${getLimitDays(item)} días`, color: 'text-blue-600 bg-blue-50' }
 }
 
 // ─── Subscribe Drawer ─────────────────────────────────────────────────────────
@@ -245,25 +186,19 @@ function SubscribeDrawer({ onClose, onSuccess }) {
                     <Crown className="w-5 h-5 text-yellow-400" />
                   </div>
                   <div>
-                    <p className="text-white font-bold text-base leading-tight">Moon Club Premium</p>
+                    <p className="text-white font-bold text-base leading-tight">{PREMIUM_PLAN_NAME}</p>
                     <p className="text-white/50 text-xs mt-0.5">Desbloquea todos los beneficios</p>
                   </div>
                 </div>
                 <div className="flex items-end gap-1">
-                  <span className="text-4xl font-black text-white">$1.500</span>
-                  <span className="text-white/60 text-sm mb-1">/mes</span>
+                  <span className="text-4xl font-black text-white">{PREMIUM_PRICE_LABEL}</span>
+                  <span className="text-white/60 text-sm mb-1">/{PREMIUM_PERIOD_LABEL}</span>
                 </div>
                 <p className="text-white/40 text-xs mt-1">Cancelas cuando quieras. Sin permanencia.</p>
               </div>
               <div className="px-5 py-5 space-y-3">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Incluye</p>
-                {[
-                  '10% de descuento en todo el menú',
-                  'Mesa reservada sin espera',
-                  'Café gratis en tu cumpleaños',
-                  '2x1 en bebidas calientes los miércoles',
-                  'Descuentos en comercios adheridos',
-                ].map((item) => (
+                {PREMIUM_INCLUDED.map((item) => (
                   <div key={item} className="flex items-center gap-3">
                     <div
                       className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
@@ -307,15 +242,17 @@ function SubscribeDrawer({ onClose, onSuccess }) {
                 <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Plan</span>
-                    <span className="font-semibold text-gray-900">Moon Club Premium</span>
+                    <span className="font-semibold text-gray-900">{PREMIUM_PLAN_NAME}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Facturación</span>
-                    <span className="font-semibold text-gray-900">Mensual</span>
+                    <span className="font-semibold text-gray-900">
+                      {PREMIUM_PERIOD_LABEL === 'mes' ? 'Mensual' : PREMIUM_PERIOD_LABEL}
+                    </span>
                   </div>
                   <div className="border-t border-gray-200 pt-2 flex justify-between">
                     <span className="text-sm font-semibold text-gray-700">Total hoy</span>
-                    <span className="text-sm font-black text-gray-900">$1.500</span>
+                    <span className="text-sm font-black text-gray-900">{PREMIUM_PRICE_LABEL}</span>
                   </div>
                 </div>
                 <div>
@@ -335,7 +272,8 @@ function SubscribeDrawer({ onClose, onSuccess }) {
                   </div>
                 </div>
                 <p className="text-xs text-gray-400 text-center leading-relaxed">
-                  Al confirmar, autorizas el cobro de <strong>$1.500</strong> hoy y cada mes hasta cancelar.
+                  Al confirmar, autorizas el cobro de <strong>{PREMIUM_PRICE_LABEL}</strong> hoy y cada{' '}
+                  {PREMIUM_PERIOD_LABEL} hasta cancelar.
                 </p>
                 <Button
                   className="w-full h-12 rounded-xl font-semibold text-white flex items-center justify-center gap-2"
@@ -596,7 +534,7 @@ function PartnerModal({ partner, onClose, onSuccess }) {
   const [code] = useState(
     () => partner.partner_name.split(' ')[0].toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase(),
   )
-  const meta = USE_TYPE_META[partner.use_type]
+  const meta = getUseTypeMeta(partner)
   const requiredTier = TIERS.find((t) => t.id === partner.tier_required)
 
   return (
@@ -649,10 +587,12 @@ function PartnerModal({ partner, onClose, onSuccess }) {
                     {meta.label}
                   </span>
                 </div>
-                {partner.use_type === 'monthly' && (
+                {isPeriodicUse(partner) && (
                   <div className="flex items-center gap-3 text-sm text-blue-600">
                     <Info className="w-4 h-4 flex-shrink-0" />
-                    <span>Disponible una vez por mes. Se resetea el 1° de cada mes.</span>
+                    <span>
+                      Disponible {getLimitCount(partner)}x cada {getLimitDays(partner)} días.
+                    </span>
                   </div>
                 )}
                 {partner.use_type === 'onetime' && (
@@ -781,8 +721,8 @@ function PartnerModal({ partner, onClose, onSuccess }) {
 }
 
 function PartnerCard({ partner, accessible, redeemedMonthly, redeemedOnetime, onSelect }) {
-  const meta = USE_TYPE_META[partner.use_type]
-  const usedMonthly = partner.use_type === 'monthly' && redeemedMonthly.has(partner.id)
+  const meta = getUseTypeMeta(partner)
+  const usedMonthly = isPeriodicUse(partner) && redeemedMonthly.has(partner.id)
   const usedOnetime = partner.use_type === 'onetime' && redeemedOnetime.has(partner.id)
   const isUsed = usedMonthly || usedOnetime
   const isLocked = !accessible
@@ -813,7 +753,9 @@ function PartnerCard({ partner, accessible, redeemedMonthly, redeemedOnetime, on
           <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
             <div className="bg-white rounded-full px-2.5 py-1 shadow flex items-center gap-1">
               <Check className="w-3.5 h-3.5 text-emerald-500" />
-              <span className="text-xs font-semibold text-gray-700">{usedMonthly ? 'Usado este mes' : 'Canjeado'}</span>
+              <span className="text-xs font-semibold text-gray-700">
+                {usedMonthly ? usedPeriodLabel(partner) : 'Canjeado'}
+              </span>
             </div>
           </div>
         )}
@@ -856,7 +798,9 @@ function PartnerCard({ partner, accessible, redeemedMonthly, redeemedOnetime, on
         {isUsed && (
           <div className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-emerald-50 border border-emerald-100">
             <Check className="w-3 h-3 text-emerald-500 flex-shrink-0" />
-            <p className="text-xs text-emerald-700 font-medium">{usedMonthly ? 'Usado este mes' : 'Canjeado'}</p>
+            <p className="text-xs text-emerald-700 font-medium">
+              {usedMonthly ? usedPeriodLabel(partner) : 'Canjeado'}
+            </p>
           </div>
         )}
       </div>
@@ -871,7 +815,7 @@ function PartnersSection({ tierId, loggedIn }) {
   const [redeemedOnetime, setRedeemedOnetime] = useState(new Set())
 
   const handleRedeemSuccess = (partner) => {
-    if (partner.use_type === 'monthly') setRedeemedMonthly((prev) => new Set([...prev, partner.id]))
+    if (isPeriodicUse(partner)) setRedeemedMonthly((prev) => new Set([...prev, partner.id]))
     if (partner.use_type === 'onetime') setRedeemedOnetime((prev) => new Set([...prev, partner.id]))
   }
 
@@ -1081,8 +1025,8 @@ function PostsCarousel() {
 // ─── Benefit card ─────────────────────────────────────────────────────────────
 
 function BenefitCard({ benefit, accessible, redeemedMonthly, redeemedOnetime, onSelect }) {
-  const meta = USE_TYPE_META[benefit.use_type]
-  const usedMonthly = benefit.use_type === 'monthly' && redeemedMonthly.has(benefit.id)
+  const meta = getUseTypeMeta(benefit)
+  const usedMonthly = isPeriodicUse(benefit) && redeemedMonthly.has(benefit.id)
   const usedOnetime = benefit.use_type === 'onetime' && redeemedOnetime.has(benefit.id)
   const isUsed = usedMonthly || usedOnetime
   const isLocked = !accessible
@@ -1118,7 +1062,9 @@ function BenefitCard({ benefit, accessible, redeemedMonthly, redeemedOnetime, on
           <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
             <div className="bg-white rounded-full px-2.5 py-1 shadow flex items-center gap-1">
               <Check className="w-3.5 h-3.5 text-emerald-500" />
-              <span className="text-xs font-semibold text-gray-700">{usedMonthly ? 'Usado este mes' : 'Canjeado'}</span>
+              <span className="text-xs font-semibold text-gray-700">
+                {usedMonthly ? usedPeriodLabel(benefit) : 'Canjeado'}
+              </span>
             </div>
           </div>
         )}
@@ -1150,7 +1096,9 @@ function BenefitCard({ benefit, accessible, redeemedMonthly, redeemedOnetime, on
         {isUsed && (
           <div className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-emerald-50 border border-emerald-100">
             <Check className="w-3 h-3 text-emerald-500 flex-shrink-0" />
-            <p className="text-xs text-emerald-700 font-medium">{usedMonthly ? 'Usado este mes' : 'Canjeado'}</p>
+            <p className="text-xs text-emerald-700 font-medium">
+              {usedMonthly ? usedPeriodLabel(benefit) : 'Canjeado'}
+            </p>
           </div>
         )}
       </div>
@@ -1163,7 +1111,7 @@ function BenefitCard({ benefit, accessible, redeemedMonthly, redeemedOnetime, on
 function BenefitModal({ benefit, onClose, onSuccess }) {
   const [step, setStep] = useState('detail')
   const [code] = useState(() => 'MC-' + Math.random().toString(36).slice(2, 6).toUpperCase())
-  const meta = USE_TYPE_META[benefit.use_type]
+  const meta = getUseTypeMeta(benefit)
 
   return (
     <motion.div
@@ -1225,10 +1173,12 @@ function BenefitModal({ benefit, onClose, onSuccess }) {
                     {meta.label}
                   </span>
                 </div>
-                {benefit.use_type === 'monthly' && (
+                {isPeriodicUse(benefit) && (
                   <div className="flex items-center gap-3 text-sm text-blue-600">
                     <Info className="w-4 h-4 flex-shrink-0" />
-                    <span>Disponible una vez por mes. Se resetea el 1° de cada mes.</span>
+                    <span>
+                      Disponible {getLimitCount(benefit)}x cada {getLimitDays(benefit)} días.
+                    </span>
                   </div>
                 )}
                 {benefit.use_type === 'onetime' && (
@@ -1360,7 +1310,7 @@ export default function PublicMembershipMoonCafe() {
   const [activityOpen, setActivityOpen] = useState(false)
   const [activityExpanded, setActivityExpanded] = useState(false)
   const [shareDone, setShareDone] = useState(false)
-  const [showEmailLookup, setShowEmailLookup] = useState(false)
+  const [joinStep, setJoinStep] = useState('cta') // 'cta' | 'plans' | 'email'
   const [emailInput, setEmailInput] = useState('')
   const [howOpen, setHowOpen] = useState(false)
   const [subscribeOpen, setSubscribeOpen] = useState(false)
@@ -1384,12 +1334,18 @@ export default function PublicMembershipMoonCafe() {
   const handleEmailLookup = (e) => {
     e.preventDefault()
     setLoggedIn(true)
-    setShowEmailLookup(false)
+    setJoinStep('cta')
     setEmailInput('')
   }
 
+  const handleJoinFree = () => {
+    setTierId(BASIC_TIER.id)
+    setLoggedIn(true)
+    toast.success('¡Bienvenido a Moon Club! Ya eres socio nivel Básico.')
+  }
+
   const handleRedeemSuccess = (benefit) => {
-    if (benefit.use_type === 'monthly') setRedeemedMonthly((prev) => new Set([...prev, benefit.id]))
+    if (isPeriodicUse(benefit)) setRedeemedMonthly((prev) => new Set([...prev, benefit.id]))
     if (benefit.use_type === 'onetime') setRedeemedOnetime((prev) => new Set([...prev, benefit.id]))
   }
 
@@ -1416,21 +1372,6 @@ export default function PublicMembershipMoonCafe() {
               {PROGRAM.brand}
             </p>
           </div>
-        </div>
-        {/* Ticker */}
-        <div
-          className="overflow-hidden py-1.5"
-          style={{ backgroundColor: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.1)' }}
-        >
-          <div className="flex whitespace-nowrap" style={{ animation: 'marquee 20s linear infinite' }}>
-            {[...Array(6)].map((_, i) => (
-              <span key={i} className="text-white text-xs font-medium px-8">
-                ☕ Cappuccino artesanal · 🥐 Medialunas de manteca · 🍵 Matcha latte · ❄️ Cold brew · 🎉 Eventos para
-                socios · ✨ Nuevos fríos de temporada
-              </span>
-            ))}
-          </div>
-          <style>{`@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }`}</style>
         </div>
       </div>
 
@@ -1584,17 +1525,17 @@ export default function PublicMembershipMoonCafe() {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl p-4 border sm:max-w-lg sm:mx-auto"
+            className="rounded-2xl border overflow-hidden sm:max-w-2xl sm:mx-auto"
             style={{ backgroundColor: `${COLOR}08`, borderColor: `${COLOR}20` }}
           >
             <AnimatePresence mode="wait">
-              {!showEmailLookup ? (
+              {joinStep === 'cta' && (
                 <motion.div
                   key="cta"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="flex flex-col sm:flex-row sm:items-center gap-3"
+                  className="p-4 flex flex-col sm:flex-row sm:items-center gap-3"
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div
@@ -1609,7 +1550,7 @@ export default function PublicMembershipMoonCafe() {
                         Accede a beneficios exclusivos y comercios aliados.
                       </p>
                       <button
-                        onClick={() => setShowEmailLookup(true)}
+                        onClick={() => setJoinStep('email')}
                         className="text-xs mt-1.5 font-medium underline underline-offset-2"
                         style={{ color: COLOR }}
                       >
@@ -1618,20 +1559,100 @@ export default function PublicMembershipMoonCafe() {
                     </div>
                   </div>
                   <button
-                    onClick={() => setShowEmailLookup(true)}
+                    onClick={() => setJoinStep('plans')}
                     className="w-full sm:w-auto text-center text-sm font-bold px-4 py-2.5 rounded-xl text-white"
                     style={{ backgroundColor: COLOR }}
                   >
                     Unirme →
                   </button>
                 </motion.div>
-              ) : (
+              )}
+              {joinStep === 'plans' && (
+                <motion.div
+                  key="plans"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="p-4 space-y-3"
+                >
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm leading-tight">Únete a Moon Club</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Elige cómo quieres empezar. Puedes subir de nivel cuando quieras.
+                    </p>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <div className="rounded-xl border-2 border-gray-200 bg-white p-4 flex flex-col gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">{BASIC_TIER.name}</p>
+                        <p className="text-2xl font-black text-gray-900 mt-0.5">Gratis</p>
+                      </div>
+                      <ul className="space-y-1.5 flex-1">
+                        {BASIC_INCLUDED.map((item) => (
+                          <li key={item} className="flex items-start gap-2 text-xs text-gray-600">
+                            <Check className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-emerald-500" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <button
+                        onClick={handleJoinFree}
+                        className="w-full h-10 rounded-xl text-sm font-bold border-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white transition-colors"
+                      >
+                        Unirme gratis
+                      </button>
+                    </div>
+                    <div
+                      className="relative rounded-xl border-2 bg-white p-4 flex flex-col gap-3"
+                      style={{ borderColor: COLOR }}
+                    >
+                      <span
+                        className="absolute -top-2.5 right-4 px-2 py-0.5 rounded-full text-[10px] font-bold text-white"
+                        style={{ backgroundColor: COLOR }}
+                      >
+                        Recomendado
+                      </span>
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: COLOR }}>
+                          {PREMIUM_TIER.name}
+                        </p>
+                        <p className="text-2xl font-black text-gray-900 mt-0.5">
+                          {PREMIUM_PRICE_LABEL}
+                          <span className="text-sm font-semibold text-gray-400">/{PREMIUM_PERIOD_LABEL}</span>
+                        </p>
+                      </div>
+                      <ul className="space-y-1.5 flex-1">
+                        {PREMIUM_INCLUDED.map((item) => (
+                          <li key={item} className="flex items-start gap-2 text-xs text-gray-600">
+                            <Check className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: COLOR }} />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <button
+                        onClick={() => setSubscribeOpen(true)}
+                        className="w-full h-10 rounded-xl text-sm font-bold text-white"
+                        style={{ backgroundColor: COLOR }}
+                      >
+                        Unirme con {PREMIUM_TIER.name}
+                      </button>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setJoinStep('email')}
+                    className="w-full text-center text-xs text-gray-400 hover:text-gray-600 underline underline-offset-2 pt-1"
+                  >
+                    ¿Ya eres socio? Ingresa con tu email →
+                  </button>
+                </motion.div>
+              )}
+              {joinStep === 'email' && (
                 <motion.div
                   key="email"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="space-y-2"
+                  className="p-4 space-y-2"
                 >
                   <div className="flex items-center gap-2">
                     <Mail className="w-4 h-4 flex-shrink-0" style={{ color: COLOR }} />
@@ -1656,7 +1677,7 @@ export default function PublicMembershipMoonCafe() {
                   </form>
                   <button
                     onClick={() => {
-                      setShowEmailLookup(false)
+                      setJoinStep('cta')
                       setEmailInput('')
                     }}
                     className="text-xs text-gray-400 hover:text-gray-600"
@@ -1698,7 +1719,7 @@ export default function PublicMembershipMoonCafe() {
                     },
                     {
                       step: '2',
-                      text: 'Suscríbete a Premium por $1.500/mes para desbloquear todos los beneficios y comercios adheridos.',
+                      text: `Suscríbete a ${PREMIUM_TIER.name} por ${PREMIUM_PRICE_LABEL}/${PREMIUM_PERIOD_LABEL} para desbloquear todos los beneficios y comercios adheridos.`,
                     },
                     { step: '3', text: 'Genera un cupón por cada beneficio y preséntalo en caja para usarlo.' },
                   ].map((s) => (

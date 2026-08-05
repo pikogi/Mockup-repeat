@@ -10,7 +10,9 @@ import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { useLanguage } from '@/components/auth/LanguageContext'
-import { MOONCAFE_CLUBS, POINTS_TYPE_ID } from '@/constants/moonCafeClubs'
+import { MOONCAFE_CLUBS, POINTS_TYPE_ID, MEMBERSHIP_TYPE_ID } from '@/constants/moonCafeClubs'
+
+const MEMBERSHIP_PREVIEW_URL = '/membership/moon-cafe-demo'
 
 const TYPE_BADGE = {
   '7aedc7a8-b1c9-4fa3-a0b0-4ea74b6fc151': {
@@ -35,6 +37,7 @@ function DemoClubCard({ card, onEdit, onCatalog }) {
   const [line1, line2] = splitTwoLines(card.club_name)
   const badge = TYPE_BADGE[card.program_type_id]
   const isPoints = card.program_type_id === POINTS_TYPE_ID
+  const isMembership = card.program_type_id === MEMBERSHIP_TYPE_ID
 
   const handleNotAvailable = () => toast.info('Esto es una demo — esta acción no está disponible.')
 
@@ -91,7 +94,12 @@ function DemoClubCard({ card, onEdit, onCatalog }) {
 
             {/* Actions */}
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" className="gap-2 h-9" onClick={handleNotAvailable}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 h-9"
+                onClick={isMembership ? () => window.open(MEMBERSHIP_PREVIEW_URL, '_blank') : handleNotAvailable}
+              >
                 <Eye className="w-4 h-4" /> Preview
               </Button>
               <Button variant="outline" size="sm" className="gap-2 h-9" onClick={() => onEdit(card)}>

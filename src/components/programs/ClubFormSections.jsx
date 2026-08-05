@@ -776,15 +776,18 @@ export function ColorPickerGroup({ formData, setFormData }) {
   )
 }
 
-export function ValiditySection({ formData, setFormData, getValidityTermsText }) {
+export function ValiditySection({ formData, setFormData, getValidityTermsText, programTypeId }) {
   const { t } = useLanguage()
+  const isMembership = programTypeId === MEMBERSHIP_TYPE_ID
 
   return (
     <div className="border-t pt-6 pb-6">
       <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('validityAndTerms')}</h3>
       <div className="flex flex-col gap-4">
         <div className="space-y-2">
-          <Label htmlFor="validity_stamps">{t('stampsValidity')}</Label>
+          <Label htmlFor="validity_stamps">
+            {isMembership ? 'Vigencia de membresía inactiva' : t('stampsValidity')}
+          </Label>
           <div className="relative">
             <Input
               id="validity_stamps"
@@ -794,8 +797,8 @@ export function ValiditySection({ formData, setFormData, getValidityTermsText })
               onChange={(e) => {
                 const newDays = parseInt(e.target.value) || 0
                 setFormData((prev) => {
-                  const prevAutoText = getValidityTermsText(prev.validity_stamps_days || 0)
-                  const newAutoText = getValidityTermsText(newDays)
+                  const prevAutoText = getValidityTermsText(prev.validity_stamps_days || 0, programTypeId)
+                  const newAutoText = getValidityTermsText(newDays, programTypeId)
                   const shouldUpdateTerms = !prev.terms || prev.terms === prevAutoText
                   return {
                     ...prev,
@@ -811,7 +814,11 @@ export function ValiditySection({ formData, setFormData, getValidityTermsText })
               {t('days')}
             </span>
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400">{t('noTimeLimit')}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            {isMembership
+              ? `Días sin actividad antes de considerar vencida una membresía inactiva. ${t('noTimeLimit')}`
+              : t('noTimeLimit')}
+          </p>
         </div>
       </div>
     </div>
@@ -1021,15 +1028,18 @@ export function CustomerDataFields({ formData, setFormData }) {
   )
 }
 
-export function SecuritySection({ formData, setFormData }) {
+export function SecuritySection({ formData, setFormData, programTypeId }) {
   const { t } = useLanguage()
+  const isMembership = programTypeId === MEMBERSHIP_TYPE_ID
 
   return (
     <div className="border-t pt-6 pb-6">
       <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('securityAndFraud')}</h3>
       <div className="grid gap-4">
         <div className="space-y-2">
-          <Label htmlFor="cooldown">{t('cooldownTime')}</Label>
+          <Label htmlFor="cooldown">
+            {isMembership ? 'Tiempo de espera entre canjes del mismo beneficio (horas)' : t('cooldownTime')}
+          </Label>
           <Input
             id="cooldown"
             type="number"
@@ -1039,7 +1049,11 @@ export function SecuritySection({ formData, setFormData }) {
             placeholder="0"
             className="h-12"
           />
-          <p className="text-sm text-gray-500 dark:text-gray-400">{t('cooldownTimeDesc')}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {isMembership
+              ? 'Evita que un mismo socio canjee el mismo beneficio varias veces seguidas'
+              : t('cooldownTimeDesc')}
+          </p>
         </div>
 
         <div className="flex items-start justify-between gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
@@ -1141,10 +1155,10 @@ export function BusinessInfoSection({ formData, setFormData, setIsFlipped }) {
           onFocus={() => setIsFlipped(true)}
           placeholder={t('termsPlaceholder')}
           rows={3}
-          maxLength={300}
+          maxLength={500}
         />
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          {formData.terms?.length || 0}/300 {t('formCharacters')}
+          {formData.terms?.length || 0}/500 {t('formCharacters')}
         </p>
       </div>
     </>
@@ -1676,13 +1690,19 @@ export function CouponConfigSection({ formData, setFormData }) {
   )
 }
 
-const TIER_COLOR_PRESETS = ['#cd7f32', '#9ca3af', '#f59e0b', '#7c3aed', '#0ea5e9', '#ec4899']
+const TIER_COLOR_PRESETS = ['#f43f5e', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#8b5cf6', '#ec4899', '#3b82f6']
 
 const USE_TYPES = [
   { value: 'unlimited', label: 'Ilimitado', desc: 'Sin restricción de uso' },
-  { value: 'monthly', label: '1x por mes', desc: 'Se renueva cada mes' },
+  { value: 'limited', label: 'Cantidad limitada', desc: 'Define cuántas veces y cada cuántos días' },
   { value: 'onetime', label: '1 solo uso', desc: 'Se canjea una sola vez' },
 ]
+
+function formatUseType(item) {
+  if (item.use_type === 'limited') return `${item.use_limit_count || 1}x cada ${item.use_limit_days || 30} días`
+  if (item.use_type === 'monthly') return '1x cada 30 días' // legacy value, kept for backward compatibility
+  return USE_TYPES.find((u) => u.value === item.use_type)?.label || ''
+}
 
 export function MembershipConfigSection({ formData, setFormData }) {
   const [newTier, setNewTier] = useState({
@@ -1696,6 +1716,8 @@ export function MembershipConfigSection({ formData, setFormData }) {
     name: '',
     description: '',
     use_type: 'unlimited',
+    use_limit_count: 1,
+    use_limit_days: 30,
     tier_required: 'all',
   })
   const [benefitImagePreview, setBenefitImagePreview] = useState(null)
@@ -1781,6 +1803,8 @@ export function MembershipConfigSection({ formData, setFormData }) {
                 name: newBenefit.name.trim(),
                 description: newBenefit.description.trim(),
                 use_type: newBenefit.use_type,
+                use_limit_count: parseInt(newBenefit.use_limit_count) || 1,
+                use_limit_days: parseInt(newBenefit.use_limit_days) || 30,
                 tier_required: newBenefit.tier_required,
                 image_url: benefitImagePreview ?? b.image_url,
               }
@@ -1794,12 +1818,21 @@ export function MembershipConfigSection({ formData, setFormData }) {
         name: newBenefit.name.trim(),
         description: newBenefit.description.trim(),
         use_type: newBenefit.use_type,
+        use_limit_count: parseInt(newBenefit.use_limit_count) || 1,
+        use_limit_days: parseInt(newBenefit.use_limit_days) || 30,
         tier_required: newBenefit.tier_required,
         image_url: benefitImagePreview || null,
       }
       setFormData((prev) => ({ ...prev, membership_catalog: [...(prev.membership_catalog || []), benefit] }))
     }
-    setNewBenefit({ name: '', description: '', use_type: 'unlimited', tier_required: 'all' })
+    setNewBenefit({
+      name: '',
+      description: '',
+      use_type: 'unlimited',
+      use_limit_count: 1,
+      use_limit_days: 30,
+      tier_required: 'all',
+    })
     setBenefitImagePreview(null)
   }
 
@@ -1808,6 +1841,8 @@ export function MembershipConfigSection({ formData, setFormData }) {
       name: benefit.name,
       description: benefit.description || '',
       use_type: benefit.use_type,
+      use_limit_count: benefit.use_limit_count || 1,
+      use_limit_days: benefit.use_limit_days || 30,
       tier_required: benefit.tier_required,
     })
     setBenefitImagePreview(benefit.image_url || null)
@@ -1817,7 +1852,14 @@ export function MembershipConfigSection({ formData, setFormData }) {
 
   const handleCancelBenefitEdit = () => {
     setEditingBenefitId(null)
-    setNewBenefit({ name: '', description: '', use_type: 'unlimited', tier_required: 'all' })
+    setNewBenefit({
+      name: '',
+      description: '',
+      use_type: 'unlimited',
+      use_limit_count: 1,
+      use_limit_days: 30,
+      tier_required: 'all',
+    })
     setBenefitImagePreview(null)
   }
 
@@ -2009,7 +2051,7 @@ export function MembershipConfigSection({ formData, setFormData }) {
                 type="button"
                 onClick={handleAddTier}
                 disabled={!newTier.name.trim() || newTier.min_spend === ''}
-                className="flex-1 gap-2 bg-violet-500 hover:bg-violet-600 text-white"
+                className="flex-1 gap-2 bg-black hover:bg-neutral-800 text-white"
               >
                 {editingTierId !== null ? (
                   <>
@@ -2177,6 +2219,26 @@ export function MembershipConfigSection({ formData, setFormData }) {
                     )
                   })}
                 </div>
+                {newBenefit.use_type === 'limited' && (
+                  <div className="flex items-center gap-2 pt-1">
+                    <Input
+                      type="number"
+                      min="1"
+                      value={newBenefit.use_limit_count}
+                      onChange={(e) => setNewBenefit((p) => ({ ...p, use_limit_count: e.target.value }))}
+                      className="h-9 w-16"
+                    />
+                    <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">veces cada</span>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={newBenefit.use_limit_days}
+                      onChange={(e) => setNewBenefit((p) => ({ ...p, use_limit_days: e.target.value }))}
+                      className="h-9 w-20"
+                    />
+                    <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">días</span>
+                  </div>
+                )}
               </div>
 
               {/* Nivel requerido */}
@@ -2212,7 +2274,7 @@ export function MembershipConfigSection({ formData, setFormData }) {
                   type="button"
                   onClick={handleAddBenefit}
                   disabled={!newBenefit.name.trim()}
-                  className="flex-1 gap-2 bg-violet-500 hover:bg-violet-600 text-white"
+                  className="flex-1 gap-2 bg-black hover:bg-neutral-800 text-white"
                 >
                   {editingBenefitId !== null ? (
                     <>
@@ -2236,7 +2298,7 @@ export function MembershipConfigSection({ formData, setFormData }) {
                   {catalog.length} {catalog.length === 1 ? 'beneficio' : 'beneficios'}
                 </p>
                 {catalog.map((benefit) => {
-                  const useType = USE_TYPES.find((u) => u.value === benefit.use_type)
+                  const useTypeLabel = formatUseType(benefit)
                   const tierInfo =
                     benefit.tier_required !== 'all' ? tiers.find((t) => t.id === benefit.tier_required) : null
                   return (
@@ -2255,7 +2317,7 @@ export function MembershipConfigSection({ formData, setFormData }) {
                         <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{benefit.name}</p>
                         <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                           <span className="text-xs px-1.5 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 font-medium">
-                            {useType?.label}
+                            {useTypeLabel}
                           </span>
                           {tierInfo ? (
                             <span
@@ -2481,6 +2543,8 @@ const DEFAULT_PARTNER = {
   description: '',
   category: 'gastronomia',
   use_type: 'unlimited',
+  use_limit_count: 1,
+  use_limit_days: 30,
   tier_required: 'all',
 }
 
@@ -2508,6 +2572,8 @@ export function PartnerBenefitsSection({ formData, setFormData }) {
                 description: newPartner.description.trim(),
                 category: newPartner.category,
                 use_type: newPartner.use_type,
+                use_limit_count: parseInt(newPartner.use_limit_count) || 1,
+                use_limit_days: parseInt(newPartner.use_limit_days) || 30,
                 tier_required: newPartner.tier_required,
                 logo_url: logoPreview ?? p.logo_url,
               }
@@ -2522,6 +2588,8 @@ export function PartnerBenefitsSection({ formData, setFormData }) {
         partner_name: newPartner.partner_name.trim(),
         benefit_name: newPartner.benefit_name.trim(),
         description: newPartner.description.trim(),
+        use_limit_count: parseInt(newPartner.use_limit_count) || 1,
+        use_limit_days: parseInt(newPartner.use_limit_days) || 30,
         logo_url: logoPreview || null,
       }
       setFormData((prev) => ({ ...prev, membership_partners: [...(prev.membership_partners || []), partner] }))
@@ -2537,6 +2605,8 @@ export function PartnerBenefitsSection({ formData, setFormData }) {
       description: partner.description || '',
       category: partner.category || 'gastronomia',
       use_type: partner.use_type,
+      use_limit_count: partner.use_limit_count || 1,
+      use_limit_days: partner.use_limit_days || 30,
       tier_required: partner.tier_required,
     })
     setLogoPreview(partner.logo_url || null)
@@ -2709,6 +2779,26 @@ export function PartnerBenefitsSection({ formData, setFormData }) {
                   )
                 })}
               </div>
+              {newPartner.use_type === 'limited' && (
+                <div className="flex items-center gap-2 pt-1">
+                  <Input
+                    type="number"
+                    min="1"
+                    value={newPartner.use_limit_count}
+                    onChange={(e) => setNewPartner((p) => ({ ...p, use_limit_count: e.target.value }))}
+                    className="h-9 w-16"
+                  />
+                  <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">veces cada</span>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={newPartner.use_limit_days}
+                    onChange={(e) => setNewPartner((p) => ({ ...p, use_limit_days: e.target.value }))}
+                    className="h-9 w-20"
+                  />
+                  <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">días</span>
+                </div>
+              )}
             </div>
 
             {/* Nivel requerido */}
@@ -2744,7 +2834,7 @@ export function PartnerBenefitsSection({ formData, setFormData }) {
                 type="button"
                 onClick={handleAddPartner}
                 disabled={!newPartner.partner_name.trim() || !newPartner.benefit_name.trim()}
-                className="flex-1 gap-2 bg-violet-500 hover:bg-violet-600 text-white"
+                className="flex-1 gap-2 bg-black hover:bg-neutral-800 text-white"
               >
                 {editingPartnerId !== null ? (
                   <>
@@ -2769,7 +2859,7 @@ export function PartnerBenefitsSection({ formData, setFormData }) {
               </p>
               {partners.map((partner) => {
                 const cat = PARTNER_CATEGORIES.find((c) => c.value === partner.category)
-                const useType = USE_TYPES.find((u) => u.value === partner.use_type)
+                const useTypeLabel = formatUseType(partner)
                 const tierInfo =
                   partner.tier_required !== 'all' ? tiers.find((t) => t.id === partner.tier_required) : null
                 const initial = partner.partner_name.charAt(0).toUpperCase()
@@ -2797,7 +2887,7 @@ export function PartnerBenefitsSection({ formData, setFormData }) {
                           </span>
                         )}
                         <span className="text-xs px-1.5 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 font-medium">
-                          {useType?.label}
+                          {useTypeLabel}
                         </span>
                         {tierInfo ? (
                           <span

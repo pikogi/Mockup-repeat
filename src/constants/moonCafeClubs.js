@@ -118,15 +118,17 @@ export const MOONCAFE_CLUBS = [
         description: 'Un café de tu elección sin costo el día de tu cumple.',
         use_type: 'onetime',
         tier_required: 'all',
-        image_url: null,
+        image_url: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&h=400&fit=crop&q=80',
       },
       {
         id: 1002,
         name: '2x1 en bebidas calientes los miércoles',
         description: 'Pides uno y te llevas dos. Válido solo los miércoles.',
-        use_type: 'monthly',
+        use_type: 'limited',
+        use_limit_count: 1,
+        use_limit_days: 30,
         tier_required: 'all',
-        image_url: null,
+        image_url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&h=400&fit=crop&q=80',
       },
       {
         id: 1003,
@@ -134,7 +136,7 @@ export const MOONCAFE_CLUBS = [
         description: 'Descuento automático en cada visita.',
         use_type: 'unlimited',
         tier_required: 'tier-premium',
-        image_url: null,
+        image_url: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&h=400&fit=crop&q=80',
       },
       {
         id: 1004,
@@ -142,7 +144,7 @@ export const MOONCAFE_CLUBS = [
         description: 'Reserva tu lugar con prioridad en cualquier sucursal.',
         use_type: 'unlimited',
         tier_required: 'tier-premium',
-        image_url: null,
+        image_url: 'https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=400&h=400&fit=crop&q=80',
       },
     ],
     membership_partners: [
@@ -182,7 +184,9 @@ export const MOONCAFE_CLUBS = [
         benefit_name: 'Corte + barba a $2.500 (valor normal $3.800)',
         description: 'Con turno previo. Sujeto a disponibilidad.',
         category: 'servicios',
-        use_type: 'monthly',
+        use_type: 'limited',
+        use_limit_count: 1,
+        use_limit_days: 30,
         tier_required: 'tier-premium',
         logo_url: null,
       },
@@ -254,5 +258,10 @@ export const MOONCAFE_CLUBS = [
   },
 ]
 
-export const getValidityTermsText = (days) =>
-  days > 0 ? `Plazo para juntar sellos: ${days} días, de lo contrario tu tarjeta vuelve a 0.` : ''
+export const getValidityTermsText = (days, programTypeId) => {
+  if (days <= 0) return ''
+  if (programTypeId === MEMBERSHIP_TYPE_ID) {
+    return `Vigencia: si tu membresía permanece inactiva por ${days} días, se considera vencida y deja de dar acceso a beneficios.`
+  }
+  return `Plazo para juntar sellos: ${days} días, de lo contrario tu tarjeta vuelve a 0.`
+}
