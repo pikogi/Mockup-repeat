@@ -14,6 +14,9 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
   Mail,
@@ -33,9 +36,10 @@ import {
 import { format } from 'date-fns'
 import { toast } from 'sonner'
 import { api } from '@/api/client'
-import { getTransactionErrorMessage } from '@/lib/utils'
+import { cn, getTransactionErrorMessage } from '@/lib/utils'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useLanguage } from '@/components/auth/LanguageContext'
+import { addDaysUTC } from '@/utils/date'
 
 const CONFETTI_PIECES = [
   { left: '8%', color: '#22c55e', w: 8, h: 10, rotate: 120, dur: 1.2, delay: 0 },
@@ -60,6 +64,18 @@ const CONFETTI_PIECES = [
   { left: '73%', color: '#22c55e', w: 6, h: 6, rotate: -140, dur: 1.5, delay: 0.5 },
 ]
 
+function getExpiryStatus(expiredAt) {
+  const expiryDate = new Date(expiredAt)
+  const now = new Date()
+  if (expiryDate < now) {
+    return { label: `Venció el ${format(expiryDate, 'dd MMM yyyy')}`, className: 'bg-red-50 text-red-600' }
+  }
+  if (expiryDate < addDaysUTC(now, 7)) {
+    return { label: `Vence el ${format(expiryDate, 'dd MMM yyyy')}`, className: 'bg-amber-50 text-amber-600' }
+  }
+  return { label: `Vigente hasta ${format(expiryDate, 'dd MMM yyyy')}`, className: 'bg-emerald-50 text-emerald-600' }
+}
+
 export default function CustomerDetailModal({ customer, brandId, initialData, onClose }) {
   const { t } = useLanguage()
   const queryClient = useQueryClient()
@@ -68,8 +84,25 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
   const [showRedeemSuccess, setShowRedeemSuccess] = useState(false)
   const [selectedStore, setSelectedStore] = useState(null)
   const [selectedCardId, setSelectedCardId] = useState(null)
+  const [serviceNote, setServiceNote] = useState('')
+  const [clientNotes, setClientNotes] = useState('')
 
   const userId = customer?.user_id
+
+  // Notas de cliente: sin campo en el backend todavía, se guardan solo en este dispositivo
+  useEffect(() => {
+    if (!userId) return
+    setClientNotes(localStorage.getItem(`customer_notes_${userId}`) || '')
+  }, [userId])
+
+  const handleClientNotesBlur = () => {
+    if (!userId) return
+    if (clientNotes.trim()) {
+      localStorage.setItem(`customer_notes_${userId}`, clientNotes)
+    } else {
+      localStorage.removeItem(`customer_notes_${userId}`)
+    }
+  }
 
   const { data: stores = [] } = useQuery({
     queryKey: ['stores', brandId],
@@ -135,11 +168,11 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
 
   // Mismo flujo que ScanQR: transactions.create + regenerar imagen
   const addStampMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (serviceNote) => {
       if (!selectedStore) throw new Error(t('customerSelectStoreFirst'))
       if (!autoSelectedCardId) throw new Error(t('customerCardNotFound'))
 
-      await api.transactions.create(autoSelectedCardId, selectedStore, 'stamp_added', 'stamp', 1)
+      await api.transactions.create(autoSelectedCardId, selectedStore, 'stamp_added', 'stamp', 1, serviceNote || null)
 
       const programId = activeCard?.program?.program_id
       if (programId) {
@@ -168,6 +201,7 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
       queryClient.invalidateQueries({ queryKey: ['brandUsers'] })
       setIsConfirming(false)
       setShowSuccess(true)
+      setServiceNote('')
     },
     onError: (err) => {
       setIsConfirming(false)
@@ -371,6 +405,17 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                     {activeCard.program?.program_rules?.unit_label ?? t('stampPlural')}
                   </p>
                 </Card>
+                {activeCard.expired_at &&
+                  (() => {
+                    const expiry = getExpiryStatus(activeCard.expired_at)
+                    return (
+                      <span
+                        className={cn('inline-block text-xs font-semibold px-3 py-1.5 rounded-full', expiry.className)}
+                      >
+                        {expiry.label}
+                      </span>
+                    )
+                  })()}
               </div>
             ) : null}
 
@@ -413,14 +458,21 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                   {[...activeCard.transactions]
                     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
                     .map((tx) => (
-                      <div key={tx.transaction_id} className="flex items-center justify-between px-3 py-2">
-                        <div className="flex items-center gap-2">
-                          <Stamp className="w-3.5 h-3.5 text-amber-500" />
-                          <span className="text-sm text-gray-700 dark:text-gray-300">
-                            {tx.transaction_type === 'stamp_added' ? t('customerStampAdded') : tx.transaction_type}
-                          </span>
+                      <div key={tx.transaction_id} className="flex items-start justify-between gap-2 px-3 py-2">
+                        <div className="flex items-start gap-2 min-w-0">
+                          <Stamp className="w-3.5 h-3.5 text-amber-500 mt-0.5 flex-shrink-0" />
+                          <div className="min-w-0">
+                            <span className="text-sm text-gray-700 dark:text-gray-300 block">
+                              {tx.transaction_type === 'stamp_added' ? t('customerStampAdded') : tx.transaction_type}
+                            </span>
+                            {tx.notes && (
+                              <span className="text-xs text-gray-400 dark:text-gray-500 block truncate">
+                                {tx.notes}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <span className="text-xs text-gray-400 dark:text-gray-500 tabular-nums">
+                        <span className="text-xs text-gray-400 dark:text-gray-500 tabular-nums flex-shrink-0">
                           {format(new Date(tx.created_at), 'dd MMM yyyy, HH:mm')}
                         </span>
                       </div>
@@ -428,6 +480,19 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                 </Card>
               </div>
             )}
+
+            {/* Notas del cliente (preferencias) — sin campo en backend, se guarda en este dispositivo */}
+            <div>
+              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Notas del cliente</h4>
+              <Textarea
+                value={clientNotes}
+                onChange={(e) => setClientNotes(e.target.value)}
+                onBlur={handleClientNotesBlur}
+                placeholder="Ej: prefiere corte con máquina 2, café sin azúcar, barbero de preferencia..."
+                rows={3}
+              />
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Se guarda solo en este dispositivo.</p>
+            </div>
 
             {/* Store indicator / selector */}
             {stores.length > 0 && (
@@ -484,9 +549,22 @@ export default function CustomerDetailModal({ customer, brandId, initialData, on
                     {t('customerAddStampConfirmSuffix')}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
+                <div className="space-y-1.5 py-2">
+                  <Label htmlFor="service-note" className="text-xs text-gray-500">
+                    ¿Qué servicio? (opcional)
+                  </Label>
+                  <Input
+                    id="service-note"
+                    value={serviceNote}
+                    onChange={(e) => setServiceNote(e.target.value)}
+                    placeholder="Ej: Corte + barba"
+                  />
+                </div>
                 <AlertDialogFooter>
                   <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => addStampMutation.mutate()}>{t('confirm')}</AlertDialogAction>
+                  <AlertDialogAction onClick={() => addStampMutation.mutate(serviceNote)}>
+                    {t('confirm')}
+                  </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
