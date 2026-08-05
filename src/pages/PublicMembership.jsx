@@ -23,6 +23,7 @@ import {
   Gift,
   Clock,
   Users,
+  CreditCard,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -326,8 +327,8 @@ const MOCK_BARBER = {
 
 const TIERS_BARBER = [
   { id: 't1', name: 'Regular', min_spend: 0, color: '#78716c' },
-  { id: 't2', name: 'VIP', min_spend: 20000, color: '#f59e0b' },
-  { id: 't3', name: 'Black', min_spend: 60000, color: '#111' },
+  { id: 't2', name: 'VIP', min_spend: 20000, color: '#f59e0b', sub_price: 8000, sub_period: 'monthly' },
+  { id: 't3', name: 'Black', min_spend: 60000, color: '#111', sub_price: 15000, sub_period: 'monthly' },
 ]
 
 const CATALOG_BARBER = [
@@ -991,6 +992,210 @@ function BenefitCard({ benefit, color, accessible, redeemedMonthly, redeemedOnet
   )
 }
 
+// ─── Suscripción a un tier pago (compra directa, sin pasar por gasto mínimo) ───
+
+const PERIOD_LABEL = { monthly: 'mes', annual: 'año' }
+
+function SubscribeDrawer({ tier, program, catalog, color, onClose, onSuccess }) {
+  const [step, setStep] = useState('plan')
+  const [loading, setLoading] = useState(false)
+
+  const periodLabel = PERIOD_LABEL[tier.sub_period] ?? tier.sub_period
+  const includedBenefits = catalog.filter((b) => b.tier_required === tier.id).slice(0, 5)
+
+  const handleConfirm = () => {
+    setLoading(true)
+    setTimeout(() => {
+      setLoading(false)
+      setStep('success')
+    }, 1600)
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
+      style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+      onClick={step !== 'success' ? onClose : undefined}
+    >
+      <motion.div
+        initial={{ y: 80, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 80, opacity: 0 }}
+        transition={{ type: 'spring', damping: 30, stiffness: 320 }}
+        className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <AnimatePresence mode="wait">
+          {step === 'plan' && (
+            <motion.div key="plan" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <div className="relative px-5 pt-5 pb-6" style={{ backgroundColor: tier.color }}>
+                <button
+                  onClick={onClose}
+                  className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                >
+                  <X className="w-4 h-4 text-white" />
+                </button>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
+                    <Crown className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-white font-bold text-base leading-tight">
+                      {program.name} {tier.name}
+                    </p>
+                    <p className="text-white/60 text-xs mt-0.5">Desbloqueá todos los beneficios</p>
+                  </div>
+                </div>
+                <div className="flex items-end gap-1">
+                  <span className="text-4xl font-black text-white">${tier.sub_price.toLocaleString('es-AR')}</span>
+                  <span className="text-white/60 text-sm mb-1">/{periodLabel}</span>
+                </div>
+                <p className="text-white/50 text-xs mt-1">Cancelás cuando quieras. Sin permanencia.</p>
+              </div>
+              <div className="px-5 py-5 space-y-3">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Incluye</p>
+                {includedBenefits.map((benefit) => (
+                  <div key={benefit.id} className="flex items-center gap-3">
+                    <div
+                      className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: `${color}15` }}
+                    >
+                      <Check className="w-3 h-3" style={{ color }} />
+                    </div>
+                    <span className="text-sm text-gray-700">{benefit.name}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="px-5 pb-5">
+                <Button
+                  className="w-full h-12 rounded-2xl font-bold text-white"
+                  style={{ backgroundColor: color }}
+                  onClick={() => setStep('pay')}
+                >
+                  Continuar
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
+          {step === 'pay' && (
+            <motion.div
+              key="pay"
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -30 }}
+            >
+              <div className="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-gray-100">
+                <button
+                  onClick={() => setStep('plan')}
+                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4 text-gray-500" />
+                </button>
+                <p className="font-semibold text-gray-900">Confirmar suscripción</p>
+              </div>
+              <div className="px-5 py-5 space-y-4">
+                <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Plan</span>
+                    <span className="font-semibold text-gray-900">
+                      {program.name} {tier.name}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Facturación</span>
+                    <span className="font-semibold text-gray-900">
+                      {tier.sub_period === 'annual' ? 'Anual' : 'Mensual'}
+                    </span>
+                  </div>
+                  <div className="border-t border-gray-200 pt-2 flex justify-between">
+                    <span className="text-sm font-semibold text-gray-700">Total hoy</span>
+                    <span className="text-sm font-black text-gray-900">${tier.sub_price.toLocaleString('es-AR')}</span>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Método de pago</p>
+                  <div
+                    className="rounded-2xl border-2 p-3.5 flex items-center gap-3"
+                    style={{ borderColor: `${color}50`, backgroundColor: `${color}06` }}
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center flex-shrink-0">
+                      <CreditCard className="w-4 h-4 text-gray-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-gray-900">Visa •••• 4242</p>
+                      <p className="text-xs text-gray-400">Vence 08/27</p>
+                    </div>
+                    <Check className="w-4 h-4 flex-shrink-0" style={{ color }} />
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 text-center leading-relaxed">
+                  Al confirmar, autorizás el cobro de <strong>${tier.sub_price.toLocaleString('es-AR')}</strong> hoy y
+                  cada {periodLabel} hasta cancelar.
+                </p>
+                <Button
+                  className="w-full h-12 rounded-xl font-semibold text-white flex items-center justify-center gap-2"
+                  style={{ backgroundColor: color }}
+                  disabled={loading}
+                  onClick={handleConfirm}
+                >
+                  {loading ? (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
+                      className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full"
+                    />
+                  ) : (
+                    'Confirmar suscripción'
+                  )}
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
+          {step === 'success' && (
+            <motion.div
+              key="success"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="p-8 text-center space-y-4"
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', damping: 15, stiffness: 200, delay: 0.1 }}
+                className="w-20 h-20 rounded-full flex items-center justify-center mx-auto"
+                style={{ backgroundColor: tier.color }}
+              >
+                <CheckCircle2 className="w-10 h-10 text-white" />
+              </motion.div>
+              <div>
+                <p className="text-2xl font-black text-gray-900">¡Ya sos {tier.name}!</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  Tu suscripción está activa. Todos tus beneficios están desbloqueados.
+                </p>
+              </div>
+              <Button
+                className="w-full h-11 rounded-xl font-semibold text-white"
+                style={{ backgroundColor: color }}
+                onClick={() => {
+                  onSuccess()
+                  onClose()
+                }}
+              >
+                Ver mis beneficios
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </motion.div>
+  )
+}
+
 // ─── Página principal ──────────────────────────────────────────────────────────
 
 export default function PublicMembership() {
@@ -1045,8 +1250,6 @@ export default function PublicMembership() {
   const color = program.brand_color
 
   const totalSpend = isMember ? memberData.total_spend : 0
-  const currentTier = getTierForSpend(tiers, totalSpend)
-  const nextTier = getNextTier(tiers, currentTier)
 
   const [redeemedMonthly, setRedeemedMonthly] = useState(isMember ? new Set(memberData.redeemed_monthly) : new Set())
   const [redeemedOnetime, setRedeemedOnetime] = useState(isMember ? new Set(memberData.redeemed_onetime) : new Set())
@@ -1057,6 +1260,14 @@ export default function PublicMembership() {
   const [activityExpanded, setActivityExpanded] = useState(false)
   const [showEmailLookup, setShowEmailLookup] = useState(false)
   const [emailInput, setEmailInput] = useState('')
+  const [subscribedTierId, setSubscribedTierId] = useState(null)
+  const [subscribeDrawerTier, setSubscribeDrawerTier] = useState(null)
+
+  // Comprar un tier directamente (sub_price) omite el requisito de gasto mínimo
+  const currentTier = subscribedTierId
+    ? tiers.find((t) => t.id === subscribedTierId)
+    : getTierForSpend(tiers, totalSpend)
+  const nextTier = getNextTier(tiers, currentTier)
 
   const handleRedeemSuccess = (benefit) => {
     if (benefit.use_type === 'monthly') setRedeemedMonthly((prev) => new Set([...prev, benefit.id]))
@@ -1314,6 +1525,16 @@ export default function PublicMembership() {
                     {nextTier.name}
                   </span>
                 </div>
+                {nextTier.sub_price != null && (
+                  <button
+                    onClick={() => setSubscribeDrawerTier(nextTier)}
+                    className="w-full mt-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 transition-colors text-white text-xs font-semibold"
+                  >
+                    <Crown className="w-3.5 h-3.5" />
+                    Hacerte socio {nextTier.name} ahora · ${nextTier.sub_price.toLocaleString('es-AR')}/
+                    {PERIOD_LABEL[nextTier.sub_period] ?? nextTier.sub_period}
+                  </button>
+                )}
               </div>
             )}
             {!nextTier && tiers.length > 0 && (
@@ -1539,6 +1760,20 @@ export default function PublicMembership() {
               handleRedeemSuccess(benefit)
               // modal remains open to show success step
             }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Suscripción directa a un tier pago */}
+      <AnimatePresence>
+        {subscribeDrawerTier && (
+          <SubscribeDrawer
+            tier={subscribeDrawerTier}
+            program={program}
+            catalog={catalog}
+            color={color}
+            onClose={() => setSubscribeDrawerTier(null)}
+            onSuccess={() => setSubscribedTierId(subscribeDrawerTier.id)}
           />
         )}
       </AnimatePresence>
