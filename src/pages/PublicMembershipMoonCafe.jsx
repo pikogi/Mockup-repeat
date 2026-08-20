@@ -65,16 +65,33 @@ const PARTNERS = CLUB.membership_partners.map((p) => ({
 const POSTS = CLUB.novedades
 
 const PREMIUM_TIER = TIERS.find((t) => t.sub_price) || TIERS[TIERS.length - 1]
-const PREMIUM_PLAN_NAME = `${PROGRAM.name} ${PREMIUM_TIER.name}`
 const PREMIUM_PRICE_LABEL = PREMIUM_TIER.sub_price ? `$${PREMIUM_TIER.sub_price.toLocaleString('es-AR')}` : ''
 const PREMIUM_PERIOD_LABEL = PREMIUM_TIER.sub_period === 'monthly' ? 'mes' : PREMIUM_TIER.sub_period || 'mes'
-const PREMIUM_INCLUDED = [
-  ...BENEFITS.filter((b) => b.tier_required === 'all' || b.tier_required === PREMIUM_TIER.id).map((b) => b.name),
-  'Descuentos en comercios adheridos',
-]
 
 const BASIC_TIER = TIERS.find((t) => !t.sub_price) || TIERS[0]
 const BASIC_INCLUDED = BENEFITS.filter((b) => b.tier_required === 'all').map((b) => b.name)
+
+// Every paid plan a member can subscribe to directly (skipping the spend requirement),
+// ordered cheapest first so it reads as an upgrade path in the checkout drawer.
+const PAID_TIERS = TIERS.filter((t) => t.sub_price).sort((a, b) => a.sub_price - b.sub_price)
+
+function periodLabel(tier) {
+  return tier.sub_period === 'annual' ? 'año' : 'mes'
+}
+
+// Benefits included in a given tier also include everything unlocked by lower tiers,
+// matching the hierarchy check used for logged-in members (see isAccessible).
+function includedBenefitNames(tier) {
+  const tierIndex = TIERS.indexOf(tier)
+  return [
+    ...BENEFITS.filter((b) => {
+      if (b.tier_required === 'all') return true
+      const requiredIndex = TIERS.findIndex((t) => t.id === b.tier_required)
+      return requiredIndex !== -1 && requiredIndex <= tierIndex
+    }).map((b) => b.name),
+    'Descuentos en comercios adheridos',
+  ]
+}
 
 const ACTIVITY = [
   { id: 1, type: 'visit', label: 'Visita — Cappuccino + medialunas', date: '9 jul 2026' },
@@ -139,6 +156,13 @@ function getUseTypeMeta(item) {
 function SubscribeDrawer({ onClose, onSuccess }) {
   const [step, setStep] = useState('plan')
   const [loading, setLoading] = useState(false)
+  const [selectedTierId, setSelectedTierId] = useState(PAID_TIERS[0]?.id)
+
+  const selectedTier = PAID_TIERS.find((t) => t.id === selectedTierId) || PAID_TIERS[0]
+  const selectedPeriod = periodLabel(selectedTier)
+  const selectedPriceLabel = `$${selectedTier.sub_price.toLocaleString('es-AR')}`
+  const selectedPlanName = `${PROGRAM.name} ${selectedTier.name}`
+  const selectedIncluded = includedBenefitNames(selectedTier)
 
   const handleConfirm = () => {
     setLoading(true)
@@ -178,7 +202,7 @@ function SubscribeDrawer({ onClose, onSuccess }) {
                 >
                   <X className="w-4 h-4 text-white" />
                 </button>
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-3">
                   <div
                     className="w-10 h-10 rounded-xl flex items-center justify-center"
                     style={{ backgroundColor: 'rgba(245,158,11,0.2)' }}
@@ -186,19 +210,56 @@ function SubscribeDrawer({ onClose, onSuccess }) {
                     <Crown className="w-5 h-5 text-yellow-400" />
                   </div>
                   <div>
-                    <p className="text-white font-bold text-base leading-tight">{PREMIUM_PLAN_NAME}</p>
-                    <p className="text-white/50 text-xs mt-0.5">Desbloquea todos los beneficios</p>
+                    <p className="text-white font-bold text-base leading-tight">Elegí tu plan</p>
+                    <p className="text-white/50 text-xs mt-0.5">Desbloquea beneficios exclusivos al instante</p>
                   </div>
                 </div>
-                <div className="flex items-end gap-1">
-                  <span className="text-4xl font-black text-white">{PREMIUM_PRICE_LABEL}</span>
-                  <span className="text-white/60 text-sm mb-1">/{PREMIUM_PERIOD_LABEL}</span>
-                </div>
-                <p className="text-white/40 text-xs mt-1">Cancelas cuando quieras. Sin permanencia.</p>
               </div>
+
+              <div className="px-5 pt-4 space-y-2.5">
+                {PAID_TIERS.map((tier) => {
+                  const isSelected = tier.id === selectedTierId
+                  return (
+                    <button
+                      key={tier.id}
+                      type="button"
+                      onClick={() => setSelectedTierId(tier.id)}
+                      className={`w-full flex items-center gap-3 p-3.5 rounded-2xl border-2 text-left transition-all ${
+                        isSelected ? '' : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                      style={isSelected ? { borderColor: COLOR, backgroundColor: `${COLOR}0a` } : undefined}
+                    >
+                      <div
+                        className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: tier.color }}
+                      >
+                        <Crown className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-gray-900">{tier.name}</p>
+                        <p className="text-xs text-gray-400">
+                          ${tier.sub_price.toLocaleString('es-AR')}/{periodLabel(tier)}
+                        </p>
+                      </div>
+                      <div
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                          isSelected ? '' : 'border-gray-300'
+                        }`}
+                        style={isSelected ? { borderColor: COLOR, backgroundColor: COLOR } : undefined}
+                      >
+                        {isSelected && <Check className="w-3 h-3 text-white" />}
+                      </div>
+                    </button>
+                  )
+                })}
+                <p className="text-gray-400 text-xs">Cancelas cuando quieras. Sin permanencia.</p>
+              </div>
+
               <div className="px-5 py-5 space-y-3">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Incluye</p>
-                {PREMIUM_INCLUDED.map((item) => (
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                  Incluye con {selectedTier.name}
+                </p>
+                {selectedIncluded.map((item) => (
                   <div key={item} className="flex items-center gap-3">
                     <div
                       className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
@@ -216,7 +277,7 @@ function SubscribeDrawer({ onClose, onSuccess }) {
                   style={{ backgroundColor: COLOR }}
                   onClick={() => setStep('pay')}
                 >
-                  Continuar
+                  Continuar con {selectedTier.name} · {selectedPriceLabel}/{selectedPeriod}
                 </Button>
               </div>
             </motion.div>
@@ -242,17 +303,17 @@ function SubscribeDrawer({ onClose, onSuccess }) {
                 <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Plan</span>
-                    <span className="font-semibold text-gray-900">{PREMIUM_PLAN_NAME}</span>
+                    <span className="font-semibold text-gray-900">{selectedPlanName}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Facturación</span>
                     <span className="font-semibold text-gray-900">
-                      {PREMIUM_PERIOD_LABEL === 'mes' ? 'Mensual' : PREMIUM_PERIOD_LABEL}
+                      {selectedPeriod === 'mes' ? 'Mensual' : 'Anual'}
                     </span>
                   </div>
                   <div className="border-t border-gray-200 pt-2 flex justify-between">
                     <span className="text-sm font-semibold text-gray-700">Total hoy</span>
-                    <span className="text-sm font-black text-gray-900">{PREMIUM_PRICE_LABEL}</span>
+                    <span className="text-sm font-black text-gray-900">{selectedPriceLabel}</span>
                   </div>
                 </div>
                 <div>
@@ -272,8 +333,8 @@ function SubscribeDrawer({ onClose, onSuccess }) {
                   </div>
                 </div>
                 <p className="text-xs text-gray-400 text-center leading-relaxed">
-                  Al confirmar, autorizas el cobro de <strong>{PREMIUM_PRICE_LABEL}</strong> hoy y cada{' '}
-                  {PREMIUM_PERIOD_LABEL} hasta cancelar.
+                  Al confirmar, autorizas el cobro de <strong>{selectedPriceLabel}</strong> hoy y cada {selectedPeriod}{' '}
+                  hasta cancelar.
                 </p>
                 <Button
                   className="w-full h-12 rounded-xl font-semibold text-white flex items-center justify-center gap-2"
@@ -312,7 +373,7 @@ function SubscribeDrawer({ onClose, onSuccess }) {
                 <CheckCircle2 className="w-10 h-10 text-white" />
               </motion.div>
               <div>
-                <p className="text-2xl font-black text-gray-900">¡Ya eres Premium!</p>
+                <p className="text-2xl font-black text-gray-900">¡Ya eres {selectedTier.name}!</p>
                 <p className="text-sm text-gray-500 mt-1">
                   Tu suscripción está activa. Todos tus beneficios están desbloqueados.
                 </p>
@@ -321,7 +382,7 @@ function SubscribeDrawer({ onClose, onSuccess }) {
                 className="w-full h-11 rounded-xl font-semibold text-white"
                 style={{ backgroundColor: COLOR }}
                 onClick={() => {
-                  onSuccess()
+                  onSuccess(selectedTier.id)
                   onClose()
                 }}
               >
@@ -1316,7 +1377,7 @@ export default function PublicMembershipMoonCafe() {
   const [subscribeOpen, setSubscribeOpen] = useState(false)
 
   const currentTier = TIERS.find((t) => t.id === tierId) || TIERS[0]
-  const isPremium = tierId === 'tier-premium'
+  const isPaidMember = !!currentTier.sub_price
   const accessible = BENEFITS.filter((b) => loggedIn && isAccessible(b, tierId))
 
   const handleShare = async () => {
@@ -1405,15 +1466,15 @@ export default function PublicMembershipMoonCafe() {
             </div>
 
             {/* Upgrade or active status */}
-            {!isPremium ? (
+            {!isPaidMember ? (
               <div className="space-y-1.5">
                 <div className="h-2 rounded-full bg-white/20 overflow-hidden">
                   <div className="h-full w-0 rounded-full bg-amber-400/60" />
                 </div>
                 <div className="flex items-center justify-between text-white text-xs opacity-70">
                   <span>
-                    Desbloquea <span className="font-bold opacity-100 text-amber-300">todos los beneficios</span> con
-                    Premium
+                    Desbloquea <span className="font-bold opacity-100 text-amber-300">todos los beneficios</span> con un
+                    plan pago
                   </span>
                   <button
                     onClick={() => setSubscribeOpen(true)}
@@ -1428,7 +1489,7 @@ export default function PublicMembershipMoonCafe() {
             ) : (
               <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10">
                 <CheckCircle2 className="w-4 h-4 text-yellow-400 flex-shrink-0" />
-                <span className="text-white text-xs font-medium">Premium activo · Se renueva el 17 jul</span>
+                <span className="text-white text-xs font-medium">{currentTier.name} activo · Se renueva el 17 jul</span>
               </div>
             )}
 
@@ -1622,7 +1683,7 @@ export default function PublicMembershipMoonCafe() {
                         </p>
                       </div>
                       <ul className="space-y-1.5 flex-1">
-                        {PREMIUM_INCLUDED.map((item) => (
+                        {includedBenefitNames(PREMIUM_TIER).map((item) => (
                           <li key={item} className="flex items-start gap-2 text-xs text-gray-600">
                             <Check className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: COLOR }} />
                             <span>{item}</span>
@@ -1781,8 +1842,8 @@ export default function PublicMembershipMoonCafe() {
         {subscribeOpen && (
           <SubscribeDrawer
             onClose={() => setSubscribeOpen(false)}
-            onSuccess={() => {
-              setTierId('tier-premium')
+            onSuccess={(purchasedTierId) => {
+              setTierId(purchasedTierId)
               setLoggedIn(true)
             }}
           />

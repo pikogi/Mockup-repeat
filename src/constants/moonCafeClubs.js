@@ -34,6 +34,7 @@ const BASE_CLUB = {
   coupon_description: '',
   coupon_validity_days: 30,
   membership_activation: 'free',
+  membership_payment_mode: 'both',
   membership_tiers: [],
   membership_catalog: [],
   membership_partners: [],
@@ -110,6 +111,14 @@ export const MOONCAFE_CLUBS = [
         sub_price: 1500,
         sub_period: 'monthly',
       },
+      {
+        id: 'tier-black',
+        name: 'Black',
+        min_spend: 15000,
+        color: '#111827',
+        sub_price: 3000,
+        sub_period: 'monthly',
+      },
     ],
     membership_catalog: [
       {
@@ -145,6 +154,14 @@ export const MOONCAFE_CLUBS = [
         use_type: 'unlimited',
         tier_required: 'tier-premium',
         image_url: 'https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=400&h=400&fit=crop&q=80',
+      },
+      {
+        id: 1005,
+        name: 'Invitación a catas y eventos exclusivos',
+        description: 'Acceso prioritario a catas de origen y eventos solo para socios Black.',
+        use_type: 'unlimited',
+        tier_required: 'tier-black',
+        image_url: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=400&h=400&fit=crop&q=80',
       },
     ],
     membership_partners: [

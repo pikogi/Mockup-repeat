@@ -116,6 +116,16 @@ function DemoClubCard({ card, onEdit, onCatalog }) {
                   <Package className="w-4 h-4" /> Catálogo
                 </Button>
               )}
+              {isMembership && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 h-9"
+                  onClick={() => window.open(MEMBERSHIP_PREVIEW_URL, '_blank')}
+                >
+                  <Package className="w-4 h-4" /> Catálogo
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="sm"

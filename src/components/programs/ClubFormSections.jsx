@@ -1692,6 +1692,24 @@ export function CouponConfigSection({ formData, setFormData }) {
 
 const TIER_COLOR_PRESETS = ['#f43f5e', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#8b5cf6', '#ec4899', '#3b82f6']
 
+const PAYMENT_MODE_OPTIONS = [
+  {
+    value: 'points',
+    label: 'Sin pagar',
+    desc: 'Los clientes suben de nivel solo acumulando puntos o gastando. No hay opción de pago.',
+  },
+  {
+    value: 'paid',
+    label: 'Paga',
+    desc: 'Los niveles se desbloquean únicamente pagando una suscripción.',
+  },
+  {
+    value: 'both',
+    label: 'Ambas',
+    desc: 'Pueden subir gastando o pagar una suscripción para acceder más rápido y saltarse el requisito.',
+  },
+]
+
 const USE_TYPES = [
   { value: 'unlimited', label: 'Ilimitado', desc: 'Sin restricción de uso' },
   { value: 'limited', label: 'Cantidad limitada', desc: 'Define cuántas veces y cada cuántos días' },
@@ -1726,6 +1744,7 @@ export function MembershipConfigSection({ formData, setFormData }) {
   const [editingTierId, setEditingTierId] = useState(null)
 
   const activation = formData.membership_activation || 'free'
+  const paymentMode = formData.membership_payment_mode || 'both'
   const tiers = [...(formData.membership_tiers || [])].sort((a, b) => a.min_spend - b.min_spend)
   const catalog = formData.membership_catalog || []
 
@@ -1925,6 +1944,42 @@ export function MembershipConfigSection({ formData, setFormData }) {
         </div>
       </div>
 
+      {/* Tipo de suscripción */}
+      {activation === 'tiers' && (
+        <div className="space-y-3">
+          <Label>Tipo de suscripción</Label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {PAYMENT_MODE_OPTIONS.map((opt) => {
+              const isSelected = paymentMode === opt.value
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setFormData((prev) => ({ ...prev, membership_payment_mode: opt.value }))}
+                  className={`flex items-start gap-3 p-3 rounded-xl border-2 transition-all text-left ${
+                    isSelected
+                      ? 'border-violet-400 bg-violet-50 dark:bg-violet-950/40'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                >
+                  <div
+                    className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${isSelected ? 'bg-violet-500' : 'bg-gray-300 dark:bg-gray-600'}`}
+                  />
+                  <div>
+                    <p
+                      className={`text-sm font-semibold ${isSelected ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}
+                    >
+                      {opt.label}
+                    </p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{opt.desc}</p>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Tier builder */}
       {activation === 'tiers' && (
         <div className="space-y-4">
@@ -1936,7 +1991,7 @@ export function MembershipConfigSection({ formData, setFormData }) {
               {editingTierId !== null ? 'Editando nivel' : 'Agregar nivel'}
             </p>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className={`grid gap-3 ${paymentMode === 'paid' ? 'grid-cols-1' : 'grid-cols-2'}`}>
               <div className="space-y-1.5">
                 <Label htmlFor="tier_name" className="text-xs">
                   Nombre
@@ -1955,76 +2010,85 @@ export function MembershipConfigSection({ formData, setFormData }) {
                   className="h-9"
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="tier_min_spend" className="text-xs">
-                  Gasto mínimo ($)
-                </Label>
-                <Input
-                  id="tier_min_spend"
-                  type="number"
-                  min="0"
-                  value={newTier.min_spend}
-                  onChange={(e) => setNewTier((p) => ({ ...p, min_spend: e.target.value }))}
-                  placeholder="0"
-                  className="h-9"
-                />
-              </div>
-            </div>
-
-            {/* Suscripción opcional */}
-            <div className="pt-1 border-t border-gray-200 dark:border-gray-700 space-y-2">
-              <div className="flex items-center gap-2">
-                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">Suscripción directa</p>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-400 font-medium">
-                  opcional
-                </span>
-              </div>
-              <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-snug">
-                Si defines un precio, los clientes pueden pagar para acceder a este nivel sin necesidad de alcanzar el
-                gasto mínimo.
-              </p>
-              <div className="grid grid-cols-2 gap-3">
+              {paymentMode !== 'paid' && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="tier_sub_price" className="text-xs">
-                    Precio ($)
+                  <Label htmlFor="tier_min_spend" className="text-xs">
+                    Gasto mínimo ($)
                   </Label>
                   <Input
-                    id="tier_sub_price"
+                    id="tier_min_spend"
                     type="number"
                     min="0"
-                    value={newTier.sub_price}
-                    onChange={(e) => setNewTier((p) => ({ ...p, sub_price: e.target.value }))}
-                    placeholder="Dejar vacío si no aplica"
+                    value={newTier.min_spend}
+                    onChange={(e) => setNewTier((p) => ({ ...p, min_spend: e.target.value }))}
+                    placeholder="0"
                     className="h-9"
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Período</Label>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {[
-                      { value: 'monthly', label: 'Mensual' },
-                      { value: 'annual', label: 'Anual' },
-                    ].map((opt) => {
-                      const isSelected = newTier.sub_period === opt.value
-                      return (
-                        <button
-                          key={opt.value}
-                          type="button"
-                          onClick={() => setNewTier((p) => ({ ...p, sub_period: opt.value }))}
-                          className={`py-2 rounded-lg border-2 text-[11px] font-semibold transition-all ${
-                            isSelected
-                              ? 'border-violet-400 bg-violet-50 dark:bg-violet-950/40 text-gray-900 dark:text-gray-100'
-                              : 'border-gray-200 dark:border-gray-700 text-gray-400 hover:border-gray-300'
-                          }`}
-                        >
-                          {opt.label}
-                        </button>
-                      )
-                    })}
+              )}
+            </div>
+
+            {/* Suscripción */}
+            {paymentMode !== 'points' && (
+              <div className="pt-1 border-t border-gray-200 dark:border-gray-700 space-y-2">
+                <div className="flex items-center gap-2">
+                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                    {paymentMode === 'paid' ? 'Precio de la suscripción' : 'Suscripción directa'}
+                  </p>
+                  {paymentMode === 'both' && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-400 font-medium">
+                      opcional
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-snug">
+                  {paymentMode === 'paid'
+                    ? 'Los clientes pagan este precio para acceder a este nivel.'
+                    : 'Si defines un precio, los clientes pueden pagar para acceder a este nivel sin necesidad de alcanzar el gasto mínimo.'}
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="tier_sub_price" className="text-xs">
+                      Precio ($)
+                    </Label>
+                    <Input
+                      id="tier_sub_price"
+                      type="number"
+                      min="0"
+                      value={newTier.sub_price}
+                      onChange={(e) => setNewTier((p) => ({ ...p, sub_price: e.target.value }))}
+                      placeholder={paymentMode === 'paid' ? 'Ej: 1500' : 'Dejar vacío si no aplica'}
+                      className="h-9"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Período</Label>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {[
+                        { value: 'monthly', label: 'Mensual' },
+                        { value: 'annual', label: 'Anual' },
+                      ].map((opt) => {
+                        const isSelected = newTier.sub_period === opt.value
+                        return (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => setNewTier((p) => ({ ...p, sub_period: opt.value }))}
+                            className={`py-2 rounded-lg border-2 text-[11px] font-semibold transition-all ${
+                              isSelected
+                                ? 'border-violet-400 bg-violet-50 dark:bg-violet-950/40 text-gray-900 dark:text-gray-100'
+                                : 'border-gray-200 dark:border-gray-700 text-gray-400 hover:border-gray-300'
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        )
+                      })}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
 
             <div className="space-y-1.5">
               <Label className="text-xs">Color</Label>
@@ -2050,7 +2114,9 @@ export function MembershipConfigSection({ formData, setFormData }) {
               <Button
                 type="button"
                 onClick={handleAddTier}
-                disabled={!newTier.name.trim() || newTier.min_spend === ''}
+                disabled={
+                  !newTier.name.trim() || (paymentMode === 'paid' ? newTier.sub_price === '' : newTier.min_spend === '')
+                }
                 className="flex-1 gap-2 bg-black hover:bg-neutral-800 text-white"
               >
                 {editingTierId !== null ? (
@@ -2079,10 +2145,15 @@ export function MembershipConfigSection({ formData, setFormData }) {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{tier.name}</p>
                     <p className="text-xs text-gray-400">
-                      Gasto mín. ${parseInt(tier.min_spend || 0).toLocaleString()}
+                      {paymentMode !== 'paid' && `Gasto mín. $${parseInt(tier.min_spend || 0).toLocaleString()}`}
                       {tier.sub_price != null && (
-                        <span className="ml-2 text-violet-500 font-medium">
-                          · Suscripción ${parseInt(tier.sub_price).toLocaleString()}/
+                        <span
+                          className={
+                            paymentMode === 'paid' ? 'text-violet-500 font-medium' : 'ml-2 text-violet-500 font-medium'
+                          }
+                        >
+                          {paymentMode !== 'paid' && '· '}
+                          Suscripción ${parseInt(tier.sub_price).toLocaleString()}/
                           {tier.sub_period === 'annual' ? 'año' : 'mes'}
                         </span>
                       )}

@@ -52,6 +52,7 @@ const DEFAULT_FORM_DATA = {
   coupon_validity_days: 30,
   // Membresías
   membership_activation: 'free',
+  membership_payment_mode: 'both',
   membership_tiers: [],
   membership_catalog: [],
   membership_partners: [],
