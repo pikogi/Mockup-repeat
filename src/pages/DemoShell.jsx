@@ -366,9 +366,9 @@ const PRICING_PLANS = [
       'Miembros de equipo ilimitados',
     ],
     prices: {
-      ar: { mensual: 19999, semianual: 16999, anual: 14999 },
+      ar: { mensual: 24999, semianual: 21249, anual: 18749 },
       mx: { mensual: 299, semianual: 254, anual: 224 },
-      usd: { mensual: 19, semianual: 16, anual: 14 },
+      usd: { mensual: 24.99, semianual: 21.24, anual: 18.74 },
     },
   },
   {
@@ -384,9 +384,9 @@ const PRICING_PLANS = [
     ],
     notIncluded: ['Encuesta de satisfacción', 'Menú y catálogo digital'],
     prices: {
-      ar: { mensual: 29999, semianual: 25499, anual: 22499 },
+      ar: { mensual: 34999, semianual: 29749, anual: 26249 },
       mx: { mensual: 499, semianual: 424, anual: 374 },
-      usd: { mensual: 39, semianual: 33, anual: 29 },
+      usd: { mensual: 49.99, semianual: 42.49, anual: 37.49 },
     },
   },
   {
@@ -403,7 +403,7 @@ const PRICING_PLANS = [
     prices: {
       ar: { mensual: 49999, semianual: 42499, anual: 37499 },
       mx: { mensual: 799, semianual: 679, anual: 599 },
-      usd: { mensual: 69, semianual: 59, anual: 52 },
+      usd: { mensual: 79.99, semianual: 67.99, anual: 59.99 },
     },
   },
 ]
