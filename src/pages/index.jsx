@@ -46,8 +46,8 @@ const MembershipsDashboard = lazy(() => import('./memberships/MembershipsDashboa
 const MembershipPlans = lazy(() => import('./memberships/MembershipPlans'))
 const MembershipMembers = lazy(() => import('./memberships/MembershipMembers'))
 const MembershipMemberProfile = lazy(() => import('./memberships/MembershipMemberProfile'))
-const MembershipAutomations = lazy(() => import('./memberships/MembershipAutomations'))
-const MembershipAnalytics = lazy(() => import('./memberships/MembershipAnalytics'))
+const MembershipNotifications = lazy(() => import('./memberships/MembershipNotifications'))
+const MembershipClubs = lazy(() => import('./memberships/MembershipClubs'))
 const PublicMembershipPlansDemo = lazy(() => import('./PublicMembershipPlansDemo'))
 const ShortUrlRedirect = lazy(() => import('./ShortUrlRedirect'))
 const Preview = lazy(() => import('./Preview'))
@@ -737,21 +737,55 @@ export default function Pages() {
               }
             />
             <Route
-              path="/memberships/automations"
+              path="/memberships/notifications"
               element={
                 <LayoutWrapper>
-                  <MembershipAutomations />
+                  <MembershipNotifications />
                 </LayoutWrapper>
               }
             />
             <Route
-              path="/memberships/analytics"
+              path="/memberships/clubs"
               element={
                 <LayoutWrapper>
-                  <MembershipAnalytics />
+                  <MembershipClubs />
                 </LayoutWrapper>
               }
             />
+            <Route
+              path="/memberships/clubs/edit"
+              element={
+                <LayoutWrapper>
+                  <EditClubMoonCafe />
+                </LayoutWrapper>
+              }
+            />
+            <Route path="/memberships/clubs/preview" element={<PublicMembershipMoonCafe />} />
+            <Route
+              path="/memberships/team"
+              element={
+                <LayoutWrapper>
+                  <TeamMoonCafe />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/memberships/stores"
+              element={
+                <LayoutWrapper>
+                  <StoresMoonCafe />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/memberships/sorteo"
+              element={
+                <LayoutWrapper>
+                  <Sorteo />
+                </LayoutWrapper>
+              }
+            />
+            <Route path="/memberships/scan" element={<ScanQR />} />
             <Route path="/join/:slug" element={<PublicMembershipPlansDemo />} />
 
             <Route

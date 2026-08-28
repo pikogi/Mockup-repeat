@@ -24,10 +24,12 @@ import {
   Send,
   Building2,
   Coffee,
+  Image as ImageIcon,
 } from 'lucide-react'
-import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { MOONCAFE_CLUBS } from '@/constants/moonCafeClubs'
+import { loadMembershipData } from '@/constants/membershipDemoData'
+import { formatMoney, periodLabel } from '@/lib/membershipFormat'
 
 // ─── Data ──────────────────────────────────────────────────────────────────────
 // Sourced from the real "Moon Club" membership club config (moonCafeClubs.js) so the
@@ -64,20 +66,30 @@ const PARTNERS = CLUB.membership_partners.map((p) => ({
 
 const POSTS = CLUB.novedades
 
-const PREMIUM_TIER = TIERS.find((t) => t.sub_price) || TIERS[TIERS.length - 1]
-const PREMIUM_PRICE_LABEL = PREMIUM_TIER.sub_price ? `$${PREMIUM_TIER.sub_price.toLocaleString('es-AR')}` : ''
-const PREMIUM_PERIOD_LABEL = PREMIUM_TIER.sub_period === 'monthly' ? 'mes' : PREMIUM_TIER.sub_period || 'mes'
+// Los niveles del club enlazan a Planes reales (creados en /memberships/plans) por
+// plan_id — se resuelven acá para que esta página nunca muestre precios inventados.
+const { plans: REAL_PLANS } = loadMembershipData()
 
-const BASIC_TIER = TIERS.find((t) => !t.sub_price) || TIERS[0]
-const BASIC_INCLUDED = BENEFITS.filter((b) => b.tier_required === 'all').map((b) => b.name)
-
-// Every paid plan a member can subscribe to directly (skipping the spend requirement),
-// ordered cheapest first so it reads as an upgrade path in the checkout drawer.
-const PAID_TIERS = TIERS.filter((t) => t.sub_price).sort((a, b) => a.sub_price - b.sub_price)
-
-function periodLabel(tier) {
-  return tier.sub_period === 'annual' ? 'año' : 'mes'
+function planForTier(tier) {
+  return REAL_PLANS.find((p) => p.id === tier.plan_id)
 }
+
+// Todos los niveles con un Plan real y activo enlazado — son exactamente los planes
+// que existen hoy en /memberships/plans (Básico, Plus, VIP), en el mismo orden de
+// precio. Esta es la lista que se ofrece en el checkout: ahí el visitante elige
+// directamente cuál de los planes reales quiere pagar.
+const SUBSCRIBABLE_TIERS = TIERS.filter((t) => planForTier(t)?.active).sort(
+  (a, b) => planForTier(a).price - planForTier(b).price,
+)
+
+// Niveles que vale la pena pagar directamente para saltear el requisito de gasto
+// (el nivel con gasto mínimo 0, Básico, ya es gratis por naturaleza, así que no
+// cuenta acá). Se usa para el texto de "¿Cómo funciona?" — el checkout en sí ofrece
+// los 3 planes reales, sin destacar ninguno en particular.
+const UPGRADE_TIERS = SUBSCRIBABLE_TIERS.filter((t) => t.min_spend > 0)
+
+const PREMIUM_TIER = UPGRADE_TIERS[0] || TIERS[TIERS.length - 1]
+const PREMIUM_PLAN = planForTier(PREMIUM_TIER)
 
 // Benefits included in a given tier also include everything unlocked by lower tiers,
 // matching the hierarchy check used for logged-in members (see isAccessible).
@@ -151,17 +163,22 @@ function getUseTypeMeta(item) {
   return { label: `↻ ${getLimitCount(item)}x cada ${getLimitDays(item)} días`, color: 'text-blue-600 bg-blue-50' }
 }
 
-// ─── Subscribe Drawer ─────────────────────────────────────────────────────────
+// ─── Subscribe Checkout ───────────────────────────────────────────────────────
+// Página completa (no modal) para suscribirse a un nivel pago — mismo lenguaje
+// visual que el checkout de Barber Club Pro (PublicMembershipPlansDemo.jsx):
+// banner con gradiente en el color del plan, logo placeholder, fila de precio
+// destacada. Los datos de precio/período salen siempre del Plan real enlazado
+// (tier.plan_id → loadMembershipData().plans), nunca de campos legacy del tier.
 
-function SubscribeDrawer({ onClose, onSuccess }) {
+function SubscribeCheckout({ onClose, onSuccess }) {
   const [step, setStep] = useState('plan')
   const [loading, setLoading] = useState(false)
-  const [selectedTierId, setSelectedTierId] = useState(PAID_TIERS[0]?.id)
+  const [selectedTierId, setSelectedTierId] = useState(SUBSCRIBABLE_TIERS[0]?.id)
 
-  const selectedTier = PAID_TIERS.find((t) => t.id === selectedTierId) || PAID_TIERS[0]
-  const selectedPeriod = periodLabel(selectedTier)
-  const selectedPriceLabel = `$${selectedTier.sub_price.toLocaleString('es-AR')}`
-  const selectedPlanName = `${PROGRAM.name} ${selectedTier.name}`
+  const selectedTier = SUBSCRIBABLE_TIERS.find((t) => t.id === selectedTierId) || SUBSCRIBABLE_TIERS[0]
+  const selectedPlan = planForTier(selectedTier)
+  const selectedPeriod = periodLabel(selectedPlan.billing_period_days)
+  const selectedPriceLabel = formatMoney(selectedPlan.price)
   const selectedIncluded = includedBenefitNames(selectedTier)
 
   const handleConfirm = () => {
@@ -177,87 +194,66 @@ function SubscribeDrawer({ onClose, onSuccess }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
-      style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
-      onClick={step !== 'success' ? onClose : undefined}
+      className="fixed inset-0 z-50 bg-white overflow-y-auto"
     >
-      <motion.div
-        initial={{ y: 80, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 80, opacity: 0 }}
-        transition={{ type: 'spring', damping: 30, stiffness: 320 }}
-        className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <AnimatePresence mode="wait">
-          {step === 'plan' && (
-            <motion.div key="plan" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <div
-                className="relative px-5 pt-5 pb-6"
-                style={{ background: `linear-gradient(135deg, ${COLOR} 0%, #4c1d95 100%)` }}
+      <AnimatePresence mode="wait">
+        {step === 'plan' && (
+          <motion.div key="plan" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="flex items-center gap-3 px-4 sm:px-6 py-4 border-b border-gray-100">
+              <button
+                onClick={onClose}
+                className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors flex-shrink-0"
               >
-                <button
-                  onClick={onClose}
-                  className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
-                >
-                  <X className="w-4 h-4 text-white" />
-                </button>
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center"
-                    style={{ backgroundColor: 'rgba(245,158,11,0.2)' }}
+                <X className="w-4 h-4 text-gray-600" />
+              </button>
+              <div>
+                <p className="font-bold text-gray-900 leading-tight">Elegí tu plan</p>
+                <p className="text-xs text-gray-500 mt-0.5">Desbloquea beneficios exclusivos al instante</p>
+              </div>
+            </div>
+
+            <div className="max-w-md mx-auto px-4 sm:px-6 py-6 space-y-2.5">
+              {SUBSCRIBABLE_TIERS.map((tier) => {
+                const isSelected = tier.id === selectedTierId
+                const plan = planForTier(tier)
+                return (
+                  <button
+                    key={tier.id}
+                    type="button"
+                    onClick={() => setSelectedTierId(tier.id)}
+                    className={`w-full flex items-center gap-3 p-3.5 rounded-2xl border-2 text-left transition-all ${
+                      isSelected ? '' : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    style={isSelected ? { borderColor: COLOR, backgroundColor: `${COLOR}0a` } : undefined}
                   >
-                    <Crown className="w-5 h-5 text-yellow-400" />
-                  </div>
-                  <div>
-                    <p className="text-white font-bold text-base leading-tight">Elegí tu plan</p>
-                    <p className="text-white/50 text-xs mt-0.5">Desbloquea beneficios exclusivos al instante</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="px-5 pt-4 space-y-2.5">
-                {PAID_TIERS.map((tier) => {
-                  const isSelected = tier.id === selectedTierId
-                  return (
-                    <button
-                      key={tier.id}
-                      type="button"
-                      onClick={() => setSelectedTierId(tier.id)}
-                      className={`w-full flex items-center gap-3 p-3.5 rounded-2xl border-2 text-left transition-all ${
-                        isSelected ? '' : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      style={isSelected ? { borderColor: COLOR, backgroundColor: `${COLOR}0a` } : undefined}
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: tier.color }}
                     >
-                      <div
-                        className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: tier.color }}
-                      >
-                        <Crown className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-gray-900">{tier.name}</p>
-                        <p className="text-xs text-gray-400">
-                          ${tier.sub_price.toLocaleString('es-AR')}/{periodLabel(tier)}
-                        </p>
-                      </div>
-                      <div
-                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                          isSelected ? '' : 'border-gray-300'
-                        }`}
-                        style={isSelected ? { borderColor: COLOR, backgroundColor: COLOR } : undefined}
-                      >
-                        {isSelected && <Check className="w-3 h-3 text-white" />}
-                      </div>
-                    </button>
-                  )
-                })}
-                <p className="text-gray-400 text-xs">Cancelas cuando quieras. Sin permanencia.</p>
-              </div>
+                      <Crown className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-gray-900">{plan.name}</p>
+                      <p className="text-xs text-gray-400">
+                        {formatMoney(plan.price)}/{periodLabel(plan.billing_period_days)}
+                      </p>
+                    </div>
+                    <div
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                        isSelected ? '' : 'border-gray-300'
+                      }`}
+                      style={isSelected ? { borderColor: COLOR, backgroundColor: COLOR } : undefined}
+                    >
+                      {isSelected && <Check className="w-3 h-3 text-white" />}
+                    </div>
+                  </button>
+                )
+              })}
+              <p className="text-gray-400 text-xs">Cancelas cuando quieras. Sin permanencia.</p>
 
-              <div className="px-5 py-5 space-y-3">
+              <div className="pt-3 space-y-3">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                  Incluye con {selectedTier.name}
+                  Incluye con {selectedPlan.name}
                 </p>
                 {selectedIncluded.map((item) => (
                   <div key={item} className="flex items-center gap-3">
@@ -271,109 +267,130 @@ function SubscribeDrawer({ onClose, onSuccess }) {
                   </div>
                 ))}
               </div>
-              <div className="px-5 pb-5">
-                <Button
-                  className="w-full h-12 rounded-2xl font-bold text-white"
-                  style={{ backgroundColor: COLOR }}
-                  onClick={() => setStep('pay')}
-                >
-                  Continuar con {selectedTier.name} · {selectedPriceLabel}/{selectedPeriod}
-                </Button>
-              </div>
-            </motion.div>
-          )}
 
-          {step === 'pay' && (
-            <motion.div
-              key="pay"
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -30 }}
-            >
-              <div className="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-gray-100">
-                <button
-                  onClick={() => setStep('plan')}
-                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
-                >
-                  <ChevronLeft className="w-4 h-4 text-gray-500" />
-                </button>
-                <p className="font-semibold text-gray-900">Confirmar suscripción</p>
-              </div>
-              <div className="px-5 py-5 space-y-4">
-                <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Plan</span>
-                    <span className="font-semibold text-gray-900">{selectedPlanName}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Facturación</span>
-                    <span className="font-semibold text-gray-900">
-                      {selectedPeriod === 'mes' ? 'Mensual' : 'Anual'}
-                    </span>
-                  </div>
-                  <div className="border-t border-gray-200 pt-2 flex justify-between">
-                    <span className="text-sm font-semibold text-gray-700">Total hoy</span>
-                    <span className="text-sm font-black text-gray-900">{selectedPriceLabel}</span>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Método de pago</p>
-                  <div
-                    className="rounded-2xl border-2 p-3.5 flex items-center gap-3"
-                    style={{ borderColor: `${COLOR}50`, backgroundColor: `${COLOR}06` }}
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center flex-shrink-0">
-                      <CreditCard className="w-4 h-4 text-gray-600" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-gray-900">Visa •••• 4242</p>
-                      <p className="text-xs text-gray-400">Vence 08/27</p>
-                    </div>
-                    <Check className="w-4 h-4 flex-shrink-0" style={{ color: COLOR }} />
-                  </div>
-                </div>
-                <p className="text-xs text-gray-400 text-center leading-relaxed">
-                  Al confirmar, autorizas el cobro de <strong>{selectedPriceLabel}</strong> hoy y cada {selectedPeriod}{' '}
-                  hasta cancelar.
-                </p>
-                <Button
-                  className="w-full h-12 rounded-xl font-semibold text-white flex items-center justify-center gap-2"
-                  style={{ backgroundColor: COLOR }}
-                  disabled={loading}
-                  onClick={handleConfirm}
-                >
-                  {loading ? (
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
-                      className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full"
-                    />
-                  ) : (
-                    'Confirmar suscripción'
-                  )}
-                </Button>
-              </div>
-            </motion.div>
-          )}
+              <Button
+                className="w-full h-12 rounded-2xl font-bold text-white mt-4"
+                style={{ backgroundColor: COLOR }}
+                onClick={() => setStep('pay')}
+              >
+                Continuar con {selectedPlan.name} · {selectedPriceLabel}/{selectedPeriod}
+              </Button>
+            </div>
+          </motion.div>
+        )}
 
-          {step === 'success' && (
-            <motion.div
-              key="success"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="p-8 text-center space-y-4"
+        {step === 'pay' && (
+          <motion.div key="pay" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
+            <div
+              className="relative px-6 pt-6 pb-11"
+              style={{ background: `linear-gradient(135deg, ${selectedTier.color} 0%, ${selectedTier.color}99 100%)` }}
             >
+              <button
+                onClick={() => setStep('plan')}
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4 text-white" />
+              </button>
+            </div>
+
+            <div className="max-w-md mx-auto px-6 pb-8">
+              <div className="flex justify-center -mt-9">
+                <div className="w-[72px] h-[72px] rounded-2xl bg-white shadow-md border border-gray-100 flex items-center justify-center">
+                  <ImageIcon className="w-6 h-6 text-gray-300" />
+                </div>
+              </div>
+
+              <p className="text-center font-bold text-xl text-gray-900 mt-4">Confirmar suscripción</p>
+
+              <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 space-y-2 mt-5">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Plan</span>
+                  <span className="font-semibold text-gray-900">
+                    {PROGRAM.name} {selectedPlan.name}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Facturación</span>
+                  <span className="font-semibold text-gray-900">{selectedPeriod === 'mes' ? 'Mensual' : 'Anual'}</span>
+                </div>
+                {selectedPlan.trial_days > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Prueba gratis</span>
+                    <span className="font-semibold text-gray-900">{selectedPlan.trial_days} días</span>
+                  </div>
+                )}
+                <div className="border-t border-gray-200 pt-2.5 flex items-center justify-between">
+                  <span className="text-sm font-semibold text-gray-700">Suscripción</span>
+                  <span className="text-xl font-black" style={{ color: selectedTier.color }}>
+                    {selectedPriceLabel}
+                    <span className="text-xs font-medium text-gray-400">/{selectedPeriod}</span>
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Método de pago</p>
+                <div
+                  className="rounded-2xl border-2 p-3.5 flex items-center gap-3"
+                  style={{ borderColor: `${COLOR}50`, backgroundColor: `${COLOR}06` }}
+                >
+                  <div className="w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center flex-shrink-0">
+                    <CreditCard className="w-4 h-4 text-gray-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-gray-900">Visa •••• 4242</p>
+                    <p className="text-xs text-gray-400">Vence 08/27</p>
+                  </div>
+                  <Check className="w-4 h-4 flex-shrink-0" style={{ color: COLOR }} />
+                </div>
+              </div>
+
+              <p className="text-xs text-gray-400 text-center leading-relaxed mt-4">
+                Al confirmar, autorizas el cobro de <strong>{selectedPriceLabel}</strong> hoy y cada {selectedPeriod}{' '}
+                hasta cancelar.
+              </p>
+
+              <Button
+                className="w-full h-12 rounded-xl font-semibold text-white flex items-center justify-center gap-2 mt-4"
+                style={{ backgroundColor: COLOR }}
+                disabled={loading}
+                onClick={handleConfirm}
+              >
+                {loading ? (
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
+                    className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full"
+                  />
+                ) : (
+                  'Confirmar suscripción'
+                )}
+              </Button>
+            </div>
+          </motion.div>
+        )}
+
+        {step === 'success' && (
+          <motion.div
+            key="success"
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="min-h-screen flex items-center justify-center px-6"
+          >
+            <div className="max-w-sm w-full text-center space-y-4">
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', damping: 15, stiffness: 200, delay: 0.1 }}
                 className="w-20 h-20 rounded-full flex items-center justify-center mx-auto"
-                style={{ background: `linear-gradient(135deg, ${COLOR} 0%, #4c1d95 100%)` }}
+                style={{
+                  background: `linear-gradient(135deg, ${selectedTier.color} 0%, ${selectedTier.color}99 100%)`,
+                }}
               >
                 <CheckCircle2 className="w-10 h-10 text-white" />
               </motion.div>
               <div>
-                <p className="text-2xl font-black text-gray-900">¡Ya eres {selectedTier.name}!</p>
+                <p className="text-2xl font-black text-gray-900">¡Ya eres {selectedPlan.name}!</p>
                 <p className="text-sm text-gray-500 mt-1">
                   Tu suscripción está activa. Todos tus beneficios están desbloqueados.
                 </p>
@@ -388,10 +405,10 @@ function SubscribeDrawer({ onClose, onSuccess }) {
               >
                 Ver mis beneficios
               </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }
@@ -1371,13 +1388,13 @@ export default function PublicMembershipMoonCafe() {
   const [activityOpen, setActivityOpen] = useState(false)
   const [activityExpanded, setActivityExpanded] = useState(false)
   const [shareDone, setShareDone] = useState(false)
-  const [joinStep, setJoinStep] = useState('cta') // 'cta' | 'plans' | 'email'
+  const [joinStep, setJoinStep] = useState('cta') // 'cta' | 'email'
   const [emailInput, setEmailInput] = useState('')
   const [howOpen, setHowOpen] = useState(false)
   const [subscribeOpen, setSubscribeOpen] = useState(false)
 
   const currentTier = TIERS.find((t) => t.id === tierId) || TIERS[0]
-  const isPaidMember = !!currentTier.sub_price
+  const isPaidMember = currentTier.min_spend > 0
   const accessible = BENEFITS.filter((b) => loggedIn && isAccessible(b, tierId))
 
   const handleShare = async () => {
@@ -1397,12 +1414,6 @@ export default function PublicMembershipMoonCafe() {
     setLoggedIn(true)
     setJoinStep('cta')
     setEmailInput('')
-  }
-
-  const handleJoinFree = () => {
-    setTierId(BASIC_TIER.id)
-    setLoggedIn(true)
-    toast.success('¡Bienvenido a Moon Club! Ya eres socio nivel Básico.')
   }
 
   const handleRedeemSuccess = (benefit) => {
@@ -1620,90 +1631,11 @@ export default function PublicMembershipMoonCafe() {
                     </div>
                   </div>
                   <button
-                    onClick={() => setJoinStep('plans')}
+                    onClick={() => setSubscribeOpen(true)}
                     className="w-full sm:w-auto text-center text-sm font-bold px-4 py-2.5 rounded-xl text-white"
                     style={{ backgroundColor: COLOR }}
                   >
                     Unirme →
-                  </button>
-                </motion.div>
-              )}
-              {joinStep === 'plans' && (
-                <motion.div
-                  key="plans"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="p-4 space-y-3"
-                >
-                  <div>
-                    <p className="font-semibold text-gray-900 text-sm leading-tight">Únete a Moon Club</p>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      Elige cómo quieres empezar. Puedes subir de nivel cuando quieras.
-                    </p>
-                  </div>
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    <div className="rounded-xl border-2 border-gray-200 bg-white p-4 flex flex-col gap-3">
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">{BASIC_TIER.name}</p>
-                        <p className="text-2xl font-black text-gray-900 mt-0.5">Gratis</p>
-                      </div>
-                      <ul className="space-y-1.5 flex-1">
-                        {BASIC_INCLUDED.map((item) => (
-                          <li key={item} className="flex items-start gap-2 text-xs text-gray-600">
-                            <Check className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-emerald-500" />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      <button
-                        onClick={handleJoinFree}
-                        className="w-full h-10 rounded-xl text-sm font-bold border-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white transition-colors"
-                      >
-                        Unirme gratis
-                      </button>
-                    </div>
-                    <div
-                      className="relative rounded-xl border-2 bg-white p-4 flex flex-col gap-3"
-                      style={{ borderColor: COLOR }}
-                    >
-                      <span
-                        className="absolute -top-2.5 right-4 px-2 py-0.5 rounded-full text-[10px] font-bold text-white"
-                        style={{ backgroundColor: COLOR }}
-                      >
-                        Recomendado
-                      </span>
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: COLOR }}>
-                          {PREMIUM_TIER.name}
-                        </p>
-                        <p className="text-2xl font-black text-gray-900 mt-0.5">
-                          {PREMIUM_PRICE_LABEL}
-                          <span className="text-sm font-semibold text-gray-400">/{PREMIUM_PERIOD_LABEL}</span>
-                        </p>
-                      </div>
-                      <ul className="space-y-1.5 flex-1">
-                        {includedBenefitNames(PREMIUM_TIER).map((item) => (
-                          <li key={item} className="flex items-start gap-2 text-xs text-gray-600">
-                            <Check className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: COLOR }} />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      <button
-                        onClick={() => setSubscribeOpen(true)}
-                        className="w-full h-10 rounded-xl text-sm font-bold text-white"
-                        style={{ backgroundColor: COLOR }}
-                      >
-                        Unirme con {PREMIUM_TIER.name}
-                      </button>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setJoinStep('email')}
-                    className="w-full text-center text-xs text-gray-400 hover:text-gray-600 underline underline-offset-2 pt-1"
-                  >
-                    ¿Ya eres socio? Ingresa con tu email →
                   </button>
                 </motion.div>
               )}
@@ -1780,7 +1712,7 @@ export default function PublicMembershipMoonCafe() {
                     },
                     {
                       step: '2',
-                      text: `Suscríbete a ${PREMIUM_TIER.name} por ${PREMIUM_PRICE_LABEL}/${PREMIUM_PERIOD_LABEL} para desbloquear todos los beneficios y comercios adheridos.`,
+                      text: `Suscríbete a ${PREMIUM_PLAN.name} por ${formatMoney(PREMIUM_PLAN.price)}/${periodLabel(PREMIUM_PLAN.billing_period_days)} para desbloquear todos los beneficios y comercios adheridos.`,
                     },
                     { step: '3', text: 'Genera un cupón por cada beneficio y preséntalo en caja para usarlo.' },
                   ].map((s) => (
@@ -1840,7 +1772,7 @@ export default function PublicMembershipMoonCafe() {
 
       <AnimatePresence>
         {subscribeOpen && (
-          <SubscribeDrawer
+          <SubscribeCheckout
             onClose={() => setSubscribeOpen(false)}
             onSuccess={(purchasedTierId) => {
               setTierId(purchasedTierId)

@@ -1,49 +1,11 @@
-import { Plus, X } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
-
-// ─── Lista editable (servicios / productos / beneficios) ──────────────────────
-
-function TagListField({ label, placeholder, items, onChange }) {
-  const addItem = () => onChange([...items, { name: '' }])
-  const updateItem = (index, name) => onChange(items.map((it, i) => (i === index ? { name } : it)))
-  const removeItem = (index) => onChange(items.filter((_, i) => i !== index))
-
-  return (
-    <div className="space-y-1.5">
-      <Label>{label}</Label>
-      <div className="space-y-2">
-        {items.map((item, i) => (
-          <div key={i} className="flex gap-2">
-            <Input
-              value={item.name}
-              onChange={(e) => updateItem(i, e.target.value)}
-              placeholder={placeholder}
-              className="flex-1"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => removeItem(i)}
-              className="text-gray-400 hover:text-red-500"
-            >
-              <X className="w-3.5 h-3.5" />
-            </Button>
-          </div>
-        ))}
-        <Button type="button" variant="outline" size="sm" onClick={addItem} className="gap-1.5 text-gray-500">
-          <Plus className="w-3.5 h-3.5" /> Agregar
-        </Button>
-      </div>
-    </div>
-  )
-}
 
 // ─── Toggle segmentado (2 opciones) ────────────────────────────────────────────
 
@@ -67,10 +29,18 @@ function SegmentedToggle({ options, value, onChange }) {
   )
 }
 
+// ─── Frecuencia de facturación (presets en días + opción personalizada) ───────
+
+const PERIOD_PRESETS = [
+  { value: 30, label: 'Mensual' },
+  { value: 365, label: 'Anual' },
+]
+
 // ─── Formulario de plan ────────────────────────────────────────────────────────
 
 export default function PlanFormDialog({ open, onOpenChange, formData, setFormData, onSave, editingId }) {
   const set = (field, value) => setFormData((f) => ({ ...f, [field]: value }))
+  const isCustomPeriod = !PERIOD_PRESETS.some((p) => p.value === Number(formData.billing_period_days))
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -117,14 +87,32 @@ export default function PlanFormDialog({ open, onOpenChange, formData, setFormDa
           <div className="space-y-1.5">
             <Label>Facturación y precio</Label>
             <div className="flex gap-2">
-              <SegmentedToggle
-                options={[
-                  { value: 'monthly', label: 'Mensual' },
-                  { value: 'annual', label: 'Anual' },
-                ]}
-                value={formData.billing_period}
-                onChange={(v) => set('billing_period', v)}
-              />
+              <Select
+                value={isCustomPeriod ? 'custom' : String(formData.billing_period_days)}
+                onValueChange={(v) => set('billing_period_days', v === 'custom' ? '' : Number(v))}
+              >
+                <SelectTrigger className="w-[150px] flex-shrink-0">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PERIOD_PRESETS.map((opt) => (
+                    <SelectItem key={opt.value} value={String(opt.value)}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="custom">Personalizado</SelectItem>
+                </SelectContent>
+              </Select>
+              {isCustomPeriod && (
+                <Input
+                  type="number"
+                  min="1"
+                  placeholder="Días"
+                  value={formData.billing_period_days}
+                  onChange={(e) => set('billing_period_days', e.target.value)}
+                  className="w-20 flex-shrink-0"
+                />
+              )}
               <Input
                 type="number"
                 placeholder="0"
@@ -133,6 +121,9 @@ export default function PlanFormDialog({ open, onOpenChange, formData, setFormDa
                 className="flex-1"
               />
             </div>
+            {isCustomPeriod && (
+              <p className="text-xs text-gray-400">Se cobra cada {formData.billing_period_days || '…'} días.</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -155,67 +146,6 @@ export default function PlanFormDialog({ open, onOpenChange, formData, setFormDa
               />
             </div>
           </div>
-
-          <TagListField
-            label="Servicios incluidos"
-            placeholder="Ej: 2 cortes al mes"
-            items={formData.included_services}
-            onChange={(v) => set('included_services', v)}
-          />
-
-          <TagListField
-            label="Productos incluidos"
-            placeholder="Ej: Cera para barba"
-            items={formData.included_products}
-            onChange={(v) => set('included_products', v)}
-          />
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label>Descuento en tienda (%)</Label>
-              <Input
-                type="number"
-                placeholder="0"
-                value={formData.discount_pct}
-                onChange={(e) => set('discount_pct', e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Multiplicador de puntos</Label>
-              <Input
-                type="number"
-                step="0.5"
-                placeholder="1"
-                value={formData.point_multiplier}
-                onChange={(e) => set('point_multiplier', e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Recompensa de bienvenida</Label>
-            <Input
-              placeholder="Ej: Corte de bienvenida gratis"
-              value={formData.welcome_reward}
-              onChange={(e) => set('welcome_reward', e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Recompensa de renovación</Label>
-            <Input
-              placeholder="Ej: 10% off en tu próxima renovación"
-              value={formData.renewal_reward}
-              onChange={(e) => set('renewal_reward', e.target.value)}
-            />
-          </div>
-
-          <TagListField
-            label="Beneficios exclusivos"
-            placeholder="Ej: Reserva prioritaria"
-            items={formData.perks}
-            onChange={(v) => set('perks', v)}
-          />
 
           <div className="space-y-1.5">
             <Label>Política de cancelación</Label>

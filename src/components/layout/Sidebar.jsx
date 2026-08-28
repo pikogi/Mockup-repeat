@@ -21,6 +21,8 @@ import {
   Ticket,
   Megaphone,
   Crown,
+  Package,
+  UserCog,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLanguage } from '@/components/auth/LanguageContext'
@@ -217,6 +219,20 @@ export default function Sidebar() {
     ScanQR: null,
   }
 
+  // Automatizaciones vive dentro de Notificaciones (pestaña "Automáticas") y Analytics
+  // dentro del Dashboard de membresías (pestaña "Analytics") — no son destinos de
+  // sidebar propios.
+  const MEMBERSHIP_NAV_ITEMS = [
+    { name: 'Dashboard', icon: LayoutDashboard, path: '/memberships', exact: true },
+    { name: 'Miembros', icon: Users, path: '/memberships/members' },
+    { name: 'Mis Clubes', icon: Package, path: '/memberships/clubs' },
+    { name: 'Planes', icon: CreditCard, path: '/memberships/plans' },
+    { name: 'Notificaciones', icon: Bell, path: '/memberships/notifications' },
+    { name: 'Sorteo', icon: Ticket, path: '/memberships/sorteo' },
+    { name: 'Sucursales', icon: Store, path: '/memberships/stores' },
+    { name: 'Equipo', icon: UserCog, path: '/memberships/team' },
+  ]
+
   const currentPath = location.pathname
   const isBgMode = new URLSearchParams(location.search).get('bg') === '1'
   const isMoonCafeDemo = MOONCAFE_PATHS.some((p) => currentPath.startsWith(p))
@@ -236,13 +252,17 @@ export default function Sidebar() {
   const isGlowDemo = GLOW_PATHS.some((p) => currentPath.startsWith(p))
   const isDelPilarDemo = DEL_PILAR_PATHS.some((p) => currentPath.startsWith(p))
   const DEMO_PATH_PREFIXES = Object.values(DEMO_URLS).map((u) => u.split('?')[0])
+  // /memberships is its own standalone mockup section — it must work without a login,
+  // so it should never fall back into the generic (Leroma) demo nav.
+  const isMembershipsSection = currentPath.startsWith('/memberships')
   const isDemo =
-    !user ||
-    isMoonCafeDemo ||
-    isMoonCafeRoadmap ||
-    isGlowDemo ||
-    isDelPilarDemo ||
-    DEMO_PATH_PREFIXES.some((p) => currentPath.startsWith(p))
+    !isMembershipsSection &&
+    (!user ||
+      isMoonCafeDemo ||
+      isMoonCafeRoadmap ||
+      isGlowDemo ||
+      isDelPilarDemo ||
+      DEMO_PATH_PREFIXES.some((p) => currentPath.startsWith(p)))
 
   const isMoonCafePoints = MOONCAFE_PATHS.some((p) => currentPath.startsWith(p) && p.includes('points'))
   const isGlowPoints = GLOW_PATHS.some((p) => currentPath.startsWith(p) && p.includes('points'))
@@ -260,26 +280,30 @@ export default function Sidebar() {
     return DEMO_URLS[page] ?? createPageUrl(page)
   }
 
-  const navItems = [
-    { name: t('dashboard'), icon: LayoutDashboard, page: 'Dashboard' },
-    { name: t('customers'), icon: User, page: 'Customers' },
-    ...(isMoonCafeRoadmap
-      ? [{ name: 'Comunicación', icon: Megaphone, page: 'Comunicacion' }]
-      : [{ name: t('notifications'), icon: Bell, page: 'Notifications' }]),
-    { name: t('myPrograms'), icon: CreditCard, page: 'MyPrograms' },
-    ...(isMoonCafeRoadmap || isMoonCafeDemo ? [{ name: 'Encuesta', icon: ClipboardList, page: 'Encuesta' }] : []),
-    // ...(isMoonCafeRoadmap ? [{ name: 'Descuentos', icon: Percent, page: 'Descuentos' }] : []),
-    ...(!isDemo || isMoonCafeRoadmap ? [{ name: t('menu'), icon: BookOpen, page: 'Menu' }] : []),
-    ...(!isDemo ? [{ name: 'Membresías', icon: Crown, page: 'Memberships' }] : []),
-    ...(isGlowDemo || isMoonCafeDemo || isMoonCafeRoadmap || isDelPilarDemo
-      ? [
-          { name: 'Sorteo', icon: Ticket, page: 'Sorteo' },
-          { name: t('stores'), icon: Store, page: 'Stores' },
-          { name: t('team'), icon: Users, page: 'Team' },
-        ]
-      : []),
-    ...(user?.type_user === 'brand_admin' && !isDemo ? [{ name: t('stores'), icon: Store, page: 'Stores' }] : []),
-  ]
+  // Membresías es su propia sección aislada: ningún ítem del sidebar debe sacar al
+  // usuario de /memberships/* — solo sus 3 destinos propios.
+  const navItems = isMembershipsSection
+    ? MEMBERSHIP_NAV_ITEMS
+    : [
+        { name: t('dashboard'), icon: LayoutDashboard, page: 'Dashboard' },
+        { name: t('customers'), icon: User, page: 'Customers' },
+        ...(isMoonCafeRoadmap
+          ? [{ name: 'Comunicación', icon: Megaphone, page: 'Comunicacion' }]
+          : [{ name: t('notifications'), icon: Bell, page: 'Notifications' }]),
+        { name: t('myPrograms'), icon: CreditCard, page: 'MyPrograms' },
+        ...(isMoonCafeRoadmap || isMoonCafeDemo ? [{ name: 'Encuesta', icon: ClipboardList, page: 'Encuesta' }] : []),
+        // ...(isMoonCafeRoadmap ? [{ name: 'Descuentos', icon: Percent, page: 'Descuentos' }] : []),
+        ...(!isDemo || isMoonCafeRoadmap ? [{ name: t('menu'), icon: BookOpen, page: 'Menu' }] : []),
+        ...(!isDemo ? [{ name: 'Membresías', icon: Crown, page: 'Memberships' }] : []),
+        ...(isGlowDemo || isMoonCafeDemo || isMoonCafeRoadmap || isDelPilarDemo
+          ? [
+              { name: 'Sorteo', icon: Ticket, page: 'Sorteo' },
+              { name: t('stores'), icon: Store, page: 'Stores' },
+              { name: t('team'), icon: Users, page: 'Team' },
+            ]
+          : []),
+        ...(user?.type_user === 'brand_admin' && !isDemo ? [{ name: t('stores'), icon: Store, page: 'Stores' }] : []),
+      ]
 
   const primaryAction = { name: t('createProgram'), icon: Plus, page: 'CreateClub' }
 
@@ -298,7 +322,11 @@ export default function Sidebar() {
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1">
           {navItems.map((item) => {
-            const isActive = currentPath.includes(item.page)
+            const isActive = item.path
+              ? item.exact
+                ? currentPath === item.path
+                : currentPath.startsWith(item.path)
+              : currentPath.includes(item.page)
             if (item.noNav) {
               return (
                 <div
@@ -324,7 +352,7 @@ export default function Sidebar() {
                 </div>
               )
             }
-            const url = resolveUrl(item.page)
+            const url = item.path ?? resolveUrl(item.page)
             if (url === null) {
               return (
                 <div
@@ -352,26 +380,27 @@ export default function Sidebar() {
               </Link>
             )
           })}
-          {(isMoonCafeDemo || isMoonCafeRoadmap || isGlowDemo || isDelPilarDemo) && resolveUrl('ScanQR') && (
-            <Link
-              to={resolveUrl('ScanQR')}
-              className="flex items-center gap-3 px-4 py-3 mt-4 rounded-xl transition-all duration-200 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg hover:shadow-xl hover:from-yellow-500 hover:to-yellow-600"
-            >
-              <QrCode className="w-5 h-5" />
-              <span className="font-medium">Escanear QR</span>
-            </Link>
-          )}
-          {resolveUrl(primaryAction.page) === null ? (
+          {(isMoonCafeDemo || isMoonCafeRoadmap || isGlowDemo || isDelPilarDemo || isMembershipsSection) &&
+            (isMembershipsSection || resolveUrl('ScanQR')) && (
+              <Link
+                to={isMembershipsSection ? '/memberships/scan?demo=membership&scan=1' : resolveUrl('ScanQR')}
+                className="flex items-center gap-3 px-4 py-3 mt-4 rounded-xl transition-all duration-200 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg hover:shadow-xl hover:from-yellow-500 hover:to-yellow-600"
+              >
+                <QrCode className="w-5 h-5" />
+                <span className="font-medium">Escanear QR</span>
+              </Link>
+            )}
+          {!isMembershipsSection && resolveUrl(primaryAction.page) === null ? (
             <div className="flex items-center gap-3 px-4 py-3 mt-2 rounded-xl bg-gradient-to-r from-yellow-400 to-yellow-500 text-black opacity-40 cursor-default select-none">
               <primaryAction.icon className="w-5 h-5" />
               <span className="font-medium">{primaryAction.name}</span>
             </div>
           ) : (
             <Link
-              to={resolveUrl(primaryAction.page)}
+              to={isMembershipsSection ? '/memberships/clubs' : resolveUrl(primaryAction.page)}
               className={cn(
                 'flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200',
-                isMoonCafeDemo || isMoonCafeRoadmap || isGlowDemo || isDelPilarDemo
+                isMoonCafeDemo || isMoonCafeRoadmap || isGlowDemo || isDelPilarDemo || isMembershipsSection
                   ? 'mt-2 border-2 border-yellow-400 text-black dark:text-white bg-white dark:bg-gray-900 hover:bg-yellow-50 dark:hover:bg-gray-800'
                   : 'mt-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg hover:shadow-xl hover:from-yellow-500 hover:to-yellow-600',
               )}

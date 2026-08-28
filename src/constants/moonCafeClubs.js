@@ -102,23 +102,9 @@ export const MOONCAFE_CLUBS = [
     rewards_redeemed: 0,
     membership_activation: 'tiers',
     membership_tiers: [
-      { id: 'tier-basico', name: 'Básico', min_spend: 0, color: '#6b7280' },
-      {
-        id: 'tier-premium',
-        name: 'Premium',
-        min_spend: 5000,
-        color: '#f59e0b',
-        sub_price: 1500,
-        sub_period: 'monthly',
-      },
-      {
-        id: 'tier-black',
-        name: 'Black',
-        min_spend: 15000,
-        color: '#111827',
-        sub_price: 3000,
-        sub_period: 'monthly',
-      },
+      { id: 'tier-basico', name: 'Básico', min_spend: 0, color: '#6b7280', plan_id: 'plan_basico' },
+      { id: 'tier-premium', name: 'Premium', min_spend: 5000, color: '#f59e0b', plan_id: 'plan_plus' },
+      { id: 'tier-black', name: 'Black', min_spend: 15000, color: '#111827', plan_id: 'plan_vip' },
     ],
     membership_catalog: [
       {

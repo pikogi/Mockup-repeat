@@ -1,14 +1,16 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Search } from 'lucide-react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { Search, Users } from 'lucide-react'
 import { format } from 'date-fns'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import MembershipTabs from '@/components/memberships/MembershipTabs'
 import { StatusBadge, PlanBadge } from '@/components/memberships/MembershipSections'
 import { formatMoney } from '@/lib/membershipFormat'
 import { loadMembershipData } from '@/constants/membershipDemoData'
 import { addDaysUTC } from '@/utils/date'
+import { cn } from '@/lib/utils'
+import CustomersMoonCafe from '@/pages/CustomersMoonCafe'
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'Todos los estados' },
@@ -36,12 +38,46 @@ function matchesRenewalWindow(member, windowKey) {
   return true
 }
 
-export default function MembershipMembers() {
+// Toggle Miembros/Suscriptores, ubicado debajo del subtítulo de cada vista.
+function MembersToggle({ tab, setTab }) {
+  return (
+    <div className="inline-flex items-center gap-1 rounded-lg bg-gray-100 dark:bg-gray-800 p-1">
+      <button
+        onClick={() => setTab('miembros')}
+        className={cn(
+          'px-3.5 py-1.5 rounded-md text-sm font-medium transition-colors',
+          tab === 'miembros'
+            ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm'
+            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200',
+        )}
+      >
+        Miembros
+      </button>
+      <button
+        onClick={() => setTab('suscriptores')}
+        className={cn(
+          'px-3.5 py-1.5 rounded-md text-sm font-medium transition-colors',
+          tab === 'suscriptores'
+            ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm'
+            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200',
+        )}
+      >
+        Suscriptores
+      </button>
+    </div>
+  )
+}
+
+// Suscriptores: quienes pagan un plan de membresía (lo que antes vivía en esta
+// pestaña como "Miembros"). Distinto de "Miembros", que son los clientes del
+// programa de fidelidad (sellos/puntos) de Moon Café.
+function SubscribersView({ tab, setTab }) {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [data] = useState(loadMembershipData)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
-  const [planFilter, setPlanFilter] = useState('all')
+  const [planFilter, setPlanFilter] = useState(searchParams.get('plan') || 'all')
   const [renewalFilter, setRenewalFilter] = useState('all')
 
   const { plans, members } = data
@@ -57,15 +93,20 @@ export default function MembershipMembers() {
   })
 
   return (
-    <div className="px-4 py-8">
-      <div className="max-w-6xl mx-auto">
-        <MembershipTabs />
+    <div className="min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+          <div className="flex items-center gap-3 mb-2">
+            <Users className="w-8 h-8 text-gray-700 dark:text-gray-300" />
+            <h1 className="text-4xl font-bold leading-tight text-foreground">Suscriptores</h1>
+          </div>
+          <p className="text-gray-600 dark:text-gray-400">
+            {filtered.length} de {members.length} {members.length === 1 ? 'suscriptor' : 'suscriptores'}
+          </p>
+        </motion.div>
 
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Miembros</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {filtered.length} de {members.length} {members.length === 1 ? 'miembro' : 'miembros'}
-          </p>
+          <MembersToggle tab={tab} setTab={setTab} />
         </div>
 
         {/* Búsqueda y filtros */}
@@ -121,13 +162,13 @@ export default function MembershipMembers() {
 
         {/* Tabla */}
         {filtered.length === 0 ? (
-          <div className="text-center py-16 text-gray-400 text-sm">Sin miembros que coincidan con los filtros.</div>
+          <div className="text-center py-16 text-gray-400 text-sm">Sin suscriptores que coincidan con los filtros.</div>
         ) : (
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="pl-4">Miembro</TableHead>
+                  <TableHead className="pl-4">Suscriptor</TableHead>
                   <TableHead>Plan</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead>Próxima renovación</TableHead>
@@ -176,5 +217,15 @@ export default function MembershipMembers() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function MembershipMembers() {
+  const [tab, setTab] = useState('miembros')
+
+  return tab === 'miembros' ? (
+    <CustomersMoonCafe headerExtra={<MembersToggle tab={tab} setTab={setTab} />} />
+  ) : (
+    <SubscribersView tab={tab} setTab={setTab} />
   )
 }

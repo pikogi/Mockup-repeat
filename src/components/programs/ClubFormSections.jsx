@@ -4,6 +4,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
+import { loadMembershipData } from '@/constants/membershipDemoData'
+import { formatMoney, periodLabel } from '@/lib/membershipFormat'
 import {
   Loader2,
   Upload,
@@ -1690,8 +1693,6 @@ export function CouponConfigSection({ formData, setFormData }) {
   )
 }
 
-const TIER_COLOR_PRESETS = ['#f43f5e', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#8b5cf6', '#ec4899', '#3b82f6']
-
 const PAYMENT_MODE_OPTIONS = [
   {
     value: 'points',
@@ -1722,14 +1723,21 @@ function formatUseType(item) {
   return USE_TYPES.find((u) => u.value === item.use_type)?.label || ''
 }
 
+const TIER_COLOR_PRESETS = ['#f43f5e', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#8b5cf6', '#ec4899', '#3b82f6']
+
 export function MembershipConfigSection({ formData, setFormData }) {
+  // Cuando la membresía incluye suscripción paga, los niveles se arman a partir de
+  // los planes ya creados en la pestaña Planes (acá solo se tildan). Cuando es
+  // "Sin pagar" (o "Ambas", que también admite nivel por gasto sin plan asociado),
+  // los niveles se siguen creando acá mismo como antes, ya que no son un plan pago.
+  const [availablePlans] = useState(() => loadMembershipData().plans || [])
   const [newTier, setNewTier] = useState({
     name: '',
     min_spend: '',
-    sub_price: '',
-    sub_period: 'monthly',
+    plan_id: 'none',
     color: '#f59e0b',
   })
+  const [editingTierId, setEditingTierId] = useState(null)
   const [newBenefit, setNewBenefit] = useState({
     name: '',
     description: '',
@@ -1741,12 +1749,40 @@ export function MembershipConfigSection({ formData, setFormData }) {
   const [benefitImagePreview, setBenefitImagePreview] = useState(null)
   const [benefitsOpen, setBenefitsOpen] = useState(false)
   const [editingBenefitId, setEditingBenefitId] = useState(null)
-  const [editingTierId, setEditingTierId] = useState(null)
 
   const activation = formData.membership_activation || 'free'
   const paymentMode = formData.membership_payment_mode || 'both'
-  const tiers = [...(formData.membership_tiers || [])].sort((a, b) => a.min_spend - b.min_spend)
+  const tiers = formData.membership_tiers || []
   const catalog = formData.membership_catalog || []
+  const selectedPlanIds = new Set(tiers.map((t) => t.id))
+
+  const handleTogglePlanTier = (plan, checked) => {
+    if (checked) {
+      const tier = {
+        id: plan.id,
+        name: plan.name,
+        color: plan.color || '#f59e0b',
+        min_spend: 0,
+        sub_price: plan.price,
+        // La página pública de Moon Club solo distingue mensual/anual — cualquier
+        // otra frecuencia (semanal, quincenal, custom) se muestra como mensual.
+        sub_period: plan.billing_period_days === 365 ? 'annual' : 'monthly',
+      }
+      setFormData((prev) => ({ ...prev, membership_tiers: [...(prev.membership_tiers || []), tier] }))
+    } else {
+      handleRemoveTier(plan.id)
+    }
+  }
+
+  const handleRemoveTier = (id) => {
+    setFormData((prev) => ({
+      ...prev,
+      membership_tiers: prev.membership_tiers.filter((t) => t.id !== id),
+      membership_catalog: (prev.membership_catalog || []).map((b) =>
+        b.tier_required === id ? { ...b, tier_required: 'all' } : b,
+      ),
+    }))
+  }
 
   const handleAddTier = () => {
     if (!newTier.name.trim() || newTier.min_spend === '') return
@@ -1760,9 +1796,7 @@ export function MembershipConfigSection({ formData, setFormData }) {
                 name: newTier.name.trim(),
                 min_spend: parseInt(newTier.min_spend) || 0,
                 color: newTier.color,
-                ...(newTier.sub_price !== ''
-                  ? { sub_price: parseInt(newTier.sub_price), sub_period: newTier.sub_period }
-                  : { sub_price: undefined, sub_period: undefined }),
+                plan_id: newTier.plan_id !== 'none' ? newTier.plan_id : undefined,
               }
             : t,
         ),
@@ -1774,22 +1808,18 @@ export function MembershipConfigSection({ formData, setFormData }) {
         name: newTier.name.trim(),
         min_spend: parseInt(newTier.min_spend) || 0,
         color: newTier.color,
-        ...(newTier.sub_price !== '' && {
-          sub_price: parseInt(newTier.sub_price),
-          sub_period: newTier.sub_period,
-        }),
+        ...(newTier.plan_id !== 'none' && { plan_id: newTier.plan_id }),
       }
       setFormData((prev) => ({ ...prev, membership_tiers: [...(prev.membership_tiers || []), tier] }))
     }
-    setNewTier({ name: '', min_spend: '', sub_price: '', sub_period: 'monthly', color: '#f59e0b' })
+    setNewTier({ name: '', min_spend: '', plan_id: 'none', color: '#f59e0b' })
   }
 
   const handleEditTier = (tier) => {
     setNewTier({
       name: tier.name,
       min_spend: String(tier.min_spend ?? ''),
-      sub_price: tier.sub_price != null ? String(tier.sub_price) : '',
-      sub_period: tier.sub_period || 'monthly',
+      plan_id: tier.plan_id ?? 'none',
       color: tier.color || '#f59e0b',
     })
     setEditingTierId(tier.id)
@@ -1797,17 +1827,7 @@ export function MembershipConfigSection({ formData, setFormData }) {
 
   const handleCancelTierEdit = () => {
     setEditingTierId(null)
-    setNewTier({ name: '', min_spend: '', sub_price: '', sub_period: 'monthly', color: '#f59e0b' })
-  }
-
-  const handleRemoveTier = (id) => {
-    setFormData((prev) => ({
-      ...prev,
-      membership_tiers: prev.membership_tiers.filter((t) => t.id !== id),
-      membership_catalog: (prev.membership_catalog || []).map((b) =>
-        b.tier_required === id ? { ...b, tier_required: 'all' } : b,
-      ),
-    }))
+    setNewTier({ name: '', min_spend: '', plan_id: 'none', color: '#f59e0b' })
   }
 
   const handleAddBenefit = () => {
@@ -1980,8 +2000,86 @@ export function MembershipConfigSection({ formData, setFormData }) {
         </div>
       )}
 
-      {/* Tier builder */}
-      {activation === 'tiers' && (
+      {/* Niveles pagos: se eligen entre los planes ya creados en la pestaña Planes */}
+      {activation === 'tiers' && paymentMode === 'paid' && (
+        <div className="space-y-3">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <Label>Niveles</Label>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                Tildá qué planes de la pestaña Planes están disponibles en este club. Para crear, editar o eliminar un
+                plan, hacelo desde ahí.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-1.5 flex-shrink-0"
+              onClick={() => window.open('/memberships/plans', '_blank')}
+            >
+              <Plus className="w-3.5 h-3.5" /> Crear plan
+            </Button>
+          </div>
+
+          {availablePlans.length > 0 ? (
+            <div className="space-y-2">
+              {availablePlans.map((plan) => {
+                const isSelected = selectedPlanIds.has(plan.id)
+                return (
+                  <div
+                    key={plan.id}
+                    className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${
+                      isSelected
+                        ? 'border-violet-300 dark:border-violet-700 bg-violet-50/50 dark:bg-violet-950/20'
+                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+                    }`}
+                  >
+                    <div
+                      className="w-8 h-8 rounded-lg flex-shrink-0"
+                      style={{ backgroundColor: plan.color || '#f59e0b' }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+                        {plan.name}
+                        {plan.active === false && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-400 font-medium">
+                            Inactivo
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {formatMoney(plan.price)}/{periodLabel(plan.billing_period_days)}
+                      </p>
+                    </div>
+                    <Switch
+                      checked={isSelected}
+                      onCheckedChange={(checked) => handleTogglePlanTier(plan, checked)}
+                      className="flex-shrink-0"
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-4 text-gray-400 dark:text-gray-500 border border-dashed border-gray-200 dark:border-gray-700 rounded-xl space-y-2">
+              <p className="text-sm">Todavía no creaste planes.</p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                onClick={() => window.open('/memberships/plans', '_blank')}
+              >
+                <Plus className="w-3.5 h-3.5" /> Crear el primer plan
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Niveles sin plan pago (Sin pagar / Ambas): se arman acá, por gasto */}
+      {activation === 'tiers' && paymentMode !== 'paid' && (
         <div className="space-y-4">
           <Label>Niveles</Label>
           <div
@@ -1991,7 +2089,7 @@ export function MembershipConfigSection({ formData, setFormData }) {
               {editingTierId !== null ? 'Editando nivel' : 'Agregar nivel'}
             </p>
 
-            <div className={`grid gap-3 ${paymentMode === 'paid' ? 'grid-cols-1' : 'grid-cols-2'}`}>
+            <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="tier_name" className="text-xs">
                   Nombre
@@ -2010,82 +2108,63 @@ export function MembershipConfigSection({ formData, setFormData }) {
                   className="h-9"
                 />
               </div>
-              {paymentMode !== 'paid' && (
-                <div className="space-y-1.5">
-                  <Label htmlFor="tier_min_spend" className="text-xs">
-                    Gasto mínimo ($)
-                  </Label>
-                  <Input
-                    id="tier_min_spend"
-                    type="number"
-                    min="0"
-                    value={newTier.min_spend}
-                    onChange={(e) => setNewTier((p) => ({ ...p, min_spend: e.target.value }))}
-                    placeholder="0"
-                    className="h-9"
-                  />
-                </div>
-              )}
+              <div className="space-y-1.5">
+                <Label htmlFor="tier_min_spend" className="text-xs">
+                  Gasto mínimo ($)
+                </Label>
+                <Input
+                  id="tier_min_spend"
+                  type="number"
+                  min="0"
+                  value={newTier.min_spend}
+                  onChange={(e) => setNewTier((p) => ({ ...p, min_spend: e.target.value }))}
+                  placeholder="0"
+                  className="h-9"
+                />
+              </div>
             </div>
 
-            {/* Suscripción */}
-            {paymentMode !== 'points' && (
+            {/* Suscripción opcional (solo en modo "Ambas") — enlaza a un plan ya creado en Planes */}
+            {paymentMode === 'both' && (
               <div className="pt-1 border-t border-gray-200 dark:border-gray-700 space-y-2">
                 <div className="flex items-center gap-2">
                   <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                    {paymentMode === 'paid' ? 'Precio de la suscripción' : 'Suscripción directa'}
+                    Suscripción para saltear el gasto
                   </p>
-                  {paymentMode === 'both' && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-400 font-medium">
-                      opcional
-                    </span>
-                  )}
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-400 font-medium">
+                    opcional
+                  </span>
                 </div>
                 <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-snug">
-                  {paymentMode === 'paid'
-                    ? 'Los clientes pagan este precio para acceder a este nivel.'
-                    : 'Si defines un precio, los clientes pueden pagar para acceder a este nivel sin necesidad de alcanzar el gasto mínimo.'}
+                  Si enlazás un plan, los clientes pueden pagarlo para acceder a este nivel sin necesidad de alcanzar el
+                  gasto mínimo. Para crear o editar planes, hacelo desde la pestaña Planes.
                 </p>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="tier_sub_price" className="text-xs">
-                      Precio ($)
-                    </Label>
-                    <Input
-                      id="tier_sub_price"
-                      type="number"
-                      min="0"
-                      value={newTier.sub_price}
-                      onChange={(e) => setNewTier((p) => ({ ...p, sub_price: e.target.value }))}
-                      placeholder={paymentMode === 'paid' ? 'Ej: 1500' : 'Dejar vacío si no aplica'}
-                      className="h-9"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Período</Label>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {[
-                        { value: 'monthly', label: 'Mensual' },
-                        { value: 'annual', label: 'Anual' },
-                      ].map((opt) => {
-                        const isSelected = newTier.sub_period === opt.value
-                        return (
-                          <button
-                            key={opt.value}
-                            type="button"
-                            onClick={() => setNewTier((p) => ({ ...p, sub_period: opt.value }))}
-                            className={`py-2 rounded-lg border-2 text-[11px] font-semibold transition-all ${
-                              isSelected
-                                ? 'border-violet-400 bg-violet-50 dark:bg-violet-950/40 text-gray-900 dark:text-gray-100'
-                                : 'border-gray-200 dark:border-gray-700 text-gray-400 hover:border-gray-300'
-                            }`}
-                          >
-                            {opt.label}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={newTier.plan_id}
+                    onValueChange={(value) => setNewTier((p) => ({ ...p, plan_id: value }))}
+                  >
+                    <SelectTrigger className="h-9 flex-1">
+                      <SelectValue placeholder="Ninguna" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Ninguna</SelectItem>
+                      {availablePlans.map((plan) => (
+                        <SelectItem key={plan.id} value={plan.id}>
+                          {plan.name} — {formatMoney(plan.price)}/{periodLabel(plan.billing_period_days)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-9 gap-1.5 flex-shrink-0"
+                    onClick={() => window.open('/memberships/plans', '_blank')}
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Crear plan
+                  </Button>
                 </div>
               </div>
             )}
@@ -2114,9 +2193,7 @@ export function MembershipConfigSection({ formData, setFormData }) {
               <Button
                 type="button"
                 onClick={handleAddTier}
-                disabled={
-                  !newTier.name.trim() || (paymentMode === 'paid' ? newTier.sub_price === '' : newTier.min_spend === '')
-                }
+                disabled={!newTier.name.trim() || newTier.min_spend === ''}
                 className="flex-1 gap-2 bg-black hover:bg-neutral-800 text-white"
               >
                 {editingTierId !== null ? (
@@ -2136,47 +2213,46 @@ export function MembershipConfigSection({ formData, setFormData }) {
 
           {tiers.length > 0 ? (
             <div className="space-y-2">
-              {tiers.map((tier) => (
-                <div
-                  key={tier.id}
-                  className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700"
-                >
-                  <div className="w-8 h-8 rounded-lg flex-shrink-0" style={{ backgroundColor: tier.color }} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{tier.name}</p>
-                    <p className="text-xs text-gray-400">
-                      {paymentMode !== 'paid' && `Gasto mín. $${parseInt(tier.min_spend || 0).toLocaleString()}`}
-                      {tier.sub_price != null && (
-                        <span
-                          className={
-                            paymentMode === 'paid' ? 'text-violet-500 font-medium' : 'ml-2 text-violet-500 font-medium'
-                          }
-                        >
-                          {paymentMode !== 'paid' && '· '}
-                          Suscripción ${parseInt(tier.sub_price).toLocaleString()}/
-                          {tier.sub_period === 'annual' ? 'año' : 'mes'}
-                        </span>
-                      )}
-                    </p>
+              {tiers.map((tier) => {
+                const linkedPlan =
+                  paymentMode === 'both' && tier.plan_id ? availablePlans.find((p) => p.id === tier.plan_id) : null
+                return (
+                  <div
+                    key={tier.id}
+                    className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700"
+                  >
+                    <div className="w-8 h-8 rounded-lg flex-shrink-0" style={{ backgroundColor: tier.color }} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{tier.name}</p>
+                      <p className="text-xs text-gray-400">
+                        Gasto mín. ${parseInt(tier.min_spend || 0).toLocaleString()}
+                        {linkedPlan && (
+                          <span className="ml-2 text-violet-500 font-medium">
+                            · Suscripción: {linkedPlan.name} {formatMoney(linkedPlan.price)}/
+                            {periodLabel(linkedPlan.billing_period_days)}
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                    <div className="flex gap-1 flex-shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleEditTier(tier)}
+                        className="p-1.5 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-950/30 text-gray-400 hover:text-violet-500 transition-colors"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTier(tier.id)}
+                        className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-gray-400 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex gap-1 flex-shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => handleEditTier(tier)}
-                      className="p-1.5 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-950/30 text-gray-400 hover:text-violet-500 transition-colors"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveTier(tier.id)}
-                      className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-gray-400 hover:text-red-500 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           ) : (
             <div className="text-center py-4 text-gray-400 dark:text-gray-500 border border-dashed border-gray-200 dark:border-gray-700 rounded-xl">

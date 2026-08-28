@@ -32,7 +32,7 @@ const SEED_PLANS = [
     name: 'Básico',
     description: 'Acceso a beneficios esenciales. Ideal para empezar.',
     active: true,
-    billing_period: 'monthly',
+    billing_period_days: 30,
     price: 9990,
     trial_days: 7,
     renewal_frequency: 'monthly',
@@ -53,7 +53,7 @@ const SEED_PLANS = [
     name: 'Plus',
     description: 'Para clientes frecuentes que quieren más beneficios y prioridad.',
     active: true,
-    billing_period: 'monthly',
+    billing_period_days: 30,
     price: 17990,
     trial_days: 7,
     renewal_frequency: 'monthly',
@@ -74,7 +74,7 @@ const SEED_PLANS = [
     name: 'VIP',
     description: 'La experiencia completa: barbero fijo, eventos y kit de grooming.',
     active: true,
-    billing_period: 'monthly',
+    billing_period_days: 30,
     price: 29990,
     trial_days: 0,
     renewal_frequency: 'monthly',
@@ -649,6 +649,12 @@ export function loadMembershipData() {
       const data = JSON.parse(stored)
       // Migración: datos guardados antes de que existiera `automations` no lo tienen.
       if (!data.automations) data.automations = JSON.parse(JSON.stringify(SEED_AUTOMATIONS))
+      // Migración: `billing_period` (monthly/annual) → `billing_period_days` (número).
+      data.plans?.forEach((plan) => {
+        if (plan.billing_period_days == null) {
+          plan.billing_period_days = plan.billing_period === 'annual' ? 365 : 30
+        }
+      })
       return data
     }
   } catch {

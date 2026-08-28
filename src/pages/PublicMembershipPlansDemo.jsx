@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { format } from 'date-fns'
 import {
@@ -14,6 +15,7 @@ import {
   RotateCcw,
   Settings,
   Clock3,
+  ImageIcon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -47,7 +49,7 @@ function PlanCompareCard({ plan, highlighted, onSelect }) {
       <p className="text-sm text-gray-500 mt-1 mb-4 min-h-[40px]">{plan.description}</p>
       <div className="flex items-end gap-1 mb-1">
         <span className="text-3xl font-black text-gray-900">{formatMoney(plan.price)}</span>
-        <span className="text-sm text-gray-400 mb-1">/{periodLabel(plan.billing_period)}</span>
+        <span className="text-sm text-gray-400 mb-1">/{periodLabel(plan.billing_period_days)}</span>
       </div>
       {plan.trial_days > 0 && (
         <p className="text-xs font-semibold mb-4" style={{ color: plan.color }}>
@@ -141,16 +143,29 @@ function CheckoutStep({ plan, onBack, onSuccess }) {
   return (
     <div className="min-h-screen bg-gray-50 flex items-start justify-center py-10 px-4">
       <div className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden">
-        <div className="flex items-center gap-3 px-6 pt-6 pb-4 border-b border-gray-100">
+        {/* Banner con el color del plan */}
+        <div
+          className="relative px-6 pt-6 pb-11"
+          style={{ background: `linear-gradient(135deg, ${plan.color} 0%, ${plan.color}99 100%)` }}
+        >
           <button
             onClick={onBack}
-            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors"
           >
-            <ChevronLeft className="w-4 h-4 text-gray-500" />
+            <ChevronLeft className="w-4 h-4 text-white" />
           </button>
-          <p className="font-semibold text-gray-900">Confirmar suscripción</p>
         </div>
-        <div className="px-6 py-6 space-y-5">
+
+        {/* Logo placeholder, superpuesto al banner */}
+        <div className="flex justify-center -mt-9">
+          <div className="w-[72px] h-[72px] rounded-2xl bg-white shadow-md border border-gray-100 flex items-center justify-center">
+            <ImageIcon className="w-6 h-6 text-gray-300" />
+          </div>
+        </div>
+
+        <p className="font-semibold text-gray-900 text-center mt-3">Confirmar suscripción</p>
+
+        <div className="px-6 pt-5 pb-6 space-y-5">
           <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Plan</span>
@@ -158,9 +173,7 @@ function CheckoutStep({ plan, onBack, onSuccess }) {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Facturación</span>
-              <span className="font-semibold text-gray-900">
-                {plan.billing_period === 'annual' ? 'Anual' : 'Mensual'}
-              </span>
+              <span className="font-semibold text-gray-900">Cada {periodLabel(plan.billing_period_days)}</span>
             </div>
             {plan.trial_days > 0 && (
               <div className="flex justify-between text-sm">
@@ -168,12 +181,16 @@ function CheckoutStep({ plan, onBack, onSuccess }) {
                 <span className="font-semibold text-gray-900">{plan.trial_days} días</span>
               </div>
             )}
-            <div className="border-t border-gray-200 pt-2 flex justify-between">
-              <span className="text-sm font-semibold text-gray-700">Total hoy</span>
-              <span className="text-sm font-black text-gray-900">
-                {plan.trial_days > 0 ? '$0' : formatMoney(plan.price)}
+            <div className="border-t border-gray-200 pt-2.5 flex items-center justify-between">
+              <span className="text-sm font-semibold text-gray-700">Suscripción</span>
+              <span className="text-xl font-black" style={{ color: plan.color }}>
+                {formatMoney(plan.price)}
+                <span className="text-xs font-medium text-gray-400">/{periodLabel(plan.billing_period_days)}</span>
               </span>
             </div>
+            {plan.trial_days > 0 && (
+              <p className="text-xs text-gray-400 text-right">Hoy pagás $0 · empieza a cobrarse después de la prueba</p>
+            )}
           </div>
 
           <div className="space-y-3">
@@ -206,8 +223,8 @@ function CheckoutStep({ plan, onBack, onSuccess }) {
 
           <p className="text-xs text-gray-400 text-center leading-relaxed">
             Al confirmar, autorizás el cobro de <strong>{formatMoney(plan.price)}</strong>{' '}
-            {plan.trial_days > 0 ? `luego de tu prueba gratis` : 'hoy'} y cada {periodLabel(plan.billing_period)} hasta
-            cancelar.
+            {plan.trial_days > 0 ? `luego de tu prueba gratis` : 'hoy'} y cada {periodLabel(plan.billing_period_days)}{' '}
+            hasta cancelar.
           </p>
 
           <Button
@@ -575,13 +592,17 @@ function ExpiredStep({ settings, onRenew }) {
 
 export default function PublicMembershipPlansDemo() {
   const [data] = useState(loadMembershipData)
-  const [step, setStep] = useState('landing')
-  const [selectedPlan, setSelectedPlan] = useState(null)
-  const [member, setMember] = useState(null)
-  const [renewalDate, setRenewalDate] = useState(null)
-
   const { settings, plans } = data
   const activePlans = plans.filter((p) => p.active)
+
+  // Un link "Compartir" en un plan (?plan=<id>) salta directo a su checkout.
+  const [searchParams] = useSearchParams()
+  const sharedPlan = plans.find((p) => p.id === searchParams.get('plan'))
+
+  const [step, setStep] = useState(sharedPlan ? 'checkout' : 'landing')
+  const [selectedPlan, setSelectedPlan] = useState(sharedPlan ?? null)
+  const [member, setMember] = useState(null)
+  const [renewalDate, setRenewalDate] = useState(null)
 
   const handleSelectPlan = (plan) => {
     setSelectedPlan(plan)
@@ -590,7 +611,7 @@ export default function PublicMembershipPlansDemo() {
 
   const handleCheckoutSuccess = (memberInfo) => {
     setMember(memberInfo)
-    setRenewalDate(addDaysUTC(new Date(), selectedPlan.billing_period === 'annual' ? 365 : 30))
+    setRenewalDate(addDaysUTC(new Date(), selectedPlan.billing_period_days || 30))
     setStep('success')
   }
 

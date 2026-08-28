@@ -121,7 +121,7 @@ export default function MembershipMemberProfile() {
               {plan && (
                 <p className="text-2xl font-black text-gray-900 dark:text-white">
                   {formatMoney(plan.price)}
-                  <span className="text-sm font-normal text-gray-400">/{periodLabel(plan.billing_period)}</span>
+                  <span className="text-sm font-normal text-gray-400">/{periodLabel(plan.billing_period_days)}</span>
                 </p>
               )}
               <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 space-y-2 text-sm">

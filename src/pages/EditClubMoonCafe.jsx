@@ -191,6 +191,9 @@ export default function EditClubMoonCafe() {
   const [searchParams] = useSearchParams()
   const clubId = searchParams.get('club')
   const flowSuffix = location.pathname.includes('points') ? 'mooncafe-points' : 'mooncafe'
+  // Accedido desde la sección Membresías (Mis Clubes) en vez del flujo normal de Mis Clubes
+  const isMembershipsSection = location.pathname.startsWith('/memberships')
+  const backTo = isMembershipsSection ? '/memberships/clubs' : `/myprograms-demo/${flowSuffix}`
 
   const initialClub = MOONCAFE_CLUBS.find((c) => c.id === clubId) || MOONCAFE_CLUBS[0]
 
@@ -252,7 +255,7 @@ export default function EditClubMoonCafe() {
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-          <Link to={`/myprograms-demo/${flowSuffix}`}>
+          <Link to={backTo}>
             <Button variant="ghost" className="mb-6 gap-2">
               <ArrowLeft className="w-4 h-4" />
               Volver a Mis Clubes

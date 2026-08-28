@@ -1,8 +1,19 @@
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Crown, Pencil, Copy, Trash2, Package, Plus } from 'lucide-react'
+import { Crown, Pencil, Copy, Trash2, Package, Plus, Share2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 import { formatMoney, periodLabel } from '@/lib/membershipFormat'
+
+function handleSharePlan(plan) {
+  const url = `${window.location.origin}/join/barber-club-pro?plan=${plan.id}`
+  navigator.clipboard
+    .writeText(url)
+    .then(() => toast.success('Link copiado — lleva directo al checkout de este plan.'))
+    .catch(() => toast.error('No se pudo copiar el link.'))
+}
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
@@ -36,7 +47,7 @@ export function PlanBadge({ plan }) {
 
 // ─── Plan card ────────────────────────────────────────────────────────────────
 
-export function PlanCard({ plan, memberCount, onEdit, onDuplicate, onDelete }) {
+export function PlanCard({ plan, memberCount, onEdit, onDuplicate, onDelete, onToggleActive }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -53,23 +64,29 @@ export function PlanCard({ plan, memberCount, onEdit, onDuplicate, onDelete }) {
         <div>
           <div className="flex items-center justify-between gap-2">
             <p className="font-bold text-lg text-gray-900 dark:text-white">{plan.name}</p>
-            {!plan.active && (
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">Inactivo</span>
-            )}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className={cn('text-xs font-medium', plan.active ? 'text-emerald-600' : 'text-gray-400')}>
+                {plan.active ? 'Activo' : 'Inactivo'}
+              </span>
+              <Switch checked={plan.active} onCheckedChange={() => onToggleActive?.(plan)} />
+            </div>
           </div>
           <p className="text-sm text-gray-500 mt-1 line-clamp-2">{plan.description}</p>
         </div>
 
         <div className="flex items-end gap-1">
           <span className="text-2xl font-black text-gray-900 dark:text-white">{formatMoney(plan.price)}</span>
-          <span className="text-sm text-gray-400 mb-0.5">/{periodLabel(plan.billing_period)}</span>
+          <span className="text-sm text-gray-400 mb-0.5">/{periodLabel(plan.billing_period_days)}</span>
         </div>
 
         <div className="flex items-center gap-4 text-xs text-gray-500 pt-1 border-t border-gray-100 dark:border-gray-800">
-          <span className="flex items-center gap-1.5 pt-3">
+          <Link
+            to={`/memberships/members?plan=${plan.id}`}
+            className="flex items-center gap-1.5 pt-3 hover:text-gray-900 dark:hover:text-gray-200 hover:underline transition-colors"
+          >
             <Crown className="w-3.5 h-3.5" style={{ color: plan.color }} />
             {memberCount} {memberCount === 1 ? 'miembro' : 'miembros'}
-          </span>
+          </Link>
           {plan.point_multiplier > 1 && <span className="pt-3">{plan.point_multiplier}x puntos</span>}
           {plan.member_limit && <span className="pt-3">Límite: {plan.member_limit}</span>}
         </div>
@@ -80,6 +97,9 @@ export function PlanCard({ plan, memberCount, onEdit, onDuplicate, onDelete }) {
           </Button>
           <Button variant="outline" size="sm" onClick={() => onDuplicate(plan)} title="Duplicar">
             <Copy className="w-3.5 h-3.5" />
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => handleSharePlan(plan)} title="Compartir">
+            <Share2 className="w-3.5 h-3.5" />
           </Button>
           <Button
             variant="outline"

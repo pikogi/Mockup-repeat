@@ -1110,7 +1110,7 @@ function NewCustomerWizard({ open, onClose, onCreate }) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
-export default function CustomersMoonCafe() {
+export default function CustomersMoonCafe({ headerExtra }) {
   const [activeView, setActiveView] = useState('members')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('recent')
@@ -1288,6 +1288,8 @@ export default function CustomersMoonCafe() {
             <UserPlus className="w-4 h-4" /> Nuevo cliente
           </Button>
         </motion.div>
+
+        {headerExtra && <div className="mb-6">{headerExtra}</div>}
 
         {/* Metric cards */}
         <motion.div
