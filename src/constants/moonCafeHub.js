@@ -135,13 +135,23 @@ export const DEFAULT_HUB_CONFIG = {
   externalLinks: DEFAULT_EXTERNAL_LINKS,
 }
 
+// Si en una demo futura agregamos un nuevo enlace fijo de Repeat, esto asegura
+// que aparezca para quienes ya tengan una config vieja guardada en localStorage
+// (sin esto, el spread de más abajo pisaría repeatLinks entero con la lista
+// vieja y el enlace nuevo nunca se vería hasta borrar el localStorage a mano).
+function withNewDefaultRepeatLinks(savedRepeatLinks) {
+  const savedIds = new Set(savedRepeatLinks.map((l) => l.id))
+  const missing = DEFAULT_REPEAT_LINKS.filter((l) => !savedIds.has(l.id))
+  return [...savedRepeatLinks, ...missing]
+}
+
 export function loadHubConfig() {
   try {
     const stored = localStorage.getItem(HUB_STORAGE_KEY)
     if (stored) {
       const parsed = JSON.parse(stored)
       if (parsed && Array.isArray(parsed.repeatLinks) && Array.isArray(parsed.externalLinks)) {
-        return { ...DEFAULT_HUB_CONFIG, ...parsed }
+        return { ...DEFAULT_HUB_CONFIG, ...parsed, repeatLinks: withNewDefaultRepeatLinks(parsed.repeatLinks) }
       }
     }
   } catch {
