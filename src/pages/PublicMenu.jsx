@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Package, Coins, X, ShoppingBag, ChevronDown, Minus, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { SAMPLE_CATALOG } from '@/constants/moonCafeMenu'
 
 // ─── Storage ──────────────────────────────────────────────────────────────────
 
@@ -22,7 +23,9 @@ function loadCatalog() {
   } catch {
     /* ignore */
   }
-  return { items: [], categories: [], settings: { name: 'Menú', color: '#111827', logo_url: '' } }
+  // Sin catálogo guardado (p. ej. alguien escaneó un QR compartido en un dispositivo
+  // nuevo): mostramos el catálogo de ejemplo de Café Moon en vez de un menú vacío.
+  return SAMPLE_CATALOG
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

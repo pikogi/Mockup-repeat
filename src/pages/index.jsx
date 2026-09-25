@@ -95,6 +95,8 @@ const PublicCatalogMoonCafe = lazy(() => import('./PublicCatalogMoonCafe'))
 const EncuestaMoonCafe = lazy(() => import('./EncuestaMoonCafe'))
 const CrearEncuestaMoonCafe = lazy(() => import('./CrearEncuestaMoonCafe'))
 const ResultadosEncuestaMoonCafe = lazy(() => import('./ResultadosEncuestaMoonCafe'))
+const PublicHubMoonCafe = lazy(() => import('./PublicHubMoonCafe'))
+const HubMoonCafe = lazy(() => import('./HubMoonCafe'))
 const PublicEncuestaMoonCafe = lazy(() => import('./PublicEncuestaMoonCafe'))
 const WalletDemoGym = lazy(() => import('./WalletDemoGym'))
 const ScanDemoGym = lazy(() => import('./ScanDemoGym'))
@@ -178,6 +180,7 @@ export default function Pages() {
             <Route path="/wallet-demo/mooncafe" element={<WalletDemoMoonCafe />} />
             <Route path="/scan-demo/mooncafe" element={<ScanDemoMoonCafe />} />
             <Route path="/scan-demo/mooncafe-select" element={<ScanDemoMoonCafeSelector />} />
+            <Route path="/hub-demo/mooncafe" element={<PublicHubMoonCafe />} />
             <Route
               path="/dashboard-demo/mooncafe"
               element={
@@ -287,6 +290,14 @@ export default function Pages() {
               element={
                 <LayoutWrapper>
                   <ResultadosEncuestaMoonCafe />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/enlaces/mooncafe-demo"
+              element={
+                <LayoutWrapper>
+                  <HubMoonCafe />
                 </LayoutWrapper>
               }
             />

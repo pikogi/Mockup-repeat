@@ -23,6 +23,7 @@ import {
   Crown,
   Package,
   UserCog,
+  Link2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLanguage } from '@/components/auth/LanguageContext'
@@ -87,6 +88,7 @@ export default function Sidebar() {
     Team: '/team-demo/mooncafe',
     ScanQR: '/scanqr-demo?demo=selector&scan=1',
     Sorteo: '/sorteo/mooncafe-demo',
+    Enlaces: '/enlaces/mooncafe-demo',
   }
 
   const MOONCAFE_ROADMAP_PATHS = [
@@ -138,6 +140,7 @@ export default function Sidebar() {
     '/sorteo/mooncafe-demo',
     '/catalogo-demo/mooncafe',
     '/encuesta/mooncafe-demo',
+    '/enlaces/mooncafe-demo',
   ]
 
   const MOONCAFE_POINTS_DEMO_URLS = {
@@ -151,6 +154,7 @@ export default function Sidebar() {
     Team: '/team-demo/mooncafe-points',
     ScanQR: '/scanqr-demo?demo=selector&scan=1',
     Sorteo: '/sorteo/mooncafe-demo',
+    Enlaces: '/enlaces/mooncafe-demo',
   }
 
   const GLOW_PATHS = [
@@ -302,6 +306,8 @@ export default function Sidebar() {
               { name: t('team'), icon: Users, page: 'Team' },
             ]
           : []),
+        // "Enlaces" (hub público estilo Linktree) solo existe en el flujo de Café Moon por ahora.
+        ...(isMoonCafeDemo ? [{ name: 'Enlaces', icon: Link2, page: 'Enlaces' }] : []),
         ...(user?.type_user === 'brand_admin' && !isDemo ? [{ name: t('stores'), icon: Store, page: 'Stores' }] : []),
       ]
 

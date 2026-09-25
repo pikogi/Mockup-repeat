@@ -41,7 +41,7 @@ export default function StoresMoonCafe() {
     setQrOpen(true)
   }
 
-  const getQrUrl = (store) => (store ? `${window.location.origin}/publicprogram-demo/mooncafe` : '')
+  const getQrUrl = (store) => (store ? `${window.location.origin}/hub-demo/mooncafe` : '')
 
   return (
     <div className="min-h-screen">
