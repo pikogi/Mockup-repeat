@@ -117,23 +117,33 @@ export default function PublicHubMoonCafe() {
   const repeatLinks = config.repeatLinks.filter((l) => l.enabled)
   const externalLinks = config.externalLinks.filter((l) => l.enabled)
 
+  const headerStyle = config.bannerUrl
+    ? { backgroundImage: `url(${config.bannerUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    : { backgroundColor: config.color }
+
   return (
-    <div className="min-h-screen bg-gray-50 pb-10">
+    <div className="min-h-screen pb-10" style={{ backgroundColor: config.pageBackground }}>
       <div className="max-w-md mx-auto">
         {/* Header */}
-        <div className="pt-10 pb-6 px-6 text-center" style={{ backgroundColor: config.color }}>
-          <img
-            src="/moon-cafe-logo.png"
-            alt={MOONCAFE_BRAND.brand_name}
-            className="w-20 h-20 rounded-2xl object-contain mx-auto mb-4"
-            style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}
-          />
-          <h1 className="text-xl font-bold text-white leading-tight">{MOONCAFE_BRAND.brand_name}</h1>
-          <p className="text-sm text-white/60 mt-1">{config.subtitle}</p>
+        <div className="relative pt-10 pb-6 px-6 text-center" style={headerStyle}>
+          {config.bannerUrl && <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/55" />}
+          <div className="relative z-10">
+            <img
+              src="/moon-cafe-logo.png"
+              alt={MOONCAFE_BRAND.brand_name}
+              className="w-20 h-20 rounded-2xl object-contain mx-auto mb-4"
+              style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}
+            />
+            <h1 className="text-xl font-bold text-white leading-tight">{MOONCAFE_BRAND.brand_name}</h1>
+            <p className="text-sm text-white/60 mt-1">{config.subtitle}</p>
+          </div>
         </div>
 
         {/* Links */}
-        <div className="px-5 -mt-4 space-y-3">
+        {/* "relative" es necesario acá: el header tiene "relative" (para el banner/overlay), y en CSS
+            un elemento posicionado siempre se pinta encima de sus hermanos NO posicionados, sin
+            importar el orden en el DOM. Sin esto, el header tapaba la esquina superior de esta card. */}
+        <div className="relative px-5 -mt-3 space-y-3">
           {repeatLinks.map((link) =>
             link.kind === 'club' ? (
               <ClubDropdown key={link.id} link={link} color={config.color} />

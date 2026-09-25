@@ -105,6 +105,10 @@ export const DEFAULT_EXTERNAL_LINKS = [
 
 export const DEFAULT_HUB_CONFIG = {
   color: '#1a4a2e',
+  // Imagen de fondo del encabezado (reemplaza el color de marca ahí cuando está definida).
+  bannerUrl: '',
+  // Color de fondo de toda la pantalla, detrás de las tarjetas de enlaces.
+  pageBackground: '#f9fafb',
   subtitle: 'Elegí lo que buscás',
   repeatLinks: DEFAULT_REPEAT_LINKS,
   externalLinks: DEFAULT_EXTERNAL_LINKS,

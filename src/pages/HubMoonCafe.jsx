@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import {
   Link2,
   Plus,
@@ -10,6 +10,8 @@ import {
   ChevronDown,
   Pencil,
   SlidersHorizontal,
+  Image as ImageIcon,
+  X,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
@@ -266,22 +268,64 @@ function LinkQrDialog({ link, onOpenChange }) {
   )
 }
 
-function HubSettingsDialog({ open, onOpenChange, color, subtitle, onSave }) {
+// Redimensiona a un ancho máximo (preserva la relación de aspecto, no recorta)
+// y comprime a JPEG — suficiente calidad para un banner, liviano para localStorage.
+function compressBannerFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const img = new window.Image()
+      img.onload = () => {
+        const maxW = 960
+        const ratio = Math.min(maxW / img.naturalWidth, 1)
+        const w = Math.round(img.naturalWidth * ratio)
+        const h = Math.round(img.naturalHeight * ratio)
+        const canvas = document.createElement('canvas')
+        canvas.width = w
+        canvas.height = h
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h)
+        resolve(canvas.toDataURL('image/jpeg', 0.82))
+      }
+      img.onerror = () => reject(new Error('No se pudo procesar la imagen'))
+      img.src = e.target.result
+    }
+    reader.onerror = () => reject(new Error('No se pudo leer el archivo'))
+    reader.readAsDataURL(file)
+  })
+}
+
+function HubSettingsDialog({ open, onOpenChange, color, bannerUrl, pageBackground, subtitle, onSave }) {
   const [draftColor, setDraftColor] = useState(color)
+  const [draftBanner, setDraftBanner] = useState(bannerUrl)
+  const [draftBg, setDraftBg] = useState(pageBackground)
   const [draftSubtitle, setDraftSubtitle] = useState(subtitle)
+  const fileInputRef = useRef(null)
 
   // Reabrir el diálogo siempre parte de los valores actuales, no de lo que haya
   // quedado tipeado (y descartado) la vez anterior.
   const handleOpenChange = (next) => {
     if (next) {
       setDraftColor(color)
+      setDraftBanner(bannerUrl)
+      setDraftBg(pageBackground)
       setDraftSubtitle(subtitle)
     }
     onOpenChange(next)
   }
 
+  const handleBannerFile = async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    try {
+      setDraftBanner(await compressBannerFile(file))
+    } catch {
+      toast.error('No se pudo cargar la imagen')
+    }
+  }
+
   const handleSave = () => {
-    onSave({ color: draftColor, subtitle: draftSubtitle })
+    onSave({ color: draftColor, bannerUrl: draftBanner, pageBackground: draftBg, subtitle: draftSubtitle })
     onOpenChange(false)
     toast.success('Apariencia guardada')
   }
@@ -294,7 +338,31 @@ function HubSettingsDialog({ open, onOpenChange, color, subtitle, onSave }) {
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label className="text-xs">Color de marca</Label>
+            <Label className="text-xs">Banner (reemplaza el color de fondo del encabezado)</Label>
+            {draftBanner ? (
+              <div className="relative rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 h-24">
+                <img src={draftBanner} alt="Banner" className="w-full h-full object-cover" />
+                <button
+                  onClick={() => setDraftBanner('')}
+                  className="absolute top-1.5 right-1.5 bg-black/60 hover:bg-black/75 text-white rounded-full p-1 transition-colors"
+                  aria-label="Quitar banner"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full h-24 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:border-gray-400 transition-colors"
+              >
+                <ImageIcon className="w-5 h-5" />
+                <span className="text-xs">Subir imagen</span>
+              </button>
+            )}
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleBannerFile} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Color de marca {draftBanner && '(oculto mientras haya un banner)'}</Label>
             <div className="flex items-center gap-3">
               <input
                 type="color"
@@ -303,6 +371,18 @@ function HubSettingsDialog({ open, onOpenChange, color, subtitle, onSave }) {
                 className="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-800 cursor-pointer bg-transparent"
               />
               <Input value={draftColor} onChange={(e) => setDraftColor(e.target.value)} className="text-sm font-mono" />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Color de fondo de la pantalla</Label>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={draftBg}
+                onChange={(e) => setDraftBg(e.target.value)}
+                className="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-800 cursor-pointer bg-transparent"
+              />
+              <Input value={draftBg} onChange={(e) => setDraftBg(e.target.value)} className="text-sm font-mono" />
             </div>
           </div>
           <div className="space-y-1.5">
@@ -376,7 +456,8 @@ export default function HubMoonCafe() {
     toast.success('Enlace agregado')
   }
 
-  const saveAppearance = ({ color, subtitle }) => updateConfig((prev) => ({ ...prev, color, subtitle }))
+  const saveAppearance = ({ color, bannerUrl, pageBackground, subtitle }) =>
+    updateConfig((prev) => ({ ...prev, color, bannerUrl, pageBackground, subtitle }))
 
   const handleSave = () => toast.success('Cambios guardados')
 
@@ -483,6 +564,8 @@ export default function HubMoonCafe() {
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
         color={config.color}
+        bannerUrl={config.bannerUrl}
+        pageBackground={config.pageBackground}
         subtitle={config.subtitle}
         onSave={saveAppearance}
       />
