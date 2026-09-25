@@ -1,4 +1,15 @@
-import { ClipboardList, BookOpen, Gift, Coins, Crown, Instagram, MessageCircle, MapPin, Link2 } from 'lucide-react'
+import {
+  ClipboardList,
+  BookOpen,
+  Gift,
+  Coins,
+  Crown,
+  Instagram,
+  MessageCircle,
+  MapPin,
+  Link2,
+  Award,
+} from 'lucide-react'
 
 // Config del hub público de Café Moon (/hub-demo/mooncafe), editable desde el
 // admin en /enlaces/mooncafe-demo. Sin backend real: se persiste en localStorage,
@@ -16,6 +27,7 @@ export const ICONS_BY_KEY = {
   whatsapp: MessageCircle,
   mappin: MapPin,
   link: Link2,
+  award: Award,
 }
 
 // Los 3 programas de fidelidad de Café Moon. No son editables desde el admin —
@@ -68,6 +80,15 @@ export const DEFAULT_REPEAT_LINKS = [
     label: 'Club de Fidelidad',
     description: 'Sellos, Puntos y Moon Club',
     url: '/hub-demo/mooncafe',
+    enabled: true,
+  },
+  {
+    id: 'catalogo',
+    kind: 'catalogo',
+    iconKey: 'award',
+    label: 'Catálogo de premios',
+    description: 'Canjeá tus puntos por premios',
+    url: '/catalog/mooncafe-puntos-demo',
     enabled: true,
   },
 ]
