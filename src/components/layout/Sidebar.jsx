@@ -504,38 +504,34 @@ export default function Sidebar() {
                         <X className="h-5 w-5" />
                       </button>
                       <nav className="flex flex-col gap-4 mt-8">
-                        <Link
-                          to={resolveUrl('Notifications')}
-                          className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                          <Bell className="w-5 h-5" />
-                          {t('notifications')}
-                        </Link>
-                        <Link
-                          to={resolveUrl('MyPrograms')}
-                          className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                          <CreditCard className="w-5 h-5" />
-                          {t('myPrograms')}
-                        </Link>
-                        <Link
-                          to={resolveUrl('Survey')}
-                          className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                          <ClipboardList className="w-5 h-5" />
-                          {t('survey')}
-                        </Link>
-                        <Link
-                          to={resolveUrl('Menu')}
-                          className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                          <BookOpen className="w-5 h-5" />
-                          {t('menu')}
-                        </Link>
+                        {/* Same items as the desktop sidebar, minus the ones already in the bottom bar */}
+                        {navItems
+                          .filter((item) => !['Dashboard', 'Customers'].includes(item.page))
+                          .map((item) => {
+                            const url = item.path ?? resolveUrl(item.page)
+                            if (url === null || item.comingSoon || item.noNav) {
+                              return (
+                                <div
+                                  key={item.name}
+                                  className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg text-gray-300 cursor-default select-none"
+                                >
+                                  <item.icon className="w-5 h-5" />
+                                  {item.name}
+                                </div>
+                              )
+                            }
+                            return (
+                              <Link
+                                key={item.name}
+                                to={url}
+                                className="flex items-center gap-3 text-lg font-medium p-2 rounded-lg hover:bg-gray-100"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                              >
+                                <item.icon className="w-5 h-5" />
+                                {item.name}
+                              </Link>
+                            )
+                          })}
 
                         <div className="border-t border-gray-200 pt-4 mt-4 flex flex-col gap-2">
                           {isMoonCafeDemo || isMoonCafeRoadmap || isGlowDemo || isDelPilarDemo ? (
