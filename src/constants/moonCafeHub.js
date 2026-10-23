@@ -1,148 +1,88 @@
-import {
-  ClipboardList,
-  BookOpen,
-  Gift,
-  Coins,
-  Crown,
-  Instagram,
-  MessageCircle,
-  MapPin,
-  Link2,
-  Award,
-} from 'lucide-react'
+import { BookOpen, ClipboardList, CreditCard, Globe, ShoppingBag } from 'lucide-react'
+import { loadShowcaseState } from '@/constants/moonCafeShowcase'
 
-// Config del hub público de Café Moon (/hub-demo/mooncafe), editable desde el
-// admin en /enlaces/mooncafe-demo. Sin backend real: se persiste en localStorage,
-// mismo patrón que 'repeat_catalog' en Menu.jsx / PublicMenu.jsx, para que la
-// página pública siempre refleje lo último guardado en el admin.
-export const HUB_STORAGE_KEY = 'repeat_hub_config'
+// Config de la página pública de links de Café Moon (/hub-demo/mooncafe), editable
+// desde el admin en /enlaces/mooncafe-demo. Sin backend real: se persiste en
+// localStorage para que la página pública refleje lo último guardado en el admin.
+// La key cambió con el rediseño (antes 'repeat_hub_config') porque la forma de los
+// datos es otra y no vale la pena migrar configs viejas de una demo.
+export const HUB_STORAGE_KEY = 'repeat_links_mooncafe'
 
-export const ICONS_BY_KEY = {
-  clipboard: ClipboardList,
-  book: BookOpen,
-  gift: Gift,
-  coins: Coins,
-  crown: Crown,
-  instagram: Instagram,
-  whatsapp: MessageCircle,
-  mappin: MapPin,
-  link: Link2,
-  award: Award,
+export const LINKS_URL_PREFIX = 'club.repeat.la/public/links/'
+export const SLUG_PATTERN = /^[a-z0-9-]{3,60}$/i
+
+// Destinos de Repeat que se pueden agregar desde "Agregar destino de Repeat". Cada
+// uno tiene opciones (qué vitrina, qué programa…) y una etiqueta por defecto.
+export const REPEAT_DESTINATIONS = {
+  vitrina: {
+    label: 'Vitrina',
+    icon: ShoppingBag,
+    // Las vitrinas se leen en vivo para que una vitrina creada en el admin aparezca acá.
+    getOptions: () =>
+      loadShowcaseState().showcases.map((s) => ({
+        id: s.id,
+        label: s.name,
+        url: `/showcase-demo/mooncafe/${s.id}`,
+      })),
+  },
+  programa: {
+    label: 'Programa',
+    icon: CreditCard,
+    getOptions: () => [
+      { id: 'sellos', label: 'Club Moon Café · Sellos', url: '/publicprogram-demo/mooncafe' },
+      { id: 'puntos', label: 'Club Moon Café · Puntos', url: '/publicprogram-demo/mooncafe-points' },
+      { id: 'membresia', label: 'Moon Club · Membresía', url: '/membership/moon-cafe-demo' },
+    ],
+  },
+  catalogo: {
+    label: 'Catálogo',
+    icon: BookOpen,
+    getOptions: () => [{ id: 'premios', label: 'Catálogo de premios', url: '/catalog/mooncafe-puntos-demo' }],
+  },
+  encuesta: {
+    label: 'Encuesta',
+    icon: ClipboardList,
+    getOptions: () => [{ id: 'satisfaccion', label: 'Encuesta de satisfacción', url: '/encuesta/moon-cafe-demo' }],
+  },
 }
 
-// Los 3 programas de fidelidad de Café Moon. No son editables desde el admin —
-// solo la fila "Club de Fidelidad" que despliega estas 3 opciones al hacer clic.
-export const CLUB_OPTIONS = [
-  {
-    label: 'Programa de Sellos',
-    description: 'Cada 5 cafés, 1 gratis',
-    iconKey: 'gift',
-    url: '/publicprogram-demo/mooncafe',
-  },
-  {
-    label: 'Programa de Puntos',
-    description: 'Acumulá y canjeá premios',
-    iconKey: 'coins',
-    url: '/publicprogram-demo/mooncafe-points',
-  },
-  {
-    label: 'Moon Club · Membresía',
-    description: 'Beneficios exclusivos',
-    iconKey: 'crown',
-    url: '/membership/moon-cafe-demo',
-  },
-]
+export const EXTERNAL_LINK = { label: 'Link', icon: Globe }
 
-// Enlaces de Repeat: fijos (no se pueden borrar), pero sí reordenar entre ellos.
-export const DEFAULT_REPEAT_LINKS = [
-  {
-    id: 'encuesta',
-    kind: 'encuesta',
-    iconKey: 'clipboard',
-    label: 'Encuesta de satisfacción',
-    description: 'Contanos cómo te fue',
-    url: '/encuesta/moon-cafe-demo',
-    enabled: true,
-  },
-  {
-    id: 'menu',
-    kind: 'menu',
-    iconKey: 'book',
-    label: 'Menú',
-    description: 'Café, comidas y postres',
-    url: '/catalog/my-menu',
-    enabled: true,
-  },
-  {
-    id: 'club',
-    kind: 'club',
-    iconKey: 'gift',
-    label: 'Club de Fidelidad',
-    description: 'Sellos, Puntos y Moon Club',
-    url: '/hub-demo/mooncafe',
-    enabled: true,
-  },
-  {
-    id: 'catalogo',
-    kind: 'catalogo',
-    iconKey: 'award',
-    label: 'Catálogo de premios',
-    description: 'Canjeá tus puntos por premios',
-    url: '/catalog/mooncafe-puntos-demo',
-    enabled: true,
-  },
-]
+export const linkMeta = (link) => (link.type === 'external' ? EXTERNAL_LINK : REPEAT_DESTINATIONS[link.type])
 
-// Tus enlaces: editables y reordenables entre ellos, se pueden borrar y agregar más.
-export const DEFAULT_EXTERNAL_LINKS = [
-  {
-    id: 'ig',
-    kind: 'external',
-    iconKey: 'instagram',
-    label: 'Instagram',
-    description: '@cafemoon',
-    url: 'https://instagram.com/cafemoon',
-    enabled: true,
-  },
-  {
-    id: 'wa',
-    kind: 'external',
-    iconKey: 'whatsapp',
-    label: 'WhatsApp',
-    description: 'Hacé tu pedido',
-    url: 'https://wa.me/5491100000000',
-    enabled: true,
-  },
-  {
-    id: 'maps',
-    kind: 'external',
-    iconKey: 'mappin',
-    label: 'Cómo llegar',
-    description: 'Av. Corrientes 1234, Buenos Aires',
-    url: 'https://maps.google.com/?q=Av.+Corrientes+1234+Buenos+Aires',
-    enabled: true,
-  },
-]
+export function resolveLinkUrl(link) {
+  if (link.type === 'external') return link.url
+  const options = REPEAT_DESTINATIONS[link.type]?.getOptions() ?? []
+  return (options.find((o) => o.id === link.target) ?? options[0])?.url ?? null
+}
 
 export const DEFAULT_HUB_CONFIG = {
-  color: '#1a4a2e',
-  // Imagen de fondo del encabezado (reemplaza el color de marca ahí cuando está definida).
-  bannerUrl: '',
-  // Color de fondo de toda la pantalla, detrás de las tarjetas de enlaces.
-  pageBackground: '#f9fafb',
-  subtitle: 'Elegí lo que buscás',
-  repeatLinks: DEFAULT_REPEAT_LINKS,
-  externalLinks: DEFAULT_EXTERNAL_LINKS,
-}
-
-// Si en una demo futura agregamos un nuevo enlace fijo de Repeat, esto asegura
-// que aparezca para quienes ya tengan una config vieja guardada en localStorage
-// (sin esto, el spread de más abajo pisaría repeatLinks entero con la lista
-// vieja y el enlace nuevo nunca se vería hasta borrar el localStorage a mano).
-function withNewDefaultRepeatLinks(savedRepeatLinks) {
-  const savedIds = new Set(savedRepeatLinks.map((l) => l.id))
-  const missing = DEFAULT_REPEAT_LINKS.filter((l) => !savedIds.has(l.id))
-  return [...savedRepeatLinks, ...missing]
+  title: 'Café Moon',
+  subtitle: 'Tu café de especialidad',
+  slug: 'cafe-moon',
+  color: '#2f7a4f',
+  published: true,
+  links: [
+    { id: 'l1', type: 'vitrina', target: 'menu', label: 'Menú', enabled: true },
+    { id: 'l2', type: 'programa', target: 'sellos', label: 'Club Moon Café', enabled: true },
+    { id: 'l3', type: 'programa', target: 'membresia', label: 'Moon Club · Membresía', enabled: true },
+    { id: 'l4', type: 'catalogo', target: 'premios', label: 'Catálogo de premios', enabled: true },
+    {
+      id: 'l5',
+      type: 'encuesta',
+      target: 'satisfaccion',
+      label: 'Gana 10% de descuento en tu próxima visita',
+      enabled: true,
+    },
+    { id: 'l6', type: 'external', label: 'Instagram', url: 'https://instagram.com/cafemoon', enabled: true },
+    {
+      id: 'l7',
+      type: 'external',
+      label: 'Cómo llegar',
+      url: 'https://maps.google.com/?q=Av.+Corrientes+1234+Buenos+Aires',
+      enabled: true,
+    },
+  ],
 }
 
 export function loadHubConfig() {
@@ -150,9 +90,7 @@ export function loadHubConfig() {
     const stored = localStorage.getItem(HUB_STORAGE_KEY)
     if (stored) {
       const parsed = JSON.parse(stored)
-      if (parsed && Array.isArray(parsed.repeatLinks) && Array.isArray(parsed.externalLinks)) {
-        return { ...DEFAULT_HUB_CONFIG, ...parsed, repeatLinks: withNewDefaultRepeatLinks(parsed.repeatLinks) }
-      }
+      if (parsed && Array.isArray(parsed.links)) return { ...DEFAULT_HUB_CONFIG, ...parsed }
     }
   } catch {
     /* localStorage puede fallar en navegación privada; usamos los valores por defecto */

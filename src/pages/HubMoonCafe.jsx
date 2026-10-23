@@ -1,574 +1,277 @@
-import { useRef, useState } from 'react'
-import {
-  Link2,
-  Plus,
-  Trash2,
-  ExternalLink,
-  QrCode,
-  Download,
-  ChevronUp,
-  ChevronDown,
-  Pencil,
-  SlidersHorizontal,
-  Image as ImageIcon,
-  X,
-} from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { ArrowDown, ArrowUp, ExternalLink, Link2, Plus, Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { toast } from 'sonner'
-import { ICONS_BY_KEY, loadHubConfig, saveHubConfig } from '@/constants/moonCafeHub'
+import LinksPageView from '@/components/hub/LinksPageView'
+import { MOONCAFE_BRAND } from '@/constants/moonCafeClubs'
+import {
+  linkMeta,
+  LINKS_URL_PREFIX,
+  loadHubConfig,
+  REPEAT_DESTINATIONS,
+  saveHubConfig,
+  SLUG_PATTERN,
+} from '@/constants/moonCafeHub'
+import { genId } from '@/hooks/useMoonCafeShowcase'
+import { cn } from '@/lib/utils'
 
-function QrButton({ onClick, label }) {
+function Section({ title, action, children }) {
   return (
-    <button
-      onClick={onClick}
-      className="flex-shrink-0 text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors p-1"
-      aria-label={`Ver QR de ${label}`}
-      title="Imprimir solo este QR"
-    >
-      <QrCode className="w-4 h-4" />
-    </button>
+    <section className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h2>
+        {action}
+      </div>
+      {children}
+    </section>
   )
 }
 
-function MoveButtons({ onMoveUp, onMoveDown, isFirst, isLast }) {
-  return (
-    <div className="flex flex-col flex-shrink-0 -my-1">
-      <button
-        onClick={onMoveUp}
-        disabled={isFirst}
-        className="text-gray-300 hover:text-gray-700 dark:hover:text-gray-300 disabled:opacity-30 disabled:hover:text-gray-300 transition-colors"
-        aria-label="Subir"
-      >
-        <ChevronUp className="w-4 h-4" />
-      </button>
-      <button
-        onClick={onMoveDown}
-        disabled={isLast}
-        className="text-gray-300 hover:text-gray-700 dark:hover:text-gray-300 disabled:opacity-30 disabled:hover:text-gray-300 transition-colors"
-        aria-label="Bajar"
-      >
-        <ChevronDown className="w-4 h-4" />
-      </button>
-    </div>
-  )
-}
-
-function EditLinkForm({ link, onSave, onCancel }) {
-  const [label, setLabel] = useState(link.label)
-  const [description, setDescription] = useState(link.description)
-  const [url, setUrl] = useState(link.url)
-  const isExternal = link.kind === 'external'
-
-  const handleSave = () => {
-    if (!label.trim()) return
-    onSave({ label: label.trim(), description: description.trim(), ...(isExternal ? { url: url.trim() } : {}) })
-  }
+function LinkCard({ link, isFirst, isLast, onChange, onMove, onDelete }) {
+  const meta = linkMeta(link)
+  const Icon = meta?.icon ?? Link2
+  const options = link.type === 'external' ? [] : REPEAT_DESTINATIONS[link.type].getOptions()
 
   return (
     <motion.div
-      initial={{ height: 0, opacity: 0 }}
-      animate={{ height: 'auto', opacity: 1 }}
-      exit={{ height: 0, opacity: 0 }}
-      transition={{ duration: 0.2 }}
-      className="overflow-hidden"
+      layout
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, height: 0 }}
+      className="rounded-xl border border-gray-200 dark:border-gray-700 p-4 space-y-3"
     >
-      <div className="px-4 pb-4 pt-1 space-y-3 border-t border-gray-100 dark:border-gray-800">
-        <div className="space-y-1.5">
-          <Label className="text-xs">Título</Label>
-          <Input value={label} onChange={(e) => setLabel(e.target.value)} className="text-sm" />
-        </div>
-        <div className="space-y-1.5">
-          <Label className="text-xs">Descripción</Label>
-          <Input value={description} onChange={(e) => setDescription(e.target.value)} className="text-sm" />
-        </div>
-        {isExternal && (
-          <div className="space-y-1.5">
-            <Label className="text-xs">URL</Label>
-            <Input value={url} onChange={(e) => setUrl(e.target.value)} className="text-sm" />
-          </div>
-        )}
-        <div className="flex gap-2 justify-end">
-          <Button variant="ghost" size="sm" onClick={onCancel}>
-            Cancelar
+      <div className="flex items-center gap-2">
+        <Icon className="w-4 h-4 text-gray-500" />
+        <span className="text-sm font-semibold px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+          {meta?.label}
+        </span>
+        <div className="ml-auto flex items-center gap-1">
+          <label className="flex items-center gap-2 text-sm text-gray-500 mr-2 cursor-pointer">
+            <Switch checked={link.enabled} onCheckedChange={(v) => onChange({ enabled: v })} />
+            {link.enabled ? 'Activo' : 'Inactivo'}
+          </label>
+          <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isFirst} onClick={() => onMove(-1)}>
+            <ArrowUp className="w-4 h-4" />
           </Button>
-          <Button size="sm" onClick={handleSave} disabled={!label.trim()}>
-            Guardar
+          <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isLast} onClick={() => onMove(1)}>
+            <ArrowDown className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-red-600" onClick={onDelete}>
+            <Trash2 className="w-4 h-4" />
           </Button>
         </div>
       </div>
+
+      {options.length > 1 && (
+        <div className="space-y-1.5">
+          <Label className="text-xs">Destino</Label>
+          <Select value={link.target} onValueChange={(v) => onChange({ target: v })}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {options.map((o) => (
+                <SelectItem key={o.id} value={o.id}>
+                  {o.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      <div className="space-y-1.5">
+        <Label className="text-xs">Etiqueta</Label>
+        <Input value={link.label} onChange={(e) => onChange({ label: e.target.value })} />
+      </div>
+
+      {link.type === 'external' && (
+        <div className="space-y-1.5">
+          <Label className="text-xs">URL</Label>
+          <Input
+            value={link.url}
+            placeholder="https://"
+            onChange={(e) => onChange({ url: e.target.value })}
+            className={cn(link.url && !/^https?:\/\//.test(link.url) && 'border-red-400')}
+          />
+        </div>
+      )}
     </motion.div>
-  )
-}
-
-function LinkRow({ link, isFirst, isLast, onMove, onToggle, onDelete, onShowQr, onEdit }) {
-  const [editing, setEditing] = useState(false)
-  const Icon = ICONS_BY_KEY[link.iconKey] ?? Link2
-
-  const handleSave = (fields) => {
-    onEdit(link.id, fields)
-    setEditing(false)
-    toast.success('Enlace actualizado')
-  }
-
-  return (
-    <Card className="border shadow-sm overflow-hidden">
-      <CardContent className="p-4 flex items-center gap-3">
-        <MoveButtons
-          onMoveUp={() => onMove(link.id, -1)}
-          onMoveDown={() => onMove(link.id, 1)}
-          isFirst={isFirst}
-          isLast={isLast}
-        />
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
-          <Icon className="w-5 h-5" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{link.label}</p>
-          {link.description && <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{link.description}</p>}
-          {link.kind === 'external' && (
-            <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate">{link.url}</p>
-          )}
-        </div>
-        <Switch checked={link.enabled} onCheckedChange={() => onToggle(link.id)} className="flex-shrink-0" />
-        <button
-          onClick={() => setEditing((v) => !v)}
-          className="flex-shrink-0 text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors p-1"
-          aria-label={`Editar ${link.label}`}
-        >
-          <Pencil className="w-4 h-4" />
-        </button>
-        <QrButton onClick={() => onShowQr(link)} label={link.label} />
-        {onDelete && (
-          <button
-            onClick={() => onDelete(link.id)}
-            className="flex-shrink-0 text-gray-300 hover:text-red-500 transition-colors p-1"
-            aria-label={`Eliminar ${link.label}`}
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        )}
-      </CardContent>
-      <AnimatePresence initial={false}>
-        {editing && <EditLinkForm link={link} onSave={handleSave} onCancel={() => setEditing(false)} />}
-      </AnimatePresence>
-    </Card>
-  )
-}
-
-function AddLinkForm({ onAdd, onCancel }) {
-  const [label, setLabel] = useState('')
-  const [url, setUrl] = useState('')
-
-  const handleAdd = () => {
-    if (!label.trim() || !url.trim()) return
-    onAdd({
-      id: `custom-${Date.now()}`,
-      kind: 'external',
-      iconKey: 'link',
-      label: label.trim(),
-      description: '',
-      url: url.trim(),
-      enabled: true,
-    })
-    setLabel('')
-    setUrl('')
-  }
-
-  return (
-    <motion.div
-      initial={{ height: 0, opacity: 0 }}
-      animate={{ height: 'auto', opacity: 1 }}
-      exit={{ height: 0, opacity: 0 }}
-      transition={{ duration: 0.2 }}
-      className="overflow-hidden"
-    >
-      <Card className="border shadow-sm border-dashed">
-        <CardContent className="p-4 space-y-3">
-          <div className="space-y-1.5">
-            <Label className="text-xs">Nombre del enlace</Label>
-            <Input
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
-              placeholder="Ej: TikTok"
-              className="text-sm"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">URL</Label>
-            <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://..." className="text-sm" />
-          </div>
-          <div className="flex gap-2 justify-end">
-            <Button variant="ghost" size="sm" onClick={onCancel}>
-              Cancelar
-            </Button>
-            <Button size="sm" onClick={handleAdd} disabled={!label.trim() || !url.trim()}>
-              Agregar
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  )
-}
-
-// Igual al patrón de StoreQrDialog (src/components/stores/StoresSections.jsx): QR vía
-// api.qrserver.com + descarga en alta resolución. Sirve para imprimir un solo enlace
-// (p. ej. un cartel de mesa que va directo al Menú) sin pasar por la página completa del hub.
-function LinkQrDialog({ link, onOpenChange }) {
-  if (!link) return null
-  const url = link.url.startsWith('http') ? link.url : `${window.location.origin}${link.url}`
-
-  return (
-    <Dialog open={Boolean(link)} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-center">{`QR de "${link.label}"`}</DialogTitle>
-        </DialogHeader>
-        <div className="flex flex-col items-center space-y-6 py-4">
-          <div className="bg-white dark:bg-gray-900 p-4 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800">
-            <img
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`}
-              alt={`QR ${link.label}`}
-              className="w-48 h-48"
-              loading="lazy"
-            />
-          </div>
-          <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-            <p className="font-medium text-gray-900 dark:text-gray-100">{link.label}</p>
-            <p className="text-xs mt-1 break-all">{url}</p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-              Escanea para ir directo a este enlace, sin pasar por el resto del hub.
-            </p>
-          </div>
-        </div>
-        <DialogFooter className="sm:justify-center">
-          <Button
-            variant="secondary"
-            onClick={() => {
-              const a = document.createElement('a')
-              a.href = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(url)}`
-              a.download = `qr-${link.label.toLowerCase().replace(/\s+/g, '-')}.png`
-              a.target = '_blank'
-              a.click()
-            }}
-            className="gap-2"
-          >
-            <Download className="w-4 h-4" />
-            Descargar QR
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-// Redimensiona a un ancho máximo (preserva la relación de aspecto, no recorta)
-// y comprime a JPEG — suficiente calidad para un banner, liviano para localStorage.
-function compressBannerFile(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const img = new window.Image()
-      img.onload = () => {
-        const maxW = 960
-        const ratio = Math.min(maxW / img.naturalWidth, 1)
-        const w = Math.round(img.naturalWidth * ratio)
-        const h = Math.round(img.naturalHeight * ratio)
-        const canvas = document.createElement('canvas')
-        canvas.width = w
-        canvas.height = h
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h)
-        resolve(canvas.toDataURL('image/jpeg', 0.82))
-      }
-      img.onerror = () => reject(new Error('No se pudo procesar la imagen'))
-      img.src = e.target.result
-    }
-    reader.onerror = () => reject(new Error('No se pudo leer el archivo'))
-    reader.readAsDataURL(file)
-  })
-}
-
-function HubSettingsDialog({ open, onOpenChange, color, bannerUrl, pageBackground, subtitle, onSave }) {
-  const [draftColor, setDraftColor] = useState(color)
-  const [draftBanner, setDraftBanner] = useState(bannerUrl)
-  const [draftBg, setDraftBg] = useState(pageBackground)
-  const [draftSubtitle, setDraftSubtitle] = useState(subtitle)
-  const fileInputRef = useRef(null)
-
-  // Reabrir el diálogo siempre parte de los valores actuales, no de lo que haya
-  // quedado tipeado (y descartado) la vez anterior.
-  const handleOpenChange = (next) => {
-    if (next) {
-      setDraftColor(color)
-      setDraftBanner(bannerUrl)
-      setDraftBg(pageBackground)
-      setDraftSubtitle(subtitle)
-    }
-    onOpenChange(next)
-  }
-
-  const handleBannerFile = async (e) => {
-    const file = e.target.files?.[0]
-    e.target.value = ''
-    if (!file) return
-    try {
-      setDraftBanner(await compressBannerFile(file))
-    } catch {
-      toast.error('No se pudo cargar la imagen')
-    }
-  }
-
-  const handleSave = () => {
-    onSave({ color: draftColor, bannerUrl: draftBanner, pageBackground: draftBg, subtitle: draftSubtitle })
-    onOpenChange(false)
-    toast.success('Apariencia guardada')
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Apariencia de la página pública</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4 py-2">
-          <div className="space-y-1.5">
-            <Label className="text-xs">Banner (reemplaza el color de fondo del encabezado)</Label>
-            {draftBanner ? (
-              <div className="relative rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 h-24">
-                <img src={draftBanner} alt="Banner" className="w-full h-full object-cover" />
-                <button
-                  onClick={() => setDraftBanner('')}
-                  className="absolute top-1.5 right-1.5 bg-black/60 hover:bg-black/75 text-white rounded-full p-1 transition-colors"
-                  aria-label="Quitar banner"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full h-24 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:border-gray-400 transition-colors"
-              >
-                <ImageIcon className="w-5 h-5" />
-                <span className="text-xs">Subir imagen</span>
-              </button>
-            )}
-            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleBannerFile} />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Color de marca {draftBanner && '(oculto mientras haya un banner)'}</Label>
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={draftColor}
-                onChange={(e) => setDraftColor(e.target.value)}
-                className="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-800 cursor-pointer bg-transparent"
-              />
-              <Input value={draftColor} onChange={(e) => setDraftColor(e.target.value)} className="text-sm font-mono" />
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Color de fondo de la pantalla</Label>
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={draftBg}
-                onChange={(e) => setDraftBg(e.target.value)}
-                className="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-800 cursor-pointer bg-transparent"
-              />
-              <Input value={draftBg} onChange={(e) => setDraftBg(e.target.value)} className="text-sm font-mono" />
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Subtítulo</Label>
-            <Input
-              value={draftSubtitle}
-              onChange={(e) => setDraftSubtitle(e.target.value)}
-              placeholder="Ej: Elegí lo que buscás"
-              className="text-sm"
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancelar
-          </Button>
-          <Button onClick={handleSave}>Guardar</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   )
 }
 
 export default function HubMoonCafe() {
-  const [config, setConfig] = useState(() => loadHubConfig())
-  const [adding, setAdding] = useState(false)
-  const [qrLink, setQrLink] = useState(null)
-  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [saved, setSaved] = useState(loadHubConfig)
+  const [draft, setDraft] = useState(saved)
 
-  const updateConfig = (updater) => {
-    setConfig((prev) => {
-      const next = typeof updater === 'function' ? updater(prev) : updater
-      saveHubConfig(next)
+  const set = (fields) => setDraft((d) => ({ ...d, ...fields }))
+  const setLinks = (updater) => setDraft((d) => ({ ...d, links: updater(d.links) }))
+
+  const slugValid = SLUG_PATTERN.test(draft.slug)
+  const urlsValid = draft.links.every((l) => l.type !== 'external' || /^https?:\/\/\S+/.test(l.url))
+  const isDirty = JSON.stringify(draft) !== JSON.stringify(saved)
+  const canSave = isDirty && slugValid && urlsValid
+
+  const handleSave = () => {
+    saveHubConfig(draft)
+    setSaved(draft)
+    toast.success('Cambios guardados')
+  }
+
+  const addDestination = (type) => {
+    const option = REPEAT_DESTINATIONS[type].getOptions()[0]
+    setLinks((links) => [
+      ...links,
+      { id: genId(), type, target: option?.id, label: option?.label ?? REPEAT_DESTINATIONS[type].label, enabled: true },
+    ])
+  }
+
+  const addExternal = () =>
+    setLinks((links) => [
+      ...links,
+      { id: genId(), type: 'external', label: 'Sitio web', url: 'https://', enabled: true },
+    ])
+
+  const moveLink = (index, dir) =>
+    setLinks((links) => {
+      const next = [...links]
+      ;[next[index], next[index + dir]] = [next[index + dir], next[index]]
       return next
     })
-  }
-
-  // "group" es 'repeatLinks' o 'externalLinks' — cada sección se reordena y edita
-  // por separado, nunca se mezclan entre sí.
-  const moveLink = (group, id, direction) => {
-    updateConfig((prev) => {
-      const list = [...prev[group]]
-      const index = list.findIndex((l) => l.id === id)
-      const target = index + direction
-      if (index < 0 || target < 0 || target >= list.length) return prev
-      ;[list[index], list[target]] = [list[target], list[index]]
-      return { ...prev, [group]: list }
-    })
-  }
-
-  const toggleLink = (group, id) =>
-    updateConfig((prev) => ({
-      ...prev,
-      [group]: prev[group].map((l) => (l.id === id ? { ...l, enabled: !l.enabled } : l)),
-    }))
-
-  const editLink = (group, id, fields) =>
-    updateConfig((prev) => ({
-      ...prev,
-      [group]: prev[group].map((l) => (l.id === id ? { ...l, ...fields } : l)),
-    }))
-
-  const deleteExternalLink = (id) => {
-    updateConfig((prev) => ({ ...prev, externalLinks: prev.externalLinks.filter((l) => l.id !== id) }))
-    toast.success('Enlace eliminado')
-  }
-
-  const addExternalLink = (link) => {
-    updateConfig((prev) => ({ ...prev, externalLinks: [...prev.externalLinks, link] }))
-    setAdding(false)
-    toast.success('Enlace agregado')
-  }
-
-  const saveAppearance = ({ color, bannerUrl, pageBackground, subtitle }) =>
-    updateConfig((prev) => ({ ...prev, color, bannerUrl, pageBackground, subtitle }))
-
-  const handleSave = () => toast.success('Cambios guardados')
 
   return (
-    <div className="min-h-screen">
-      <div className="max-w-3xl mx-auto px-4 py-8 md:py-12">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8 flex items-start justify-between gap-4"
-        >
+    <div className="px-4 sm:px-8 py-6 sm:py-10">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex items-start justify-between gap-4 mb-6">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <Link2 className="w-8 h-8 text-gray-700 dark:text-gray-300" />
-              <h1 className="text-4xl font-bold leading-tight text-foreground">Enlaces</h1>
+            <h1 className="flex items-center gap-3 text-3xl font-bold text-gray-900 dark:text-white">
+              <Link2 className="w-8 h-8" /> Links de tu marca
+            </h1>
+            <p className="text-gray-500 mt-1">Comparte todos tus destinos en una sola página.</p>
+          </div>
+          <Button onClick={handleSave} disabled={!canSave}>
+            Guardar
+          </Button>
+        </div>
+
+        <div className="flex gap-8 items-start">
+          <div className="flex-1 min-w-0 space-y-6">
+            <Section title="Apariencia">
+              <div className="space-y-1.5">
+                <Label>Título</Label>
+                <Input value={draft.title} onChange={(e) => set({ title: e.target.value })} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Subtítulo</Label>
+                <Input value={draft.subtitle} onChange={(e) => set({ subtitle: e.target.value })} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Dirección de tu página</Label>
+                <div className="flex items-center gap-2">
+                  <span className="hidden sm:block text-sm text-gray-500 whitespace-nowrap">{LINKS_URL_PREFIX}</span>
+                  <Input
+                    value={draft.slug}
+                    onChange={(e) => set({ slug: e.target.value.trim().toLowerCase() })}
+                    className={cn(!slugValid && 'border-red-400')}
+                  />
+                  <Button variant="outline" size="icon" asChild title="Ver página pública">
+                    <a href="/hub-demo/mooncafe" target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  </Button>
+                </div>
+                <p className={cn('text-xs', slugValid ? 'text-gray-500' : 'text-red-500')}>
+                  Solo letras, números y guiones, entre 3 y 60 caracteres.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <Label>Color</Label>
+                <input
+                  type="color"
+                  value={draft.color}
+                  onChange={(e) => set({ color: e.target.value })}
+                  className="w-12 h-9 rounded-md border border-gray-200 cursor-pointer p-0.5 bg-white"
+                />
+                <img
+                  src={MOONCAFE_BRAND.logo_url}
+                  alt=""
+                  className="w-9 h-9 rounded-lg border border-gray-200 object-contain bg-white"
+                />
+                <span className="text-sm text-gray-500">Usamos el logo de tu marca.</span>
+              </div>
+              <div className="space-y-1">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <Switch checked={draft.published} onCheckedChange={(v) => set({ published: v })} />
+                  <span className="font-medium text-gray-900 dark:text-white">Página publicada</span>
+                </label>
+                <p className="text-xs text-gray-500">Si la desactivas, la página deja de ser pública.</p>
+              </div>
+            </Section>
+
+            <Section
+              title="Tus links"
+              action={
+                <div className="flex flex-wrap items-center gap-2">
+                  <Select value="" onValueChange={addDestination}>
+                    <SelectTrigger className="w-60">
+                      <SelectValue placeholder="Agregar destino de Repeat" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(REPEAT_DESTINATIONS).map(([type, { label, icon: Icon }]) => (
+                        <SelectItem key={type} value={type}>
+                          <span className="flex items-center gap-2">
+                            <Icon className="w-4 h-4" /> {label}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" onClick={addExternal}>
+                    <Plus className="w-4 h-4 mr-2" /> Agregar link
+                  </Button>
+                </div>
+              }
+            >
+              {draft.links.length === 0 && (
+                <p className="text-sm text-gray-500 text-center py-8">
+                  Agrega tu primer link con los botones de arriba.
+                </p>
+              )}
+              <div className="space-y-3">
+                <AnimatePresence initial={false}>
+                  {draft.links.map((link, i) => (
+                    <LinkCard
+                      key={link.id}
+                      link={link}
+                      isFirst={i === 0}
+                      isLast={i === draft.links.length - 1}
+                      onChange={(fields) =>
+                        setLinks((links) => links.map((l) => (l.id === link.id ? { ...l, ...fields } : l)))
+                      }
+                      onMove={(dir) => moveLink(i, dir)}
+                      onDelete={() => setLinks((links) => links.filter((l) => l.id !== link.id))}
+                    />
+                  ))}
+                </AnimatePresence>
+              </div>
+            </Section>
+          </div>
+
+          <div className="hidden xl:block flex-shrink-0 sticky top-8">
+            <div className="rounded-[2.75rem] bg-gray-900 p-2.5 shadow-2xl" style={{ width: 320 }}>
+              <div className="rounded-[2.25rem] overflow-hidden" style={{ height: 620 }}>
+                <LinksPageView config={draft} compact />
+              </div>
             </div>
-            <p className="text-gray-600 dark:text-gray-400">
-              Lo que ve tu cliente al escanear el QR de tu local — armá tu propio Linktree.
-            </p>
+            {!draft.published && <p className="text-center text-xs text-gray-400 mt-3">La página no está publicada.</p>}
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <button
-              onClick={() => setSettingsOpen(true)}
-              className="w-9 h-9 flex items-center justify-center border border-gray-200 dark:border-gray-800 rounded-xl text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
-              aria-label="Editar apariencia de la página pública"
-              title="Color y subtítulo de la página pública"
-            >
-              <SlidersHorizontal className="w-4 h-4" />
-            </button>
-            <a
-              href="/hub-demo/mooncafe"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-2 transition-colors"
-            >
-              Ver página pública <ExternalLink className="w-3.5 h-3.5" />
-            </a>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="mb-8"
-        >
-          <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
-            Enlaces de Repeat — usá las flechas para ordenar
-          </h2>
-          <div className="space-y-2">
-            {config.repeatLinks.map((link, index) => (
-              <LinkRow
-                key={link.id}
-                link={link}
-                isFirst={index === 0}
-                isLast={index === config.repeatLinks.length - 1}
-                onMove={(id, dir) => moveLink('repeatLinks', id, dir)}
-                onToggle={(id) => toggleLink('repeatLinks', id)}
-                onShowQr={setQrLink}
-                onEdit={(id, fields) => editLink('repeatLinks', id, fields)}
-              />
-            ))}
-          </div>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-              Tus enlaces — usá las flechas para ordenar
-            </h2>
-            {!adding && (
-              <Button variant="outline" size="sm" onClick={() => setAdding(true)} className="gap-1.5">
-                <Plus className="w-4 h-4" /> Agregar enlace
-              </Button>
-            )}
-          </div>
-          <div className="space-y-2">
-            {config.externalLinks.map((link, index) => (
-              <LinkRow
-                key={link.id}
-                link={link}
-                isFirst={index === 0}
-                isLast={index === config.externalLinks.length - 1}
-                onMove={(id, dir) => moveLink('externalLinks', id, dir)}
-                onToggle={(id) => toggleLink('externalLinks', id)}
-                onDelete={deleteExternalLink}
-                onShowQr={setQrLink}
-                onEdit={(id, fields) => editLink('externalLinks', id, fields)}
-              />
-            ))}
-            <AnimatePresence initial={false}>
-              {adding && <AddLinkForm onAdd={addExternalLink} onCancel={() => setAdding(false)} />}
-            </AnimatePresence>
-          </div>
-        </motion.div>
-
-        <div className="mt-8 flex justify-end">
-          <Button onClick={handleSave}>Guardar cambios</Button>
         </div>
       </div>
-
-      <LinkQrDialog link={qrLink} onOpenChange={(open) => !open && setQrLink(null)} />
-      <HubSettingsDialog
-        open={settingsOpen}
-        onOpenChange={setSettingsOpen}
-        color={config.color}
-        bannerUrl={config.bannerUrl}
-        pageBackground={config.pageBackground}
-        subtitle={config.subtitle}
-        onSave={saveAppearance}
-      />
     </div>
   )
 }

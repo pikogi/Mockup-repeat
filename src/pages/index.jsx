@@ -96,6 +96,10 @@ const EncuestaMoonCafe = lazy(() => import('./EncuestaMoonCafe'))
 const CrearEncuestaMoonCafe = lazy(() => import('./CrearEncuestaMoonCafe'))
 const ResultadosEncuestaMoonCafe = lazy(() => import('./ResultadosEncuestaMoonCafe'))
 const PublicHubMoonCafe = lazy(() => import('./PublicHubMoonCafe'))
+const VitrinasMoonCafe = lazy(() => import('./VitrinasMoonCafe'))
+const VitrinaMoonCafe = lazy(() => import('./VitrinaMoonCafe'))
+const PublicShowcaseMoonCafe = lazy(() => import('./PublicShowcaseMoonCafe'))
+const PublicShowcaseBurger = lazy(() => import('./PublicShowcaseBurger'))
 const HubMoonCafe = lazy(() => import('./HubMoonCafe'))
 const PublicEncuestaMoonCafe = lazy(() => import('./PublicEncuestaMoonCafe'))
 const WalletDemoGym = lazy(() => import('./WalletDemoGym'))
@@ -181,6 +185,8 @@ export default function Pages() {
             <Route path="/scan-demo/mooncafe" element={<ScanDemoMoonCafe />} />
             <Route path="/scan-demo/mooncafe-select" element={<ScanDemoMoonCafeSelector />} />
             <Route path="/hub-demo/mooncafe" element={<PublicHubMoonCafe />} />
+            <Route path="/showcase-demo/mooncafe/:showcaseId" element={<PublicShowcaseMoonCafe />} />
+            <Route path="/showcase-demo/burger" element={<PublicShowcaseBurger />} />
             <Route
               path="/dashboard-demo/mooncafe"
               element={
@@ -290,6 +296,22 @@ export default function Pages() {
               element={
                 <LayoutWrapper>
                   <ResultadosEncuestaMoonCafe />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/vitrina/mooncafe-demo"
+              element={
+                <LayoutWrapper>
+                  <VitrinasMoonCafe />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/vitrina/mooncafe-demo/:showcaseId"
+              element={
+                <LayoutWrapper>
+                  <VitrinaMoonCafe />
                 </LayoutWrapper>
               }
             />

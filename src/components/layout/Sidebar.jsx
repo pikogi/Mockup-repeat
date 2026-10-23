@@ -15,6 +15,7 @@ import {
   Bell,
   LogOut,
   ClipboardList,
+  ShoppingBag,
   BookOpen,
   HelpCircle,
   X,
@@ -88,6 +89,7 @@ export default function Sidebar() {
     Team: '/team-demo/mooncafe',
     ScanQR: '/scanqr-demo?demo=selector&scan=1',
     Sorteo: '/sorteo/mooncafe-demo',
+    Vitrina: '/vitrina/mooncafe-demo',
     Enlaces: '/enlaces/mooncafe-demo',
   }
 
@@ -141,6 +143,7 @@ export default function Sidebar() {
     '/catalogo-demo/mooncafe',
     '/encuesta/mooncafe-demo',
     '/enlaces/mooncafe-demo',
+    '/vitrina/mooncafe-demo',
   ]
 
   const MOONCAFE_POINTS_DEMO_URLS = {
@@ -154,6 +157,7 @@ export default function Sidebar() {
     Team: '/team-demo/mooncafe-points',
     ScanQR: '/scanqr-demo?demo=selector&scan=1',
     Sorteo: '/sorteo/mooncafe-demo',
+    Vitrina: '/vitrina/mooncafe-demo',
     Enlaces: '/enlaces/mooncafe-demo',
   }
 
@@ -302,12 +306,18 @@ export default function Sidebar() {
         ...(isGlowDemo || isMoonCafeDemo || isMoonCafeRoadmap || isDelPilarDemo
           ? [
               { name: 'Sorteo', icon: Ticket, page: 'Sorteo' },
+              // Vitrina (catálogo público de productos) y Links (página estilo Linktree) solo existen
+              // en el flujo de Café Moon por ahora.
+              ...(isMoonCafeDemo
+                ? [
+                    { name: 'Vitrina', icon: ShoppingBag, page: 'Vitrina' },
+                    { name: 'Links', icon: Link2, page: 'Enlaces' },
+                  ]
+                : []),
               { name: t('stores'), icon: Store, page: 'Stores' },
               { name: t('team'), icon: Users, page: 'Team' },
             ]
           : []),
-        // "Enlaces" (hub público estilo Linktree) solo existe en el flujo de Café Moon por ahora.
-        ...(isMoonCafeDemo ? [{ name: 'Enlaces', icon: Link2, page: 'Enlaces' }] : []),
         ...(user?.type_user === 'brand_admin' && !isDemo ? [{ name: t('stores'), icon: Store, page: 'Stores' }] : []),
       ]
 
