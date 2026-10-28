@@ -2,6 +2,9 @@ import { Fragment, useEffect, useMemo, useState } from 'react'
 import { formatDateUTC } from '@/utils/date'
 import CustomerDetailModal from '@/components/customers/CustomerDetailModal'
 import { getEmailCampaigns, getPushCampaigns } from '@/constants/moonCafeCampaigns'
+import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
+import { MOONCAFE_MEMBERS, MOONCAFE_STAMPS_PROGRAM as PROGRAM } from '@/constants/moonCafeMembers'
+import { loadSales, membersWithSales } from '@/constants/moonCafeSales'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -41,14 +44,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
-// ─── Program ──────────────────────────────────────────────────────────────────
-
-const PROGRAM = {
-  program_id: 'mooncafe-sellos',
-  program_name: 'Club de Fidelidad Moon Cafe',
-  program_rules: { stamps_required: 5, required_customer_fields: { phone: true, birth_date: true } },
-}
-
 // Sucursales para el alta manual — el paso de sucursal solo se muestra si hay más de una.
 const MOCK_STORES = [
   { store_id: 'store-1', store_name: 'Café Moon · Sucursal Centro' },
@@ -77,151 +72,6 @@ const makeCard = (id, balance, visits, rewardsCount, firstTxDaysAgo) => {
     transactions,
   }
 }
-
-const RAW_MEMBERS = [
-  {
-    id: 1,
-    name: 'Carlos Martínez',
-    email: 'carlos.mtz@gmail.com',
-    joined: '2026-01-08',
-    balance: 4,
-    visits: 22,
-    rewards: 4,
-    phone: '+54 9 351 412-3344',
-    birthday: '1990-03-15',
-    firstTxDaysAgo: 1,
-  },
-  {
-    id: 2,
-    name: 'Sofía Ramírez',
-    email: 'sofi.ramirez@gmail.com',
-    joined: '2026-01-15',
-    balance: 2,
-    visits: 17,
-    rewards: 3,
-    phone: '+54 9 351 508-7621',
-    birthday: '1995-07-22',
-    firstTxDaysAgo: 3,
-  },
-  {
-    id: 3,
-    name: 'Andrés Morales',
-    email: 'andres.m@hotmail.com',
-    joined: '2026-02-01',
-    balance: 0,
-    visits: 10,
-    rewards: 2,
-    phone: '+54 9 351 623-0198',
-    birthday: '1988-11-04',
-    firstTxDaysAgo: 0,
-  },
-  {
-    id: 4,
-    name: 'Valentina Cruz',
-    email: 'valen.cruz@icloud.com',
-    joined: '2026-02-10',
-    balance: 3,
-    visits: 8,
-    rewards: 1,
-    phone: '+54 9 351 741-5530',
-    birthday: '1997-01-30',
-    firstTxDaysAgo: 5,
-  },
-  {
-    id: 5,
-    name: 'Lucía Herrera',
-    email: 'lucia.h@gmail.com',
-    joined: '2026-02-20',
-    balance: 1,
-    visits: 6,
-    rewards: 1,
-    phone: '+54 9 351 899-2267',
-    birthday: '1993-05-18',
-    firstTxDaysAgo: 12,
-  },
-  {
-    id: 6,
-    name: 'Mateo Flores',
-    email: 'mateo.flores@gmail.com',
-    joined: '2026-03-03',
-    balance: 4,
-    visits: 14,
-    rewards: 2,
-    phone: '+54 9 351 312-4480',
-    birthday: '1991-09-09',
-    firstTxDaysAgo: 7,
-  },
-  {
-    id: 7,
-    name: 'Camila Ortiz',
-    email: 'cami.ortiz@yahoo.com',
-    joined: '2026-03-12',
-    balance: 2,
-    visits: 7,
-    rewards: 1,
-    birthday: '1999-12-03',
-    firstTxDaysAgo: 38,
-  },
-  {
-    id: 8,
-    name: 'Diego Vargas',
-    email: 'diego.v@gmail.com',
-    joined: '2026-03-25',
-    balance: 0,
-    visits: 5,
-    rewards: 1,
-    phone: '+54 9 351 487-9915',
-    birthday: '1992-06-17',
-    firstTxDaysAgo: 52,
-  },
-  {
-    id: 9,
-    name: 'Martina Rojas',
-    email: 'marti.rojas@gmail.com',
-    joined: '2026-06-20',
-    balance: 3,
-    visits: 3,
-    rewards: 0,
-    phone: '+54 9 351 556-1023',
-    birthday: '1996-02-14',
-    firstTxDaysAgo: 4,
-  },
-  {
-    id: 10,
-    name: 'Sebastián Castro',
-    email: 'seba.castro@hotmail.com',
-    joined: '2026-03-14',
-    balance: 1,
-    visits: 2,
-    rewards: 0,
-    birthday: '1994-08-27',
-    firstTxDaysAgo: 80,
-  },
-  {
-    id: 11,
-    name: 'Isabella Méndez',
-    email: 'isa.mendez@gmail.com',
-    joined: '2026-06-28',
-    balance: 2,
-    visits: 2,
-    rewards: 0,
-    phone: '+54 9 351 730-6642',
-    birthday: '1998-04-11',
-    firstTxDaysAgo: 2,
-  },
-  {
-    id: 12,
-    name: 'Tomás Navarro',
-    email: 'tomas.nav@gmail.com',
-    joined: '2026-05-01',
-    balance: 1,
-    visits: 1,
-    rewards: 0,
-    phone: '+54 9 351 621-8874',
-    birthday: '1995-10-22',
-    firstTxDaysAgo: 18,
-  },
-]
 
 // Estas 3 funciones antes eran constantes de módulo calculadas solo a partir de
 // RAW_MEMBERS; ahora son funciones para poder recalcularlas también con los clientes
@@ -345,14 +195,6 @@ function SegmentBadge({ segment }) {
 }
 
 // ─── WhatsApp helpers ─────────────────────────────────────────────────────────
-
-function WhatsAppIcon({ className }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-    </svg>
-  )
-}
 
 function cleanPhone(phone) {
   return phone?.replace(/\D/g, '') ?? ''
@@ -1128,7 +970,12 @@ export default function CustomersMoonCafe({ headerExtra }) {
     return () => window.removeEventListener('resize', handler)
   }, [])
 
-  const rawMembers = useMemo(() => [...addedMembers, ...RAW_MEMBERS], [addedMembers])
+  // In the roadmap flow, members reflect what was charged to them in Caja / Pedidos.
+  // The regular demo keeps the fixed sample balances.
+  const [baseMembers] = useState(() =>
+    sessionStorage.getItem('mcMode') === 'roadmap' ? membersWithSales(loadSales()) : MOONCAFE_MEMBERS,
+  )
+  const rawMembers = useMemo(() => [...addedMembers, ...baseMembers], [addedMembers, baseMembers])
   const userStatsMap = useMemo(() => buildUserStatsMap(rawMembers), [rawMembers])
   const members = useMemo(() => buildMembers(rawMembers), [rawMembers])
   const enriched = useMemo(() => buildEnriched(rawMembers, members, userStatsMap), [rawMembers, members, userStatsMap])

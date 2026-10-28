@@ -25,6 +25,8 @@ import {
   Package,
   UserCog,
   Link2,
+  Receipt,
+  Inbox,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLanguage } from '@/components/auth/LanguageContext'
@@ -98,6 +100,8 @@ export default function Sidebar() {
     '/encuesta/roadmap',
     '/comunicacion/roadmap',
     '/referidos/roadmap',
+    '/pedidos/roadmap',
+    '/caja/roadmap',
     // '/descuentos/roadmap',
     '/menu',
   ]
@@ -117,6 +121,10 @@ export default function Sidebar() {
     ScanQR: '/scanqr-demo?demo=selector&scan=1',
     Sorteo: '/sorteo/mooncafe-demo',
     Menu: '/menu',
+    Pedidos: '/pedidos/roadmap',
+    Caja: '/caja/roadmap',
+    Vitrina: '/vitrina/mooncafe-demo',
+    Enlaces: '/enlaces/mooncafe-demo',
   }
 
   const MOONCAFE_PATHS = [
@@ -306,9 +314,16 @@ export default function Sidebar() {
         ...(isGlowDemo || isMoonCafeDemo || isMoonCafeRoadmap || isDelPilarDemo
           ? [
               { name: 'Sorteo', icon: Ticket, page: 'Sorteo' },
+              // Pedidos por WhatsApp y Caja (POS liviano) todavía están en desarrollo: solo en el roadmap.
+              ...(isMoonCafeRoadmap
+                ? [
+                    { name: 'Pedidos', icon: Inbox, page: 'Pedidos' },
+                    { name: 'Caja', icon: Receipt, page: 'Caja' },
+                  ]
+                : []),
               // Vitrina (catálogo público de productos) y Links (página estilo Linktree) solo existen
               // en el flujo de Café Moon por ahora.
-              ...(isMoonCafeDemo
+              ...(isMoonCafeDemo || isMoonCafeRoadmap
                 ? [
                     { name: 'Vitrina', icon: ShoppingBag, page: 'Vitrina' },
                     { name: 'Links', icon: Link2, page: 'Enlaces' },

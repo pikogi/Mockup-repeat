@@ -9,21 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { MOONCAFE_STORES } from '@/constants/moonCafeClubs'
-
-const MOONCAFE_TEAM = [
-  {
-    id: 2,
-    full_name: 'Tomás Ibáñez',
-    email: 'tomas@cafemoon.com.ar',
-    assigned_branch_id: 'store-1',
-  },
-  {
-    id: 3,
-    full_name: 'Carla Núñez',
-    email: 'carla@cafemoon.com.ar',
-    assigned_branch_id: 'store-1',
-  },
-]
+import { MOONCAFE_TEAM } from '@/constants/moonCafeTeam'
 
 const DEFAULT_PERMISSIONS = {
   add_transactions: true,

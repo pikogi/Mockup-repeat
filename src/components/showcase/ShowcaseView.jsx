@@ -1,8 +1,10 @@
 import { useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Package, X } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { AddToOrder, CartBar, CheckoutSheet, OrderSent } from '@/components/showcase/ShowcaseOrdering'
+import { lineKey } from '@/constants/moonCafeSales'
 import { formatShowcasePrice, isOutOfStock, itemDisplayPrice } from '@/constants/moonCafeShowcase'
+import { cn } from '@/lib/utils'
 
 // Vista pública de una vitrina. La usan la página pública y la "Vista móvil" del
 // admin. `compact` fuerza el layout de teléfono (las clases responsive dependen
@@ -93,7 +95,7 @@ function ListRow({ item, color, compact, onOpen }) {
   )
 }
 
-function ItemDetail({ item, compact, onClose }) {
+function ItemDetail({ item, compact, onClose, onAdd }) {
   const soldOut = isOutOfStock(item)
   return (
     <motion.div
@@ -131,43 +133,80 @@ function ItemDetail({ item, compact, onClose }) {
               <p className={cn('text-gray-600 mt-1', compact ? 'text-xs' : 'text-sm')}>{item.description}</p>
             )}
           </div>
-          {item.price_type === 'variants' ? (
-            <div className="rounded-xl bg-gray-50 divide-y divide-gray-100">
-              {item.variants.map((v) => (
-                <div key={v.id} className="flex items-center justify-between px-3 py-2.5">
-                  <span className={cn('text-gray-600', compact ? 'text-xs' : 'text-sm')}>{v.name}</span>
-                  <span className={cn('font-bold text-gray-900', compact ? 'text-sm' : 'text-base')}>
-                    {formatShowcasePrice(v.price)}
+          {onAdd ? (
+            <AddToOrder item={item} soldOut={soldOut} onAdd={onAdd} />
+          ) : (
+            <>
+              {item.price_type === 'variants' ? (
+                <div className="rounded-xl bg-gray-50 divide-y divide-gray-100">
+                  {item.variants.map((v) => (
+                    <div key={v.id} className="flex items-center justify-between px-3 py-2.5">
+                      <span className={cn('text-gray-600', compact ? 'text-xs' : 'text-sm')}>{v.name}</span>
+                      <span className={cn('font-bold text-gray-900', compact ? 'text-sm' : 'text-base')}>
+                        {formatShowcasePrice(v.price)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-xl bg-gray-50 flex items-center justify-between px-3 py-3">
+                  <span className={cn('text-gray-500', compact ? 'text-[11px]' : 'text-xs')}>Precio</span>
+                  <span className={cn('font-bold text-gray-900', compact ? 'text-base' : 'text-xl')}>
+                    {formatShowcasePrice(item.price)}
                   </span>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-xl bg-gray-50 flex items-center justify-between px-3 py-3">
-              <span className={cn('text-gray-500', compact ? 'text-[11px]' : 'text-xs')}>Precio</span>
-              <span className={cn('font-bold text-gray-900', compact ? 'text-base' : 'text-xl')}>
-                {formatShowcasePrice(item.price)}
-              </span>
-            </div>
+              )}
+              {soldOut && <p className="text-xs font-semibold text-red-600 text-center">Sin stock por el momento</p>}
+              <button
+                onClick={onClose}
+                className={cn(
+                  'w-full rounded-xl bg-gray-900 text-white font-semibold',
+                  compact ? 'py-2 text-xs' : 'py-3 text-sm',
+                )}
+              >
+                Cerrar
+              </button>
+            </>
           )}
-          {soldOut && <p className="text-xs font-semibold text-red-600 text-center">Sin stock por el momento</p>}
-          <button
-            onClick={onClose}
-            className={cn(
-              'w-full rounded-xl bg-gray-900 text-white font-semibold',
-              compact ? 'py-2 text-xs' : 'py-3 text-sm',
-            )}
-          >
-            Cerrar
-          </button>
         </div>
       </motion.div>
     </motion.div>
   )
 }
 
-export default function ShowcaseView({ brand, showcase, layout, compact = false }) {
+// `ordering` (optional) turns the showcase into a WhatsApp ordering page; see CheckoutSheet.
+export default function ShowcaseView({ brand, showcase, layout, compact = false, ordering }) {
   const [openItem, setOpenItem] = useState(null)
+  const [cart, setCart] = useState([])
+  const [checkoutOpen, setCheckoutOpen] = useState(false)
+  const [sentOrder, setSentOrder] = useState(null)
+
+  const addToCart = (item, variant, qty) => {
+    const key = lineKey(showcase.id, item.id, variant?.id)
+    setCart((prev) =>
+      prev.some((l) => l.key === key)
+        ? prev.map((l) => (l.key === key ? { ...l, qty: l.qty + qty } : l))
+        : [
+            ...prev,
+            {
+              key,
+              showcase_id: showcase.id,
+              item_id: item.id,
+              name: item.name,
+              variant_name: variant?.name ?? null,
+              category: item.category,
+              image_url: item.image_url,
+              unit_price: Number(variant?.price ?? item.price ?? 0),
+              qty,
+            },
+          ],
+    )
+    setOpenItem(null)
+  }
+
+  const changeQty = (key, delta) =>
+    setCart((prev) => prev.map((l) => (l.key === key ? { ...l, qty: l.qty + delta } : l)).filter((l) => l.qty > 0))
+
   const sectionRefs = useRef({})
   const color = brand.color || '#111827'
   const activeLayout = layout ?? showcase.layout
@@ -260,7 +299,13 @@ export default function ShowcaseView({ brand, showcase, layout, compact = false 
         )}
 
         {/* Sections */}
-        <main className={cn('mx-auto', compact ? 'px-3 py-3 space-y-5' : 'max-w-3xl px-4 sm:px-6 py-6 space-y-8')}>
+        <main
+          className={cn(
+            'mx-auto',
+            compact ? 'px-3 py-3 space-y-5' : 'max-w-3xl px-4 sm:px-6 py-6 space-y-8',
+            cart.length > 0 && 'pb-28',
+          )}
+        >
           {sections.length === 0 && (
             <div className="text-center py-16">
               <Package className="w-10 h-10 text-gray-300 mx-auto" />
@@ -292,8 +337,34 @@ export default function ShowcaseView({ brand, showcase, layout, compact = false 
       </div>
 
       <AnimatePresence>
-        {openItem && <ItemDetail item={openItem} compact={compact} onClose={() => setOpenItem(null)} />}
+        {openItem && (
+          <ItemDetail
+            item={openItem}
+            compact={compact}
+            onClose={() => setOpenItem(null)}
+            onAdd={ordering ? addToCart : undefined}
+          />
+        )}
       </AnimatePresence>
+
+      {ordering && (
+        <>
+          {!checkoutOpen && <CartBar cart={cart} color={color} onOpen={() => setCheckoutOpen(true)} />}
+          <CheckoutSheet
+            open={checkoutOpen && cart.length > 0}
+            cart={cart}
+            ordering={ordering}
+            onChangeQty={changeQty}
+            onClose={() => setCheckoutOpen(false)}
+            onSent={(order) => {
+              setCart([])
+              setCheckoutOpen(false)
+              setSentOrder(order)
+            }}
+          />
+          <OrderSent order={sentOrder} onClose={() => setSentOrder(null)} />
+        </>
+      )}
     </div>
   )
 }

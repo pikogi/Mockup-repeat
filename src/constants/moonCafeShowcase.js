@@ -15,6 +15,10 @@ export const DEFAULT_SHOWCASE_BRAND = {
   banner_url: '',
   // IDs de MOONCAFE_STORES donde se muestran las vitrinas.
   store_ids: ['store-1'],
+  // Pedidos por WhatsApp desde la vitrina pública (roadmap, ver moonCafeOrders.js).
+  whatsapp: '+54 9 11 2345-6789',
+  delivery_enabled: true,
+  delivery_fee: 1500,
 }
 
 export const DEFAULT_SHOWCASES = [
