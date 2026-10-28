@@ -1,6 +1,7 @@
 // Vitrina de ejemplo de una hamburguesería ficticia (Toro Burgers), para mostrarle
 // a prospectos gastronómicos cómo se ve una vitrina con su rubro. Solo vista pública
-// (/showcase-demo/burger): los datos son fijos, no se editan desde el admin.
+// (/showcase-demo/burger): los datos son fijos, no se editan desde el admin. Acepta
+// pedidos por WhatsApp, pero no se guardan: no hay tablero de Pedidos para esta marca.
 
 const img = (id) => `https://images.unsplash.com/${id}?w=600&q=75`
 
@@ -20,6 +21,9 @@ export const BURGER_BRAND = {
   color: '#f97316',
   logo_url: '/toro-burgers-logo.svg',
   banner_url: '',
+  whatsapp: '+54 9 11 2345-6789',
+  delivery_enabled: true,
+  delivery_fee: 2000,
 }
 
 export const BURGER_SHOWCASE = {
