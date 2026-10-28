@@ -386,7 +386,7 @@ const PRICING_PLANS = [
     prices: {
       ar: { mensual: 34999, semianual: 29749, anual: 26249 },
       mx: { mensual: 499, semianual: 424, anual: 374 },
-      usd: { mensual: 49.99, semianual: 42.49, anual: 37.49 },
+      usd: { mensual: 39.99, semianual: 33.99, anual: 29.99 },
     },
   },
   {
@@ -403,7 +403,7 @@ const PRICING_PLANS = [
     prices: {
       ar: { mensual: 49999, semianual: 42499, anual: 37499 },
       mx: { mensual: 799, semianual: 679, anual: 599 },
-      usd: { mensual: 79.99, semianual: 67.99, anual: 59.99 },
+      usd: { mensual: 59.99, semianual: 50.99, anual: 44.99 },
     },
   },
 ]
